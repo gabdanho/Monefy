@@ -9,7 +9,3 @@ data class Category(
     val totalCategoryPrice: Double = expenses.sumOf { it.sumPrice },
     val isTapped: Boolean = false
 )
-
-fun getTotalPriceFromAllCategories(categories: List<Category>): Double {
-    return categories.sumOf { it.totalCategoryPrice }
-}

@@ -13,6 +13,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.example.monefy.model.fake.FakeData
 import com.example.monefy.screen.MainScreen
 import com.example.monefy.screen.SpendingTable
+import com.example.monefy.screen.SpendingViewModel
 import com.example.monefy.ui.theme.MonefyTheme
 
 class MainActivity : ComponentActivity() {
@@ -25,7 +26,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    MainScreen(categories = FakeData.fakeCategories)
+                    MainScreen()
                 }
             }
         }

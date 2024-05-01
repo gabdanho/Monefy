@@ -11,16 +11,19 @@ object FakeData {
             color = Color.Red,
             expenses = listOf(
                 Expense(
+                    categoryName = "Дом и быт",
                     name = "Утюг",
                     price = 4599.0,
                     count = 1
                 ),
                 Expense(
+                    categoryName = "Дом и быт",
                     name = "Коврик для ванны",
                     price = 599.99,
                     count = 1
                 ),
                 Expense(
+                    categoryName = "Дом и быт",
                     name = "Краска для стен (красная)",
                     price = 1499.0,
                     count = 2
@@ -32,16 +35,19 @@ object FakeData {
             color = Color.Green,
             expenses = listOf(
                 Expense(
+                    categoryName = "Продукты питания",
                     name = "Макароны",
                     price = 69.99,
                     count = 2
                 ),
                 Expense(
+                    categoryName = "Продукты питания",
                     name = "Сливки 20%",
                     price = 120.99,
                     count = 1
                 ),
                 Expense(
+                    categoryName = "Продукты питания",
                     name = "Сыр Российский",
                     price = 256.78,
                     count = 1
@@ -53,11 +59,13 @@ object FakeData {
             color = Color.Cyan,
             expenses = listOf(
                 Expense(
+                    categoryName = "Красота",
                     name = "Помада",
                     price = 1200.0,
                     count = 1
                 ),
                 Expense(
+                    categoryName = "Красота",
                     name = "Тушь для ресниц",
                     price = 899.99,
                     count = 1
@@ -69,6 +77,7 @@ object FakeData {
             color = Color.Yellow,
             expenses = listOf(
                 Expense(
+                    categoryName = "Одежда",
                     name = "Кроссовки Adidas",
                     price = 4599.0,
                     count = 1

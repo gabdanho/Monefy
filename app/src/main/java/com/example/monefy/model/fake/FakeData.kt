@@ -9,7 +9,7 @@ object FakeData {
         Category(
             name = "Дом и быт",
             color = Color.Red,
-            expenses = listOf(
+            expenses = mutableListOf(
                 Expense(
                     categoryName = "Дом и быт",
                     name = "Утюг",
@@ -33,7 +33,7 @@ object FakeData {
         Category(
             name = "Продукты питания",
             color = Color.Green,
-            expenses = listOf(
+            expenses = mutableListOf(
                 Expense(
                     categoryName = "Продукты питания",
                     name = "Макароны",
@@ -57,7 +57,7 @@ object FakeData {
         Category(
             name = "Красота",
             color = Color.Cyan,
-            expenses = listOf(
+            expenses = mutableListOf(
                 Expense(
                     categoryName = "Красота",
                     name = "Помада",
@@ -75,7 +75,7 @@ object FakeData {
         Category(
             name = "Одежда",
             color = Color.Yellow,
-            expenses = listOf(
+            expenses = mutableListOf(
                 Expense(
                     categoryName = "Одежда",
                     name = "Кроссовки Adidas",
@@ -83,6 +83,25 @@ object FakeData {
                     count = 1
                 )
             )
+        )
+    )
+
+    val fakeCategoriesWithoutExpenses = listOf(
+        Category(
+            name = "Дом и быт",
+            color = Color.Red
+        ),
+        Category(
+            name = "Продукты питания",
+            color = Color.Green
+        ),
+        Category(
+            name = "Красота",
+            color = Color.Cyan
+        ),
+        Category(
+            name = "Одежда",
+            color = Color.Yellow
         )
     )
 }

@@ -3,6 +3,7 @@ package com.example.monefy.screen
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,8 +13,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -32,6 +38,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -51,6 +58,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.text.isDigitsOnly
+import com.example.monefy.model.Category
+import com.example.monefy.model.Expense
+import com.example.monefy.model.fake.FakeData
 import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
@@ -59,21 +69,30 @@ import java.time.format.DateTimeFormatter
 
 @Composable
 fun AddSpend() {
-    AddSpendScreen(context = LocalContext.current)
+    AddSpendScreen(
+        spendingViewModel = SpendingViewModel(FakeData.fakeCategoriesWithoutExpenses),
+        context = LocalContext.current
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddSpendScreen(
+    spendingViewModel: SpendingViewModel,
     context: Context,
     modifier: Modifier = Modifier
 ) {
+    val spendingUiState by spendingViewModel.uiState.collectAsState()
+    val categoriesList = spendingUiState.categories
+
     var spendName by rememberSaveable { mutableStateOf("") }
+    var spendPrice by rememberSaveable { mutableStateOf(0.0) }
+    var spendPriceForTextFieldValue by rememberSaveable { mutableStateOf("") }
+    var spendDescription by rememberSaveable { mutableStateOf("0") }
     var count by rememberSaveable { mutableStateOf(1) }
     var countForTextFieldValue by rememberSaveable { mutableStateOf("1") }
-    var spendDescription by rememberSaveable { mutableStateOf("") }
 
-    var pickedDate by remember { mutableStateOf(LocalDate.now()) }
+    var pickedDate by rememberSaveable { mutableStateOf(LocalDate.now()) }
     val dateDialogState = rememberMaterialDialogState()
 
     Column(
@@ -101,6 +120,62 @@ fun AddSpendScreen(
                 Icon(
                     imageVector = Icons.Filled.Close,
                     contentDescription = "Удалить название",
+                )
+            }
+        }
+        Text(
+            text = "Цена",
+            modifier = Modifier.padding(4.dp)
+        )
+        Row {
+            TextField(
+                value = spendPriceForTextFieldValue,
+                onValueChange = {
+                    if (it == "") {
+                        spendPriceForTextFieldValue = ""
+                        spendPrice = 0.0
+                    }
+                    else if (it.length < spendPriceForTextFieldValue.length) {
+                        spendPriceForTextFieldValue = it
+                        spendPrice = it.toDouble()
+                    }
+                    else if (it == "0") { }
+                    else if (it.all { it.isDigit() || it == '.' } && it.count { it == '.' } <= 1 && it.toDouble() < 10000000) {
+                        spendPriceForTextFieldValue = it
+                        spendPrice = it.toDouble()
+                    }
+                },
+                textStyle = LocalTextStyle.current.copy(
+                    textAlign = TextAlign.Center,
+                    fontSize = 20.sp
+                ),
+                singleLine = true,
+                colors = TextFieldDefaults.textFieldColors(containerColor = Color.Transparent),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                modifier = Modifier
+                    .weight(4f)
+                    .onFocusChanged { focusState ->
+                        if (focusState.isFocused) {
+                            spendPrice = 0.0
+                            spendPriceForTextFieldValue = ""
+                        } else {
+                            if (spendPriceForTextFieldValue.isEmpty()) {
+                                spendPrice = 0.0
+                                spendPriceForTextFieldValue = "0"
+                            }
+                        }
+                    }
+            )
+            IconButton(
+                onClick = {
+                    spendPrice = 0.0
+                    spendPriceForTextFieldValue = "0"
+                },
+                modifier = Modifier.weight(1f)
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Close,
+                    contentDescription = "Удалить цену",
                 )
             }
         }
@@ -183,8 +258,12 @@ fun AddSpendScreen(
                 .height(maxOf(200.dp))
                 .padding(bottom = 8.dp)
         ) {
-            items(13) {
-                CategoryCard()
+            items(categoriesList) { category ->
+                CategoryCard(
+                    categoryName = category.name,
+                    currentCategoryName = spendingUiState.selectedCategoryName,
+                    changeSelectedCategory = spendingViewModel::changeSelectedCategory
+                )
             }
         }
         Text(
@@ -201,7 +280,7 @@ fun AddSpendScreen(
             else {
                 pickedDate.toString()
             },
-            onValueChange = {},
+            onValueChange = { },
             readOnly = true,
             trailingIcon = {
                 IconButton(
@@ -244,10 +323,25 @@ fun AddSpendScreen(
             }
         }
         Button(
-            onClick = { },
+            onClick = {
+                spendingViewModel.addExpense(
+                    Expense(
+                        categoryName = spendingUiState.selectedCategoryName,
+                        name = spendName,
+                        description = spendDescription,
+                        count = count,
+                        price = spendPrice
+                    )
+                )
+            },
             modifier = Modifier.align(Alignment.CenterHorizontally )
         ) {
             Text("Добавить")
+        }
+        LazyColumn {
+            items(spendingUiState.categories) {
+                Text(it.expenses.toString())
+            }
         }
     }
     MaterialDialog(
@@ -274,14 +368,25 @@ fun AddSpendScreen(
 
 @Composable
 fun CategoryCard(
+    changeSelectedCategory: (String) -> Unit,
+    categoryName: String,
+    currentCategoryName: String,
     modifier: Modifier = Modifier
 ) {
     Card(
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+        shape = RoundedCornerShape(10.dp),
         modifier = modifier
             .size(150.dp)
             .padding(4.dp)
-            .clickable { }
+            .clickable {
+                changeSelectedCategory(categoryName)
+            }
+            .border(
+                width = 1.dp,
+                shape = RoundedCornerShape(10.dp),
+                color = if (currentCategoryName == categoryName) Color.Green else Color.Transparent,
+            )
     ) {
         Box(
             contentAlignment = Alignment.Center,
@@ -304,7 +409,7 @@ fun CategoryCard(
                     style = Stroke(width = 1f)
                 )
             }
-            Text(text = "Category")
+            Text(text = categoryName)
         }
     }
 }

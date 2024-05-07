@@ -1,4 +1,4 @@
-package com.example.monefy.screen
+package com.example.monefy.ui.screens
 
 import android.content.Context
 import android.widget.Toast
@@ -13,12 +13,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
@@ -39,10 +36,8 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -52,6 +47,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -59,23 +55,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.text.isDigitsOnly
 import com.example.monefy.model.Category
+import com.example.monefy.utils.Constants
 import com.example.monefy.model.Expense
 import com.example.monefy.model.fake.FakeData
 import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 
-@Composable
-fun AddSpend() {
-    AddSpendScreen(
-        spendingViewModel = SpendingViewModel(FakeData.fakeCategoriesWithoutExpenses),
-        context = LocalContext.current
-    )
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddSpendScreen(
     spendingViewModel: SpendingViewModel,
@@ -83,12 +70,30 @@ fun AddSpendScreen(
     modifier: Modifier = Modifier
 ) {
     val spendingUiState by spendingViewModel.uiState.collectAsState()
-    val categoriesList = spendingUiState.categories
+    AddSpend(
+        categories = spendingUiState.categories,
+        selectedCategoryName = spendingUiState.selectedCategoryName,
+        context = context,
+        changeSelectedCategory = spendingViewModel::changeSelectedCategory,
+        addExpense = spendingViewModel::addExpense,
+        modifier = modifier
+    )
+}
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AddSpend(
+    categories: List<Category>,
+    selectedCategoryName: String,
+    context: Context,
+    changeSelectedCategory: (String) -> Unit,
+    addExpense: (Expense) -> Unit,
+    modifier: Modifier = Modifier
+) {
     var spendName by rememberSaveable { mutableStateOf("") }
     var spendPrice by rememberSaveable { mutableStateOf(0.0) }
     var spendPriceForTextFieldValue by rememberSaveable { mutableStateOf("") }
-    var spendDescription by rememberSaveable { mutableStateOf("0") }
+    var spendDescription by rememberSaveable { mutableStateOf("") }
     var count by rememberSaveable { mutableStateOf(1) }
     var countForTextFieldValue by rememberSaveable { mutableStateOf("1") }
 
@@ -111,6 +116,7 @@ fun AddSpendScreen(
                 onValueChange = { spendName = it },
                 singleLine = true,
                 colors = TextFieldDefaults.textFieldColors(containerColor = Color.Transparent),
+                textStyle = TextStyle(fontSize = 20.sp),
                 modifier = Modifier.weight(4f)
             )
             IconButton(
@@ -140,15 +146,12 @@ fun AddSpendScreen(
                         spendPrice = it.toDouble()
                     }
                     else if (it == "0") { }
-                    else if (it.all { it.isDigit() || it == '.' } && it.count { it == '.' } <= 1 && it.toDouble() < 10000000) {
+                    else if (it.all { it.isDigit() || it == '.' } && it.count { it == '.' } <= 1 && it.toDouble() < Constants.maxPrice) {
                         spendPriceForTextFieldValue = it
                         spendPrice = it.toDouble()
                     }
                 },
-                textStyle = LocalTextStyle.current.copy(
-                    textAlign = TextAlign.Center,
-                    fontSize = 20.sp
-                ),
+                textStyle = LocalTextStyle.current.copy(fontSize = 20.sp),
                 singleLine = true,
                 colors = TextFieldDefaults.textFieldColors(containerColor = Color.Transparent),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -156,8 +159,10 @@ fun AddSpendScreen(
                     .weight(4f)
                     .onFocusChanged { focusState ->
                         if (focusState.isFocused) {
-                            spendPrice = 0.0
-                            spendPriceForTextFieldValue = ""
+                            if (spendPrice == 0.0) {
+                                spendPrice = 0.0
+                                spendPriceForTextFieldValue = ""
+                            }
                         } else {
                             if (spendPriceForTextFieldValue.isEmpty()) {
                                 spendPrice = 0.0
@@ -258,11 +263,11 @@ fun AddSpendScreen(
                 .height(maxOf(200.dp))
                 .padding(bottom = 8.dp)
         ) {
-            items(categoriesList) { category ->
+            items(categories) { category ->
                 CategoryCard(
                     categoryName = category.name,
-                    currentCategoryName = spendingUiState.selectedCategoryName,
-                    changeSelectedCategory = spendingViewModel::changeSelectedCategory
+                    currentCategoryName = selectedCategoryName,
+                    changeSelectedCategory = changeSelectedCategory
                 )
             }
         }
@@ -324,24 +329,20 @@ fun AddSpendScreen(
         }
         Button(
             onClick = {
-                spendingViewModel.addExpense(
+                addExpense(
                     Expense(
-                        categoryName = spendingUiState.selectedCategoryName,
+                        categoryName = selectedCategoryName,
                         name = spendName,
                         description = spendDescription,
                         count = count,
-                        price = spendPrice
+                        price = spendPrice,
+                        date = pickedDate
                     )
                 )
             },
-            modifier = Modifier.align(Alignment.CenterHorizontally )
+            modifier = Modifier.align(Alignment.CenterHorizontally)
         ) {
             Text("Добавить")
-        }
-        LazyColumn {
-            items(spendingUiState.categories) {
-                Text(it.expenses.toString())
-            }
         }
     }
     MaterialDialog(
@@ -417,5 +418,13 @@ fun CategoryCard(
 @Preview(showBackground = true)
 @Composable
 fun AddSpendPreview() {
-    AddSpend()
+    val _expense = FakeData.fakeCategories[0].expenses[0]
+    val _string = ""
+    AddSpend(
+        addExpense = { _expense -> },
+        categories = FakeData.fakeCategories,
+        changeSelectedCategory = { _string -> },
+        context = LocalContext.current,
+        selectedCategoryName = ""
+    )
 }

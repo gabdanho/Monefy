@@ -3,6 +3,7 @@ package com.example.monefy.model.fake
 import androidx.compose.ui.graphics.Color
 import com.example.monefy.model.Category
 import com.example.monefy.model.Expense
+import java.time.LocalDate
 
 object FakeData {
     val fakeCategories = listOf(
@@ -14,19 +15,22 @@ object FakeData {
                     categoryName = "Дом и быт",
                     name = "Утюг",
                     price = 4599.0,
-                    count = 1
+                    count = 1,
+                    date = LocalDate.now()
                 ),
                 Expense(
                     categoryName = "Дом и быт",
                     name = "Коврик для ванны",
                     price = 599.99,
-                    count = 1
+                    count = 1,
+                    date = LocalDate.now()
                 ),
                 Expense(
                     categoryName = "Дом и быт",
                     name = "Краска для стен (красная)",
                     price = 1499.0,
-                    count = 2
+                    count = 2,
+                    date = LocalDate.now()
                 )
             )
         ),
@@ -38,19 +42,22 @@ object FakeData {
                     categoryName = "Продукты питания",
                     name = "Макароны",
                     price = 69.99,
-                    count = 2
+                    count = 2,
+                    date = LocalDate.now()
                 ),
                 Expense(
                     categoryName = "Продукты питания",
                     name = "Сливки 20%",
                     price = 120.99,
-                    count = 1
+                    count = 1,
+                    date = LocalDate.now()
                 ),
                 Expense(
                     categoryName = "Продукты питания",
                     name = "Сыр Российский",
                     price = 256.78,
-                    count = 1
+                    count = 1,
+                    date = LocalDate.now()
                 )
             )
         ),
@@ -62,13 +69,15 @@ object FakeData {
                     categoryName = "Красота",
                     name = "Помада",
                     price = 1200.0,
-                    count = 1
+                    count = 1,
+                    date = LocalDate.now()
                 ),
                 Expense(
                     categoryName = "Красота",
                     name = "Тушь для ресниц",
                     price = 899.99,
-                    count = 1
+                    count = 1,
+                    date = LocalDate.now()
                 )
             )
         ),
@@ -80,7 +89,8 @@ object FakeData {
                     categoryName = "Одежда",
                     name = "Кроссовки Adidas",
                     price = 4599.0,
-                    count = 1
+                    count = 1,
+                    date = LocalDate.now()
                 )
             )
         )

@@ -2,20 +2,21 @@
 <project version="4">
   <component name="deploymentTargetDropDown">
     <value>
-      <entry key="AddSpendPreview">
-        <State />
-      </entry>
-      <entry key="AddSpendScreenPreview">
-        <State />
-      </entry>
-      <entry key="MainScreenPreview">
-        <State />
-      </entry>
-      <entry key="TestPrev">
-        <State />
-      </entry>
       <entry key="app">
-        <State />
+        <State>
+          <targetSelectedWithDropDown>
+            <Target>
+              <type value="QUICK_BOOT_TARGET" />
+              <deviceKey>
+                <Key>
+                  <type value="VIRTUAL_DEVICE_PATH" />
+                  <value value="C:\Users\bbe\.android\avd\Pixel_7_API_30.avd" />
+                </Key>
+              </deviceKey>
+            </Target>
+          </targetSelectedWithDropDown>
+          <timeTargetWasSelectedWithDropDown value="2024-05-07T20:34:45.895233300Z" />
+        </State>
       </entry>
     </value>
   </component>

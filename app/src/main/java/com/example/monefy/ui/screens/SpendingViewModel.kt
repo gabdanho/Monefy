@@ -1,4 +1,4 @@
-package com.example.monefy.screen
+package com.example.monefy.ui.screens
 
 import androidx.lifecycle.ViewModel
 import com.example.monefy.model.Category
@@ -56,14 +56,24 @@ class SpendingViewModel(categories: List<Category>) : ViewModel() {
     }
 
     fun addExpense(expense: Expense) {
+        var totalExpensePrice = 0.0
         val updateCategories = _uiState.value.categories.map { category ->
             if (category.name == expense.categoryName) {
-                category.copy(expenses = category.expenses.apply { add(expense) })
+                totalExpensePrice = expense.totalPrice
+                category.copy(
+                    expenses = category.expenses.apply { add(expense) },
+                    totalCategoryPrice = category.totalCategoryPrice + expense.totalPrice
+                )
             }
             else {
                 category
             }
         }
-        _uiState.update { currentState -> currentState.copy(categories = updateCategories) }
+        _uiState.update { currentState ->
+            currentState.copy(
+                categories = updateCategories,
+                totalPriceFromCategories = currentState.totalPriceFromCategories + totalExpensePrice
+            )
+        }
     }
 }

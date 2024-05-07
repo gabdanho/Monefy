@@ -6,17 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.monefy.model.fake.FakeData
-import com.example.monefy.screen.AddSpend
-import com.example.monefy.screen.AddSpendScreen
-import com.example.monefy.screen.MainScreen
-import com.example.monefy.screen.SpendingTable
-import com.example.monefy.screen.SpendingViewModel
 import com.example.monefy.ui.theme.MonefyTheme
 
 class MainActivity : ComponentActivity() {
@@ -29,7 +19,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    AddSpend()
+                    MonefyApp()
                 }
             }
         }

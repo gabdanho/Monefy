@@ -161,7 +161,7 @@ fun AddSpend(
                 TextField(
                     value = spendPriceForTextFieldValue,
                     onValueChange = {
-                        if (it == "") {
+                        if (it == "" || it == ".") {
                             spendPriceForTextFieldValue = ""
                             spendPrice = 0.0
                         }
@@ -169,7 +169,7 @@ fun AddSpend(
                             spendPriceForTextFieldValue = it
                             spendPrice = it.toDouble()
                         }
-                        else if (it == "0") { }
+                        else if (it == "00") { }
                         else if (it.all { it.isDigit() || it == '.' } && it.count { it == '.' } <= 1 && it.toDouble() < Constants.maxPrice) {
                             spendPriceForTextFieldValue = it
                             spendPrice = it.toDouble()

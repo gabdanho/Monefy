@@ -141,6 +141,13 @@ fun AddSpend(
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
+    val addCategory = listOf(
+        Category(
+            name = "Добавить категорию (+)",
+            color = Color.White
+        )
+    )
+
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) { data ->
                 Snackbar(
@@ -318,7 +325,7 @@ fun AddSpend(
                     .height(maxOf(200.dp))
                     .padding(bottom = 8.dp)
             ) {
-                items(categories) { category ->
+                items(categories + addCategory) { category ->
                     CategoryCard(
                         categoryName = category.name,
                         currentCategoryName = selectedCategoryName,

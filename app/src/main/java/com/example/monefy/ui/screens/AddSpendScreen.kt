@@ -328,6 +328,7 @@ fun AddSpend(
                 items(categories + addCategory) { category ->
                     CategoryCard(
                         categoryName = category.name,
+                        categoryColor = category.color,
                         currentCategoryName = selectedCategoryName,
                         changeSelectedCategory = changeSelectedCategory
                     )
@@ -468,6 +469,7 @@ fun AddSpend(
 fun CategoryCard(
     changeSelectedCategory: (String) -> Unit,
     categoryName: String,
+    categoryColor: Color,
     currentCategoryName: String,
     modifier: Modifier = Modifier
 ) {
@@ -496,7 +498,7 @@ fun CategoryCard(
                 modifier = Modifier.fillMaxSize()
             ) {
                 drawCircle(
-                    color = Color.Red,
+                    color = categoryColor,
                     radius = 10f,
                     center = Offset(5f, 5f)
                 )

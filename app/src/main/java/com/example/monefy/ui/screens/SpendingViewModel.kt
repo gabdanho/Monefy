@@ -36,6 +36,12 @@ class SpendingViewModel(categories: List<Category>) : ViewModel() {
         }
     }
 
+    fun removeSelectedCategory() {
+        _uiState.update { currentState ->
+            currentState.copy(selectedCategoryName = "")
+        }
+    }
+
     fun updateIsTappedFromPieChart(name: String) {
         val updateCategories = _uiState.value.categories.map { category ->
             if (name == category.name) {

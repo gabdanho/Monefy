@@ -85,6 +85,7 @@ fun AddSpendScreen(
         context = context,
         changeSelectedCategory = spendingViewModel::changeSelectedCategory,
         addExpense = spendingViewModel::addExpense,
+        removeCategory = spendingViewModel::removeSelectedCategory,
         modifier = modifier
     )
 }
@@ -97,6 +98,7 @@ fun AddSpend(
     context: Context,
     changeSelectedCategory: (String) -> Unit,
     addExpense: (Expense) -> Unit,
+    removeCategory: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var spendName by rememberSaveable { mutableStateOf("") }
@@ -353,18 +355,34 @@ fun AddSpend(
             }
             Button(
                 onClick = {
-                    addExpense(
-                        Expense(
-                            categoryName = selectedCategoryName,
-                            name = spendName,
-                            description = spendDescription,
-                            count = count,
-                            price = spendPrice,
-                            date = pickedDate
+                    if (spendName.isEmpty() || selectedCategoryName.isEmpty()) {
+                        scope.launch {
+                            snackbarHostState.showSnackbar("Заполните всю необходимую информацию")
+                        }
+                    }
+                    else {
+                        addExpense(
+                            Expense(
+                                categoryName = selectedCategoryName,
+                                name = spendName,
+                                description = spendDescription,
+                                count = count,
+                                price = spendPrice,
+                                date = pickedDate
+                            )
                         )
-                    )
-                    scope.launch {
-                        snackbarHostState.showSnackbar("Запись добавлена")
+                        scope.launch {
+                            snackbarHostState.currentSnackbarData?.dismiss()
+                            snackbarHostState.showSnackbar("Запись добавлена")
+                        }
+                        spendName = ""
+                        spendPrice = 0.0
+                        spendPriceForTextFieldValue = "0"
+                        count = 1
+                        countForTextFieldValue = "1"
+                        pickedDate = LocalDate.now()
+                        spendDescription = ""
+                        removeCategory()
                     }
                 },
                 modifier = Modifier.align(Alignment.CenterHorizontally)
@@ -453,6 +471,7 @@ fun AddSpendPreview() {
         addExpense = { _expense -> },
         categories = FakeData.fakeCategories,
         changeSelectedCategory = { _string -> },
+        removeCategory = { },
         context = LocalContext.current,
         selectedCategoryName = ""
     )

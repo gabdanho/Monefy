@@ -241,7 +241,7 @@ fun AddSpend(
                             count = it.toInt()
                         }
                         else if (it == "0") { }
-                        else if (it.isDigitsOnly() && it.toInt() < 10000) {
+                        else if (it.isDigitsOnly() && it.toInt() < Constants.maxCount) {
                             countForTextFieldValue = it
                             count = it.toInt()
                         }

@@ -31,6 +31,10 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -38,13 +42,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
@@ -61,6 +69,7 @@ import com.example.monefy.model.fake.FakeData
 import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 
 @Composable
@@ -100,251 +109,271 @@ fun AddSpend(
     var pickedDate by rememberSaveable { mutableStateOf(LocalDate.now()) }
     val dateDialogState = rememberMaterialDialogState()
 
-    Column(
-        modifier = modifier.padding(8.dp)
-    ) {
-        Text(
-            text = "Название траты",
-            modifier = Modifier.padding(4.dp)
-        )
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(bottom = 8.dp)
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) { data ->
+                Snackbar(
+                    snackbarData = data,
+                    containerColor = Color.White,
+                    contentColor = Color.Black
+                )
+            }
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = modifier
+                .padding(8.dp)
+                .padding(innerPadding)
         ) {
-            TextField(
-                value = spendName,
-                onValueChange = { spendName = it },
-                singleLine = true,
-                colors = TextFieldDefaults.textFieldColors(containerColor = Color.Transparent),
-                textStyle = TextStyle(fontSize = 20.sp),
-                modifier = Modifier.weight(4f)
+            Text(
+                text = "Название траты",
+                modifier = Modifier.padding(4.dp)
             )
-            IconButton(
-                onClick = { spendName = "" },
-                modifier = Modifier.weight(1f)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(bottom = 8.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Filled.Close,
-                    contentDescription = "Удалить название",
+                TextField(
+                    value = spendName,
+                    onValueChange = { spendName = it },
+                    singleLine = true,
+                    colors = TextFieldDefaults.textFieldColors(containerColor = Color.Transparent),
+                    textStyle = TextStyle(fontSize = 20.sp),
+                    modifier = Modifier.weight(4f)
                 )
-            }
-        }
-        Text(
-            text = "Цена",
-            modifier = Modifier.padding(4.dp)
-        )
-        Row {
-            TextField(
-                value = spendPriceForTextFieldValue,
-                onValueChange = {
-                    if (it == "") {
-                        spendPriceForTextFieldValue = ""
-                        spendPrice = 0.0
-                    }
-                    else if (it.length < spendPriceForTextFieldValue.length) {
-                        spendPriceForTextFieldValue = it
-                        spendPrice = it.toDouble()
-                    }
-                    else if (it == "0") { }
-                    else if (it.all { it.isDigit() || it == '.' } && it.count { it == '.' } <= 1 && it.toDouble() < Constants.maxPrice) {
-                        spendPriceForTextFieldValue = it
-                        spendPrice = it.toDouble()
-                    }
-                },
-                textStyle = LocalTextStyle.current.copy(fontSize = 20.sp),
-                singleLine = true,
-                colors = TextFieldDefaults.textFieldColors(containerColor = Color.Transparent),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier
-                    .weight(4f)
-                    .onFocusChanged { focusState ->
-                        if (focusState.isFocused) {
-                            if (spendPrice == 0.0) {
-                                spendPrice = 0.0
-                                spendPriceForTextFieldValue = ""
-                            }
-                        } else {
-                            if (spendPriceForTextFieldValue.isEmpty()) {
-                                spendPrice = 0.0
-                                spendPriceForTextFieldValue = "0"
-                            }
-                        }
-                    }
-            )
-            IconButton(
-                onClick = {
-                    spendPrice = 0.0
-                    spendPriceForTextFieldValue = "0"
-                },
-                modifier = Modifier.weight(1f)
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Close,
-                    contentDescription = "Удалить цену",
-                )
-            }
-        }
-        Text(
-            text = "Количество",
-            modifier = Modifier.padding(4.dp)
-        )
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(bottom = 8.dp)
-        ) {
-            IconButton(
-                onClick = {
-                    if (count > 1) {
-                        count--
-                        countForTextFieldValue = count.toString()
-                    }
-                }
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.ArrowBack,
-                    contentDescription = "Уменьшить количество"
-                )
-            }
-            BasicTextField(
-                value = countForTextFieldValue,
-                onValueChange = {
-                    if (it == "") {
-                        countForTextFieldValue = ""
-                        count = 1
-                    }
-                    else if (it.length < countForTextFieldValue.length) {
-                        countForTextFieldValue = it
-                        count = it.toInt()
-                    }
-                    else if (it == "0") { }
-                    else if (it.isDigitsOnly() && it.toInt() < 10000) {
-                        countForTextFieldValue = it
-                        count = it.toInt()
-                    }
-                },
-                textStyle = LocalTextStyle.current.copy(
-                    textAlign = TextAlign.Center,
-                    fontSize = 20.sp
-                ),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier
-                    .width(70.dp)
-                    .onFocusChanged { focusState ->
-                        if (focusState.isFocused) {
-                            count = 1
-                            countForTextFieldValue = ""
-                        } else {
-                            if (countForTextFieldValue.isEmpty()) {
-                                count = 1
-                                countForTextFieldValue = "1"
-                            }
-                        }
-                    }
-            )
-            IconButton(
-                onClick = {
-                    count++
-                    countForTextFieldValue = count.toString()
-                }
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.ArrowForward,
-                    contentDescription = "Увеличить количество"
-                )
-            }
-        }
-        Text(
-            text = "Категория",
-            modifier = Modifier.padding(4.dp)
-        )
-        LazyHorizontalGrid(
-            rows = GridCells.Fixed(2),
-            modifier = Modifier
-                .height(maxOf(200.dp))
-                .padding(bottom = 8.dp)
-        ) {
-            items(categories) { category ->
-                CategoryCard(
-                    categoryName = category.name,
-                    currentCategoryName = selectedCategoryName,
-                    changeSelectedCategory = changeSelectedCategory
-                )
-            }
-        }
-        Text(
-            text = "Дата",
-            modifier = Modifier.padding(4.dp)
-        )
-        TextField(
-            value = if (pickedDate == LocalDate.now()) {
-                "Сегодня"
-            }
-            else if (pickedDate == LocalDate.now().minusDays(1)) {
-                "Вчера"
-            }
-            else {
-                pickedDate.toString()
-            },
-            onValueChange = { },
-            readOnly = true,
-            trailingIcon = {
                 IconButton(
-                    onClick = {
-                        dateDialogState.show()
-                    },
+                    onClick = { spendName = "" },
+                    modifier = Modifier.weight(1f)
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.DateRange,
-                        contentDescription = "Выбрать дату"
+                        imageVector = Icons.Filled.Close,
+                        contentDescription = "Удалить название",
                     )
                 }
-            },
-            modifier = Modifier
-                .padding(bottom = 8.dp)
-        )
-        Text(
-            text = "Описание",
-            modifier = Modifier.padding(4.dp)
-        )
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(bottom = 8.dp)
-        ) {
-            TextField(
-                value = spendDescription,
-                onValueChange = { spendDescription = it },
-                singleLine = true,
-                colors = TextFieldDefaults.textFieldColors(containerColor = Color.Transparent),
-                modifier = Modifier.weight(4f)
+            }
+            Text(
+                text = "Цена",
+                modifier = Modifier.padding(4.dp)
             )
-            IconButton(
-                onClick = { spendDescription = "" },
-                modifier = Modifier.weight(1f)
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Close,
-                    contentDescription = "Удалить описание",
+            Row {
+                TextField(
+                    value = spendPriceForTextFieldValue,
+                    onValueChange = {
+                        if (it == "") {
+                            spendPriceForTextFieldValue = ""
+                            spendPrice = 0.0
+                        }
+                        else if (it.length < spendPriceForTextFieldValue.length) {
+                            spendPriceForTextFieldValue = it
+                            spendPrice = it.toDouble()
+                        }
+                        else if (it == "0") { }
+                        else if (it.all { it.isDigit() || it == '.' } && it.count { it == '.' } <= 1 && it.toDouble() < Constants.maxPrice) {
+                            spendPriceForTextFieldValue = it
+                            spendPrice = it.toDouble()
+                        }
+                    },
+                    textStyle = LocalTextStyle.current.copy(fontSize = 20.sp),
+                    singleLine = true,
+                    colors = TextFieldDefaults.textFieldColors(containerColor = Color.Transparent),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier
+                        .weight(4f)
+                        .onFocusChanged { focusState ->
+                            if (focusState.isFocused) {
+                                if (spendPrice == 0.0) {
+                                    spendPrice = 0.0
+                                    spendPriceForTextFieldValue = ""
+                                }
+                            } else {
+                                if (spendPriceForTextFieldValue.isEmpty()) {
+                                    spendPrice = 0.0
+                                    spendPriceForTextFieldValue = "0"
+                                }
+                            }
+                        }
                 )
+                IconButton(
+                    onClick = {
+                        spendPrice = 0.0
+                        spendPriceForTextFieldValue = "0"
+                    },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Close,
+                        contentDescription = "Удалить цену",
+                    )
+                }
+            }
+            Text(
+                text = "Количество",
+                modifier = Modifier.padding(4.dp)
+            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(bottom = 8.dp)
+            ) {
+                IconButton(
+                    onClick = {
+                        if (count > 1) {
+                            count--
+                            countForTextFieldValue = count.toString()
+                        }
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.ArrowBack,
+                        contentDescription = "Уменьшить количество"
+                    )
+                }
+                BasicTextField(
+                    value = countForTextFieldValue,
+                    onValueChange = {
+                        if (it == "") {
+                            countForTextFieldValue = ""
+                            count = 1
+                        }
+                        else if (it.length < countForTextFieldValue.length) {
+                            countForTextFieldValue = it
+                            count = it.toInt()
+                        }
+                        else if (it == "0") { }
+                        else if (it.isDigitsOnly() && it.toInt() < 10000) {
+                            countForTextFieldValue = it
+                            count = it.toInt()
+                        }
+                    },
+                    textStyle = LocalTextStyle.current.copy(
+                        textAlign = TextAlign.Center,
+                        fontSize = 20.sp
+                    ),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier
+                        .width(70.dp)
+                        .onFocusChanged { focusState ->
+                            if (focusState.isFocused) {
+                                count = 1
+                                countForTextFieldValue = ""
+                            } else {
+                                if (countForTextFieldValue.isEmpty()) {
+                                    count = 1
+                                    countForTextFieldValue = "1"
+                                }
+                            }
+                        }
+                )
+                IconButton(
+                    onClick = {
+                        count++
+                        countForTextFieldValue = count.toString()
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.ArrowForward,
+                        contentDescription = "Увеличить количество"
+                    )
+                }
+            }
+            Text(
+                text = "Категория",
+                modifier = Modifier.padding(4.dp)
+            )
+            LazyHorizontalGrid(
+                rows = GridCells.Fixed(2),
+                modifier = Modifier
+                    .height(maxOf(200.dp))
+                    .padding(bottom = 8.dp)
+            ) {
+                items(categories) { category ->
+                    CategoryCard(
+                        categoryName = category.name,
+                        currentCategoryName = selectedCategoryName,
+                        changeSelectedCategory = changeSelectedCategory
+                    )
+                }
+            }
+            Text(
+                text = "Дата",
+                modifier = Modifier.padding(4.dp)
+            )
+            TextField(
+                value = if (pickedDate == LocalDate.now()) {
+                    "Сегодня"
+                }
+                else if (pickedDate == LocalDate.now().minusDays(1)) {
+                    "Вчера"
+                }
+                else {
+                    pickedDate.toString()
+                },
+                onValueChange = { },
+                readOnly = true,
+                trailingIcon = {
+                    IconButton(
+                        onClick = {
+                            dateDialogState.show()
+                        },
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.DateRange,
+                            contentDescription = "Выбрать дату"
+                        )
+                    }
+                },
+                modifier = Modifier
+                    .padding(bottom = 8.dp)
+            )
+            Text(
+                text = "Описание",
+                modifier = Modifier.padding(4.dp)
+            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(bottom = 8.dp)
+            ) {
+                TextField(
+                    value = spendDescription,
+                    onValueChange = { spendDescription = it },
+                    singleLine = true,
+                    colors = TextFieldDefaults.textFieldColors(containerColor = Color.Transparent),
+                    modifier = Modifier.weight(4f)
+                )
+                IconButton(
+                    onClick = { spendDescription = "" },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Close,
+                        contentDescription = "Удалить описание",
+                    )
+                }
+            }
+            Button(
+                onClick = {
+                    addExpense(
+                        Expense(
+                            categoryName = selectedCategoryName,
+                            name = spendName,
+                            description = spendDescription,
+                            count = count,
+                            price = spendPrice,
+                            date = pickedDate
+                        )
+                    )
+                    scope.launch {
+                        snackbarHostState.showSnackbar("Запись добавлена")
+                    }
+                },
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            ) {
+                Text("Добавить")
             }
         }
-        Button(
-            onClick = {
-                addExpense(
-                    Expense(
-                        categoryName = selectedCategoryName,
-                        name = spendName,
-                        description = spendDescription,
-                        count = count,
-                        price = spendPrice,
-                        date = pickedDate
-                    )
-                )
-            },
-            modifier = Modifier.align(Alignment.CenterHorizontally)
-        ) {
-            Text("Добавить")
-        }
     }
+
     MaterialDialog(
         dialogState = dateDialogState,
         buttons = {

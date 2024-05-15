@@ -39,6 +39,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -69,6 +70,7 @@ import com.example.monefy.model.fake.FakeData
 import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
@@ -108,6 +110,31 @@ fun AddSpend(
     var count by rememberSaveable { mutableStateOf(1) }
     var countForTextFieldValue by rememberSaveable { mutableStateOf("1") }
 
+    var isSpendNameNotSelected by rememberSaveable { mutableStateOf(false) }
+    var isSelectedCategoryNotSelected by rememberSaveable { mutableStateOf(false) }
+    val colorSpendName = remember { mutableStateOf(Color.Black) }
+    val colorSelectedCategory = remember { mutableStateOf(Color.Black) }
+
+    LaunchedEffect(isSelectedCategoryNotSelected) {
+        for (i in 1..5) {
+            colorSelectedCategory.value = Color.Red
+            delay(500)
+            colorSelectedCategory.value = Color.Black
+            delay(500)
+        }
+        isSelectedCategoryNotSelected = false
+    }
+
+    LaunchedEffect(isSpendNameNotSelected) {
+        for (i in 1..5) {
+            colorSpendName.value = Color.Red
+            delay(500)
+            colorSpendName.value = Color.Black
+            delay(500)
+        }
+        isSpendNameNotSelected = false
+    }
+
     var pickedDate by rememberSaveable { mutableStateOf(LocalDate.now()) }
     val dateDialogState = rememberMaterialDialogState()
 
@@ -131,6 +158,7 @@ fun AddSpend(
         ) {
             Text(
                 text = "Название траты",
+                color = if (!isSpendNameNotSelected) Color.Black else colorSpendName.value,
                 modifier = Modifier.padding(4.dp)
             )
             Row(
@@ -281,6 +309,7 @@ fun AddSpend(
             }
             Text(
                 text = "Категория",
+                color = if (!isSelectedCategoryNotSelected) Color.Black else colorSelectedCategory.value,
                 modifier = Modifier.padding(4.dp)
             )
             LazyHorizontalGrid(
@@ -355,9 +384,23 @@ fun AddSpend(
             }
             Button(
                 onClick = {
-                    if (spendName.isEmpty() || selectedCategoryName.isEmpty()) {
+                    if (spendName.isEmpty() && selectedCategoryName.isEmpty()) {
+                    scope.launch {
+                        isSpendNameNotSelected = true
+                        isSelectedCategoryNotSelected = true
+                        snackbarHostState.showSnackbar("Укажите название и категорию траты")
+                        }
+                    }
+                    else if (spendName.isEmpty()) {
                         scope.launch {
-                            snackbarHostState.showSnackbar("Заполните всю необходимую информацию")
+                            isSpendNameNotSelected = true
+                            snackbarHostState.showSnackbar("Укажите название траты")
+                        }
+                    }
+                    else if (selectedCategoryName.isEmpty()) {
+                        scope.launch {
+                            isSelectedCategoryNotSelected = true
+                            snackbarHostState.showSnackbar("Укажите категорию")
                         }
                     }
                     else {

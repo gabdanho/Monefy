@@ -64,9 +64,9 @@ fun MainScreen(
 ) {
     val spendingUiState by spendingViewModel.uiState.collectAsState()
     Main(
+        spendingViewModel = spendingViewModel,
         categories = spendingUiState.categories,
         totalPriceFromAllCategories = spendingUiState.totalPriceFromCategories,
-        updateIsTappedFromPieChart = spendingViewModel::updateIsTappedFromPieChart,
         onAddButtonClick = onAddButtonClick,
         modifier = modifier
     )
@@ -74,9 +74,9 @@ fun MainScreen(
 
 @Composable
 fun Main(
+    spendingViewModel: SpendingViewModel,
     categories: List<Category>,
     totalPriceFromAllCategories: Double,
-    updateIsTappedFromPieChart: (String) -> Unit,
     onAddButtonClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -89,9 +89,7 @@ fun Main(
             modifier = modifier.padding(innerPadding)
         ) {
             SpendingPieChart(
-                categories = categories,
-                totalPriceFromAllCategories = totalPriceFromAllCategories,
-                updateIsTappedFromPieChart = updateIsTappedFromPieChart,
+                spendingViewModel = spendingViewModel,
                 modifier = modifier.weight(1.2f)
             )
             SpendingTable(
@@ -105,20 +103,18 @@ fun Main(
 
 @Composable
 fun SpendingPieChart(
-    categories: List<Category>,
-    totalPriceFromAllCategories: Double,
+    spendingViewModel: SpendingViewModel,
     radius: Float = 300f,
-    updateIsTappedFromPieChart: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    if (!isAllCategoriesEmpty(categories)) {
-        val anglePerValue = (360 / totalPriceFromAllCategories)
-        val sweepAnglePercentage = categories.map {
+    if (!isAllCategoriesEmpty(spendingViewModel.uiState.value.categories)) {
+        val anglePerValue = (360 / spendingViewModel.uiState.value.totalPriceFromCategories)
+        val sweepAnglePercentage = spendingViewModel.uiState.value.categories.map {
             (it.totalCategoryPrice * anglePerValue).toFloat()
         }
         var circleCenter by remember { mutableStateOf(Offset.Zero) }
-        var currentCategoryName by remember { mutableStateOf("") }
-        var currentCategorySumPrice by remember { mutableStateOf(totalPriceFromAllCategories) }
+        var currentCategoryName by remember { mutableStateOf("Все расходы") }
+        var currentCategorySumPrice by remember { mutableStateOf(spendingViewModel.uiState.value.totalPriceFromCategories) }
 
         Column(
             modifier = modifier,
@@ -162,18 +158,17 @@ fun SpendingPieChart(
 
                                         // по углу смотрим в какую категорию попадаем
                                         var currentAngle = 0f
-                                        categories.forEach { category ->
+                                        spendingViewModel.uiState.value.categories.forEach { category ->
                                             currentAngle += category.totalCategoryPrice.toFloat() * anglePerValue.toFloat()
                                             if (tapAngleInDegrees < currentAngle) {
-                                                val name = category.name
-                                                updateIsTappedFromPieChart(name)
+                                                spendingViewModel.updateIsTappedFromPieChart(category.name)
                                                 if (!category.isTapped) {
-                                                    currentCategoryName = name
+                                                    currentCategoryName = category.name
                                                     currentCategorySumPrice = category.totalCategoryPrice
                                                 }
                                                 else {
-                                                    currentCategoryName = ""
-                                                    currentCategorySumPrice = 0.0
+                                                    currentCategoryName = "Все расходы"
+                                                    currentCategorySumPrice = spendingViewModel.uiState.value.totalPriceFromCategories
                                                 }
                                                 return@detectTapGestures
                                             }
@@ -199,12 +194,12 @@ fun SpendingPieChart(
                         )
                     )
 
-                    for (i in categories.indices) {
-                        if (categories[i].expenses.isNotEmpty()) {
-                            val scale = if (categories[i].isTapped) 1.1f else 1.0f
+                    for (i in spendingViewModel.uiState.value.categories.indices) {
+                        if (spendingViewModel.uiState.value.categories[i].expenses.isNotEmpty()) {
+                            val scale = if (spendingViewModel.uiState.value.categories[i].isTapped) 1.1f else 1.0f
                             scale(scale) {
                                 drawArc(
-                                    color = categories[i].color,
+                                    color = spendingViewModel.uiState.value.categories[i].color,
                                     startAngle = startAngle,
                                     sweepAngle = sweepAnglePercentage[i],
                                     useCenter = false,
@@ -368,14 +363,14 @@ fun BottomMenuBar(
    }
 }
 
-@Preview
-@Composable
-fun MainPreview() {
-    val _string = ""
-    Main(
-        categories = FakeData.fakeCategories,
-        totalPriceFromAllCategories = 15000.0,
-        updateIsTappedFromPieChart = { _string -> },
-        onAddButtonClick = { /*TODO*/ }
-    )
-}
+//@Preview
+//@Composable
+//fun MainPreview() {
+//    val _string = ""
+//    Main(
+//        categories = FakeData.fakeCategories,
+//        totalPriceFromAllCategories = 15000.0,
+//        updateIsTappedFromPieChart = { _string -> },
+//        onAddButtonClick = { /*TODO*/ }
+//    )
+//}

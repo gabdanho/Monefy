@@ -1,6 +1,7 @@
 package com.example.monefy.ui.screens
 
 import android.util.Log
+import android.widget.GridLayout.Spec
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
@@ -45,10 +46,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.monefy.R
 import com.example.monefy.model.Category
 import com.example.monefy.model.fake.FakeData
 import com.example.monefy.utils.isAllCategoriesEmpty
@@ -58,7 +61,6 @@ import kotlin.math.atan2
 
 @Composable
 fun MainScreen(
-    onAddButtonClick: () -> Unit,
     spendingViewModel: SpendingViewModel,
     modifier: Modifier = Modifier
 ) {
@@ -67,7 +69,6 @@ fun MainScreen(
         spendingViewModel = spendingViewModel,
         categories = spendingUiState.categories,
         totalPriceFromAllCategories = spendingUiState.totalPriceFromCategories,
-        onAddButtonClick = onAddButtonClick,
         modifier = modifier
     )
 }
@@ -77,13 +78,9 @@ fun Main(
     spendingViewModel: SpendingViewModel,
     categories: List<Category>,
     totalPriceFromAllCategories: Double,
-    onAddButtonClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Scaffold(
-        bottomBar = { BottomMenuBar(onAddButtonClick) },
-        modifier = modifier
-    ) { innerPadding ->
+    Scaffold(modifier = modifier) { innerPadding ->
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = modifier.padding(innerPadding)
@@ -161,14 +158,17 @@ fun SpendingPieChart(
                                         spendingViewModel.uiState.value.categories.forEach { category ->
                                             currentAngle += category.totalCategoryPrice.toFloat() * anglePerValue.toFloat()
                                             if (tapAngleInDegrees < currentAngle) {
-                                                spendingViewModel.updateIsTappedFromPieChart(category.name)
+                                                spendingViewModel.updateIsTappedFromPieChart(
+                                                    category.name
+                                                )
                                                 if (!category.isTapped) {
                                                     currentCategoryName = category.name
-                                                    currentCategorySumPrice = category.totalCategoryPrice
-                                                }
-                                                else {
+                                                    currentCategorySumPrice =
+                                                        category.totalCategoryPrice
+                                                } else {
                                                     currentCategoryName = "Все расходы"
-                                                    currentCategorySumPrice = spendingViewModel.uiState.value.totalPriceFromCategories
+                                                    currentCategorySumPrice =
+                                                        spendingViewModel.uiState.value.totalPriceFromCategories
                                                 }
                                                 return@detectTapGestures
                                             }
@@ -316,61 +316,13 @@ fun ExpenseBlock(
     }
 }
 
+@Preview
 @Composable
-fun BottomMenuBar(
-    onAddButtonClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceAround,
-            modifier = modifier.fillMaxWidth()
-        ) {
-        IconButton(onClick = { /*TODO*/ }) {
-            Icon(
-                imageVector = Icons.Filled.Menu,
-                contentDescription = "Menu"
-            )
-        }
-        IconButton(onClick = { /*TODO*/ }) {
-            Icon(
-                imageVector = Icons.Filled.Edit,
-                contentDescription = "Edit"
-            )
-        }
-        IconButton(onClick = onAddButtonClick) {
-            Icon(
-                imageVector = Icons.Filled.Add,
-                contentDescription = "Menu",
-                modifier = Modifier
-                    .clip(CircleShape)
-                    .border(BorderStroke(1.dp, Color.Black), shape = CircleShape)
-                    .size(40.dp)
-            )
-        }
-        IconButton(onClick = { /*TODO*/ }) {
-            Icon(
-                imageVector = Icons.Filled.DateRange,
-                contentDescription = "Menu"
-            )
-        }
-        IconButton(onClick = { /*TODO*/ }) {
-            Icon(
-                imageVector = Icons.Filled.ShoppingCart,
-                contentDescription = "Menu"
-            )
-        }
-   }
+fun MainPreview() {
+    val spendingViewModel = SpendingViewModel(FakeData.fakeCategories)
+    Main(
+        categories = FakeData.fakeCategories,
+        totalPriceFromAllCategories = 15000.0,
+        spendingViewModel = spendingViewModel
+    )
 }
-
-//@Preview
-//@Composable
-//fun MainPreview() {
-//    val _string = ""
-//    Main(
-//        categories = FakeData.fakeCategories,
-//        totalPriceFromAllCategories = 15000.0,
-//        updateIsTappedFromPieChart = { _string -> },
-//        onAddButtonClick = { /*TODO*/ }
-//    )
-//}

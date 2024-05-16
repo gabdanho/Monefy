@@ -9,3 +9,10 @@ data class Category(
     val totalCategoryPrice: Double = if (expenses.isNotEmpty()) expenses.sumOf { it.totalPrice } else 0.0,
     val isTapped: Boolean = false
 )
+
+val addCategory = listOf(
+    Category(
+        name = "Добавить категорию (+)",
+        color = Color.White
+    )
+)

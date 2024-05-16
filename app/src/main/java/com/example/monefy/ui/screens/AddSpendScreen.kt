@@ -66,6 +66,7 @@ import androidx.core.text.isDigitsOnly
 import com.example.monefy.model.Category
 import com.example.monefy.utils.Constants
 import com.example.monefy.model.Expense
+import com.example.monefy.model.addCategory
 import com.example.monefy.model.fake.FakeData
 import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
@@ -145,13 +146,6 @@ fun AddSpend(
 
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
-
-    val addCategory = listOf(
-        Category(
-            name = "Добавить категорию (+)",
-            color = Color.White
-        )
-    )
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) { data ->
@@ -503,20 +497,22 @@ fun CategoryCard(
                 .fillMaxSize()
                 .padding(8.dp)
         ) {
-            Canvas(
-                modifier = Modifier.fillMaxSize()
-            ) {
-                drawCircle(
-                    color = categoryColor,
-                    radius = 10f,
-                    center = Offset(5f, 5f)
-                )
-                drawCircle(
-                    color = Color.Black,
-                    radius = 10f,
-                    center = Offset(5f, 5f),
-                    style = Stroke(width = 1f)
-                )
+            if (categoryName != "Добавить категорию (+)") {
+                Canvas(
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    drawCircle(
+                        color = categoryColor,
+                        radius = 10f,
+                        center = Offset(5f, 5f)
+                    )
+                    drawCircle(
+                        color = Color.Black,
+                        radius = 10f,
+                        center = Offset(5f, 5f),
+                        style = Stroke(width = 1f)
+                    )
+                }
             }
             Text(text = categoryName)
         }

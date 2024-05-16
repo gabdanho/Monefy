@@ -14,7 +14,8 @@ data class SpendingUiState(
     val totalPriceFromCategories: Double = 0.0,
     val selectedCategoryName: String = "",
     val selectedColorCategory: Color = Color.Transparent,
-    val isColorDialogShow: Boolean = false
+    val isColorDialogShow: Boolean = false,
+    val selectedSpendingList: List<Expense> = listOf()
 )
 
 class SpendingViewModel(categories: List<Category>) : ViewModel() {
@@ -36,6 +37,12 @@ class SpendingViewModel(categories: List<Category>) : ViewModel() {
             else {
                 selectedCategory
             }
+        }
+    }
+
+    fun changeSelectedSpendingList(newSpendings: List<Expense>) {
+        _uiState.update { currentState ->
+            currentState.copy(selectedSpendingList = newSpendings)
         }
     }
 

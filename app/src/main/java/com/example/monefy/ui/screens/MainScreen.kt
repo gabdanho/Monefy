@@ -45,6 +45,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.monefy.model.Category
@@ -90,12 +92,12 @@ fun Main(
                 categories = categories,
                 totalPriceFromAllCategories = totalPriceFromAllCategories,
                 updateIsTappedFromPieChart = updateIsTappedFromPieChart,
-                modifier = modifier.weight(1f)
+                modifier = modifier.weight(1.2f)
             )
             SpendingTable(
                 categories = categories,
                 totalPriceFromAllCategories = totalPriceFromAllCategories,
-                modifier = modifier.weight(1.5f)
+                modifier = modifier.weight(1f)
             )
         }
     }
@@ -116,101 +118,115 @@ fun SpendingPieChart(
         }
         var circleCenter by remember { mutableStateOf(Offset.Zero) }
         var currentCategoryName by remember { mutableStateOf("") }
+        var currentCategorySumPrice by remember { mutableStateOf(totalPriceFromAllCategories) }
 
-        Box(
+        Column(
             modifier = modifier,
-            contentAlignment = Alignment.Center
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Canvas(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .pointerInput(true) {
-                        detectTapGestures(
-                            onTap = { offset ->
-                                // проверяем был ли тач в области диаграммы
-                                if (pow(
-                                        (offset.x - circleCenter.x).toDouble(),
-                                        2.0
-                                    ) + pow(
-                                        (offset.y - circleCenter.y).toDouble(),
-                                        2.0
-                                    ) <= pow(radius.toDouble() + radius / 3f, 2.0) &&
-                                    pow(
-                                        (offset.x - circleCenter.x).toDouble(),
-                                        2.0
-                                    ) + pow(
-                                        (offset.y - circleCenter.y).toDouble(),
-                                        2.0
-                                    ) >= pow(radius.toDouble() - radius / 3f, 2.0)
-                                ) {
-                                    // тап переводим в углы
-                                    val tapAngleInDegrees = (-atan2(
-                                        x = circleCenter.y - offset.y,
-                                        y = circleCenter.x - offset.x
-                                    ) * (180f / PI).toFloat() - 90f).mod(360f)
+            Text(
+                text = currentCategoryName,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(vertical = 8.dp)
+            )
+            Box(
+                contentAlignment = Alignment.Center
+            ) {
+                Canvas(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .pointerInput(true) {
+                            detectTapGestures(
+                                onTap = { offset ->
+                                    // проверяем был ли тач в области диаграммы
+                                    if (pow(
+                                            (offset.x - circleCenter.x).toDouble(),
+                                            2.0
+                                        ) + pow(
+                                            (offset.y - circleCenter.y).toDouble(),
+                                            2.0
+                                        ) <= pow(radius.toDouble() + radius / 3f, 2.0) &&
+                                        pow(
+                                            (offset.x - circleCenter.x).toDouble(),
+                                            2.0
+                                        ) + pow(
+                                            (offset.y - circleCenter.y).toDouble(),
+                                            2.0
+                                        ) >= pow(radius.toDouble() - radius / 3f, 2.0)
+                                    ) {
+                                        // тап -> переводим в углы
+                                        val tapAngleInDegrees = (-atan2(
+                                            x = circleCenter.y - offset.y,
+                                            y = circleCenter.x - offset.x
+                                        ) * (180f / PI).toFloat() - 90f).mod(360f)
 
-                                    // по углу смотрим в какую категорию попадаем
-                                    var currentAngle = 0f
-                                    categories.forEach { category ->
-                                        currentAngle += category.totalCategoryPrice.toFloat() * anglePerValue.toFloat()
-                                        if (tapAngleInDegrees < currentAngle) {
-                                            val name = category.name
-                                            updateIsTappedFromPieChart(name)
-                                            currentCategoryName =
-                                                if (!category.isTapped) name else ""
-                                            return@detectTapGestures
+                                        // по углу смотрим в какую категорию попадаем
+                                        var currentAngle = 0f
+                                        categories.forEach { category ->
+                                            currentAngle += category.totalCategoryPrice.toFloat() * anglePerValue.toFloat()
+                                            if (tapAngleInDegrees < currentAngle) {
+                                                val name = category.name
+                                                updateIsTappedFromPieChart(name)
+                                                if (!category.isTapped) {
+                                                    currentCategoryName = name
+                                                    currentCategorySumPrice = category.totalCategoryPrice
+                                                }
+                                                else {
+                                                    currentCategoryName = ""
+                                                    currentCategorySumPrice = 0.0
+                                                }
+                                                return@detectTapGestures
+                                            }
                                         }
                                     }
                                 }
-                            }
-                        )
-                    }
-            ) {
-                val width = size.width
-                val height = size.height
-                var startAngle = 0f
-                circleCenter = Offset(x = width / 2f, y = height / 2f)
-
-                // Тень
-                drawCircle(
-                    color = Color.LightGray,
-                    center = Offset(circleCenter.x, circleCenter.y),
-                    radius = radius,
-                    alpha = 0.8f,
-                    style = Stroke(
-                        width = radius / 3f
-                    )
-                )
-
-                for (i in categories.indices) {
-                    if (categories[i].expenses.isNotEmpty()) {
-                        val scale = if (categories[i].isTapped) 1.1f else 1.0f
-                        scale(scale) {
-                            drawArc(
-                                color = categories[i].color,
-                                startAngle = startAngle,
-                                sweepAngle = sweepAnglePercentage[i],
-                                useCenter = false,
-                                style = Stroke(
-                                    width = radius / 3f
-                                ),
-                                size = Size(
-                                    radius * 2f,
-                                    radius * 2f
-                                ),
-                                topLeft = Offset(
-                                    (width - radius * 2f) / 2f,
-                                    (height - radius * 2f) / 2f
-                                )
                             )
                         }
-                        startAngle += sweepAnglePercentage[i]
+                ) {
+                    val width = size.width
+                    val height = size.height
+                    var startAngle = 0f
+                    circleCenter = Offset(x = width / 2f, y = height / 2f)
+
+                    // Тень
+                    drawCircle(
+                        color = Color.LightGray,
+                        center = Offset(circleCenter.x, circleCenter.y),
+                        radius = radius,
+                        alpha = 0.8f,
+                        style = Stroke(
+                            width = radius / 3f
+                        )
+                    )
+
+                    for (i in categories.indices) {
+                        if (categories[i].expenses.isNotEmpty()) {
+                            val scale = if (categories[i].isTapped) 1.1f else 1.0f
+                            scale(scale) {
+                                drawArc(
+                                    color = categories[i].color,
+                                    startAngle = startAngle,
+                                    sweepAngle = sweepAnglePercentage[i],
+                                    useCenter = false,
+                                    style = Stroke(
+                                        width = radius / 3f
+                                    ),
+                                    size = Size(
+                                        radius * 2f,
+                                        radius * 2f
+                                    ),
+                                    topLeft = Offset(
+                                        (width - radius * 2f) / 2f,
+                                        (height - radius * 2f) / 2f
+                                    )
+                                )
+                            }
+                            startAngle += sweepAnglePercentage[i]
+                        }
                     }
                 }
+                Text(currentCategorySumPrice.toString())
             }
-            Text(
-                text = currentCategoryName
-            )
         }
     }
 }
@@ -360,5 +376,6 @@ fun MainPreview() {
         categories = FakeData.fakeCategories,
         totalPriceFromAllCategories = 15000.0,
         updateIsTappedFromPieChart = { _string -> },
-        onAddButtonClick = { /*TODO*/ })
+        onAddButtonClick = { /*TODO*/ }
+    )
 }

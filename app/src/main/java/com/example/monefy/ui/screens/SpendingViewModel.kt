@@ -98,12 +98,21 @@ class SpendingViewModel(categories: List<Category>) : ViewModel() {
         }
     }
 
-    fun addNewCategory(category: Category) {
+    fun addNewCategory(category: Category): Boolean {
+        // check duplicate
+        _uiState.value.categories.map { currentState ->
+            if (category.name == currentState.name) {
+                return false
+            }
+        }
+
         val updatedCategories = _uiState.value.categories.toMutableList()
         updatedCategories.add(category)
         _uiState.update { currentState ->
             currentState.copy(categories = updatedCategories)
         }
+
+        return true
     }
 
     fun changeColorDialogShow(isShow: Boolean) {

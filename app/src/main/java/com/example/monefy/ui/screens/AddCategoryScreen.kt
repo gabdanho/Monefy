@@ -67,7 +67,7 @@ fun AddCategoryScreen(
 fun AddCategory(
     isColorDialogShow: Boolean,
     categoryColor: Color,
-    addCategory: (Category) -> Unit,
+    addCategory: (Category) -> Boolean,
     changeColorDialogShow: (Boolean) -> Unit,
     changeColorCategory: (Color) -> Unit,
     removeSelectedCategoryColor: () -> Unit,
@@ -186,18 +186,22 @@ fun AddCategory(
                         }
                     }
                     else {
-                        addCategory(
-                            Category(
-                                name = categoryName,
-                                color = categoryColor
-                            )
-                        )
-                        scope.launch {
-                            snackbarHostState.currentSnackbarData?.dismiss()
-                            snackbarHostState.showSnackbar("Запись добавлена")
+                        val newCategory = Category(name = categoryName, color = categoryColor)
+                        if (addCategory(newCategory)) {
+                            scope.launch {
+                                snackbarHostState.currentSnackbarData?.dismiss()
+                                snackbarHostState.showSnackbar("Категория создана")
+                            }
+                            removeSelectedCategoryColor()
+                            categoryName = ""
                         }
-                        removeSelectedCategoryColor()
-                        categoryName = ""
+                        else {
+                            scope.launch {
+                                isCategoryNameNotSelected = true
+                                snackbarHostState.currentSnackbarData?.dismiss()
+                                snackbarHostState.showSnackbar("Категория с таким именем уже существует")
+                            }
+                        }
                     }
                 },
                 modifier = Modifier.align(Alignment.CenterHorizontally)
@@ -269,7 +273,7 @@ fun AddCategoryPreview() {
     AddCategory(
         changeColorDialogShow = { _boolean -> },
         changeColorCategory = { _color -> },
-        addCategory = { _category -> },
+        addCategory = { _category -> true},
         removeSelectedCategoryColor = { },
         categoryColor = Color.Transparent,
         isColorDialogShow = false

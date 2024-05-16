@@ -1,7 +1,10 @@
 package com.example.monefy.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -150,11 +153,14 @@ fun AddCategory(
                 color = if (!isColorCategoryNotSelected) Color.Black else colorTextCategoryName.value,
                 modifier = Modifier.padding(4.dp)
             )
-            Button(
-                onClick = { changeColorDialogShow(true) }
-            ) {
-                Text("Выбрать цвет")
-            }
+            Box(
+                modifier = Modifier
+                    .padding(start = 4.dp)
+                    .size(30.dp)
+                    .background(color = categoryColor)
+                    .border(color = Color.Black, width = 1.dp, shape = RoundedCornerShape(2.dp))
+                    .clickable { changeColorDialogShow(true) }
+            )
 
             if (isColorDialogShow) {
                 Dialog(onDismissRequest = { changeColorDialogShow(false) }) {

@@ -16,9 +16,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
@@ -76,6 +78,7 @@ import java.time.LocalDate
 fun AddSpendScreen(
     spendingViewModel: SpendingViewModel,
     context: Context,
+    onAddCategoryScreenClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val spendingUiState by spendingViewModel.uiState.collectAsState()
@@ -86,6 +89,7 @@ fun AddSpendScreen(
         changeSelectedCategory = spendingViewModel::changeSelectedCategory,
         addExpense = spendingViewModel::addExpense,
         removeCategory = spendingViewModel::removeSelectedCategory,
+        onAddCategoryScreenClick = onAddCategoryScreenClick,
         modifier = modifier
     )
 }
@@ -99,8 +103,11 @@ fun AddSpend(
     changeSelectedCategory: (String) -> Unit,
     addExpense: (Expense) -> Unit,
     removeCategory: () -> Unit,
+    onAddCategoryScreenClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val scrollState = rememberScrollState()
+
     var spendName by rememberSaveable { mutableStateOf("") }
     var spendPrice by rememberSaveable { mutableStateOf(0.0) }
     var spendPriceForTextFieldValue by rememberSaveable { mutableStateOf("") }
@@ -160,6 +167,7 @@ fun AddSpend(
             modifier = modifier
                 .padding(8.dp)
                 .padding(innerPadding)
+                .verticalScroll(state = scrollState)
         ) {
             Text(
                 text = "Название траты",
@@ -328,6 +336,7 @@ fun AddSpend(
                         categoryName = category.name,
                         categoryColor = category.color,
                         currentCategoryName = selectedCategoryName,
+                        onAddCategoryScreenClick = onAddCategoryScreenClick,
                         changeSelectedCategory = changeSelectedCategory
                     )
                 }
@@ -465,10 +474,11 @@ fun AddSpend(
 
 @Composable
 fun CategoryCard(
-    changeSelectedCategory: (String) -> Unit,
     categoryName: String,
     categoryColor: Color,
     currentCategoryName: String,
+    changeSelectedCategory: (String) -> Unit,
+    onAddCategoryScreenClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -478,7 +488,8 @@ fun CategoryCard(
             .size(150.dp)
             .padding(4.dp)
             .clickable {
-                changeSelectedCategory(categoryName)
+                if (categoryName == "Добавить категорию (+)") onAddCategoryScreenClick()
+                else changeSelectedCategory(categoryName)
             }
             .border(
                 width = 1.dp,
@@ -515,13 +526,12 @@ fun CategoryCard(
 @Preview(showBackground = true)
 @Composable
 fun AddSpendPreview() {
-    val _expense = FakeData.fakeCategories[0].expenses[0]
-    val _string = ""
     AddSpend(
         addExpense = { _expense -> },
         categories = FakeData.fakeCategories,
         changeSelectedCategory = { _string -> },
         removeCategory = { },
+        onAddCategoryScreenClick = { },
         context = LocalContext.current,
         selectedCategoryName = ""
     )

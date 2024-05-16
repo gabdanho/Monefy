@@ -7,6 +7,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.monefy.model.fake.FakeData
+import com.example.monefy.ui.screens.AddCategoryScreen
 import com.example.monefy.ui.screens.AddSpendScreen
 import com.example.monefy.ui.screens.MainScreen
 import com.example.monefy.ui.screens.SpendingViewModel
@@ -34,8 +35,14 @@ fun MonefyNavGraph(
         composable(route = "AddSpendScreen") {
             AddSpendScreen(
                 spendingViewModel = spendingViewModel,
-                context = LocalContext.current
+                context = LocalContext.current,
+                onAddCategoryScreenClick = {
+                    navController.navigate(route = "AddCategoryScreen")
+                }
             )
+        }
+        composable(route = "AddCategoryScreen") {
+            AddCategoryScreen(spendingViewModel = spendingViewModel)
         }
     }
 }

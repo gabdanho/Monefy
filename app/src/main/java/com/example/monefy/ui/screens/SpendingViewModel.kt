@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
 data class SpendingUiState(
-    val categories: List<Category> = mutableListOf(),
+    val categories: List<Category> = listOf(),
     val totalPriceFromCategories: Double = 0.0,
     val selectedCategoryName: String = "",
     val selectedColorCategory: Color = Color.Transparent,
@@ -51,6 +51,12 @@ class SpendingViewModel(categories: List<Category>) : ViewModel() {
         }
     }
 
+    fun removeSelectedCategoryColor() {
+        _uiState.update { currentState ->
+            currentState.copy(selectedColorCategory = Color.Transparent)
+        }
+    }
+
     fun updateIsTappedFromPieChart(name: String) {
         val updateCategories = _uiState.value.categories.map { category ->
             if (name == category.name) {
@@ -72,7 +78,7 @@ class SpendingViewModel(categories: List<Category>) : ViewModel() {
 
     fun addExpense(expense: Expense) {
         var totalExpensePrice = 0.0
-        val updateCategories = _uiState.value.categories.map { category ->
+        val updatedCategories = _uiState.value.categories.map { category ->
             if (category.name == expense.categoryName) {
                 totalExpensePrice = expense.totalPrice
                 category.copy(
@@ -86,9 +92,17 @@ class SpendingViewModel(categories: List<Category>) : ViewModel() {
         }
         _uiState.update { currentState ->
             currentState.copy(
-                categories = updateCategories,
+                categories = updatedCategories,
                 totalPriceFromCategories = currentState.totalPriceFromCategories + totalExpensePrice
             )
+        }
+    }
+
+    fun addNewCategory(category: Category) {
+        val updatedCategories = _uiState.value.categories.toMutableList()
+        updatedCategories.add(category)
+        _uiState.update { currentState ->
+            currentState.copy(categories = updatedCategories)
         }
     }
 

@@ -40,10 +40,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.example.monefy.model.Category
 import com.github.skydoves.colorpicker.compose.BrightnessSlider
 import com.github.skydoves.colorpicker.compose.HsvColorPicker
 import com.github.skydoves.colorpicker.compose.rememberColorPickerController
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun AddCategoryScreen(
@@ -51,9 +53,12 @@ fun AddCategoryScreen(
 ) {
     val spendingUiState by spendingViewModel.uiState.collectAsState()
     AddCategory(
+        categoryColor = spendingUiState.selectedColorCategory,
         isColorDialogShow = spendingUiState.isColorDialogShow,
+        addCategory = spendingViewModel::addNewCategory,
         changeColorDialogShow = spendingViewModel::changeColorDialogShow,
-        changeColorCategory = spendingViewModel::changeColorCategory
+        changeColorCategory = spendingViewModel::changeColorCategory,
+        removeSelectedCategoryColor = spendingViewModel::removeSelectedCategoryColor
     )
 }
 
@@ -61,8 +66,11 @@ fun AddCategoryScreen(
 @Composable
 fun AddCategory(
     isColorDialogShow: Boolean,
+    categoryColor: Color,
+    addCategory: (Category) -> Unit,
     changeColorDialogShow: (Boolean) -> Unit,
     changeColorCategory: (Color) -> Unit,
+    removeSelectedCategoryColor: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
@@ -72,8 +80,10 @@ fun AddCategory(
 
     val colorTextCategoryName = remember { mutableStateOf(Color.Black) }
     var isCategoryNameNotSelected by rememberSaveable { mutableStateOf(false) }
+    val colorTextCategoryColor = remember { mutableStateOf(Color.Black) }
+    var isColorCategoryNotSelected by rememberSaveable { mutableStateOf(false) }
 
-    LaunchedEffect(colorTextCategoryName) {
+    LaunchedEffect(isCategoryNameNotSelected) {
         for (i in 1..5) {
             colorTextCategoryName.value = Color.Red
             delay(500)
@@ -81,6 +91,16 @@ fun AddCategory(
             delay(500)
         }
         isCategoryNameNotSelected = false
+    }
+
+    LaunchedEffect(isColorCategoryNotSelected) {
+        for (i in 1..5) {
+            colorTextCategoryColor.value = Color.Red
+            delay(500)
+            colorTextCategoryColor.value = Color.Black
+            delay(500)
+        }
+        isColorCategoryNotSelected = false
     }
 
     Scaffold(
@@ -127,6 +147,7 @@ fun AddCategory(
             }
             Text(
                 text = "Цвет категории",
+                color = if (!isColorCategoryNotSelected) Color.Black else colorTextCategoryName.value,
                 modifier = Modifier.padding(4.dp)
             )
             Button(
@@ -143,79 +164,48 @@ fun AddCategory(
                     )
                 }
             }
-//            Button(
-//                onClick = {
-//                    if (categoryName.isEmpty() && selectedCategoryName.isEmpty()) {
-//                        scope.launch {
-//                            isCategoryNameNotSelected = true
-//                            isSelectedCategoryNotSelected = true
-//                            snackbarHostState.showSnackbar("Укажите название и цвет категории")
-//                        }
-//                    }
-//                    else if (categoryName.isEmpty()) {
-//                        scope.launch {
-//                            isCategoryNameNotSelected = true
-//                            snackbarHostState.showSnackbar("Укажите название категории")
-//                        }
-//                    }
-//                    else if (selectedCategoryName.isEmpty()) {
-//                        scope.launch {
-//                            isSelectedCategoryNotSelected = true
-//                            snackbarHostState.showSnackbar("Укажите цвет категории")
-//                        }
-//                    }
-//                    else {
-//                        addExpense(
-//                            Expense(
-//                                categoryName = selectedCategoryName,
-//                                name = spendName,
-//                                description = spendDescription,
-//                                count = count,
-//                                price = spendPrice,
-//                                date = pickedDate
-//                            )
-//                        )
-//                        scope.launch {
-//                            snackbarHostState.currentSnackbarData?.dismiss()
-//                            snackbarHostState.showSnackbar("Запись добавлена")
-//                        }
-//                        spendName = ""
-//                        spendPrice = 0.0
-//                        spendPriceForTextFieldValue = "0"
-//                        count = 1
-//                        countForTextFieldValue = "1"
-//                        pickedDate = LocalDate.now()
-//                        spendDescription = ""
-//                        removeCategory()
-//                    }
-//                },
-//                modifier = Modifier.align(Alignment.CenterHorizontally)
-//            ) {
-//                Text("Добавить")
-//            }
+            Button(
+                onClick = {
+                    if (categoryName.isEmpty() && categoryColor == Color.Transparent) {
+                        scope.launch {
+                            isCategoryNameNotSelected = true
+                            isColorCategoryNotSelected = true
+                            snackbarHostState.showSnackbar("Укажите название и цвет категории")
+                        }
+                    }
+                    else if (categoryName.isEmpty()) {
+                        scope.launch {
+                            isCategoryNameNotSelected = true
+                            snackbarHostState.showSnackbar("Укажите название категории")
+                        }
+                    }
+                    else if (categoryColor == Color.Transparent) {
+                        scope.launch {
+                            isColorCategoryNotSelected = true
+                            snackbarHostState.showSnackbar("Укажите цвет категории")
+                        }
+                    }
+                    else {
+                        addCategory(
+                            Category(
+                                name = categoryName,
+                                color = categoryColor
+                            )
+                        )
+                        scope.launch {
+                            snackbarHostState.currentSnackbarData?.dismiss()
+                            snackbarHostState.showSnackbar("Запись добавлена")
+                        }
+                        removeSelectedCategoryColor()
+                        categoryName = ""
+                    }
+                },
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            ) {
+                Text("Добавить")
+            }
         }
     }
-
-//    MaterialDialog(
-//        dialogState = dateDialogState,
-//        buttons = {
-//            positiveButton(text = "ОК") {
-//                Toast.makeText(
-//                    context,
-//                    "Выбрана дата: $pickedDate",
-//                    Toast.LENGTH_LONG
-//                ).show()
-//            }
-//            negativeButton(text = "ОТМЕНА")
-//        }
-//    ) {
-//        datepicker(
-//            initialDate = pickedDate,
-//            title = "Pick a date"
-//        ) {
-//            pickedDate = it
-//        }
-//    }
 }
 
 @Composable
@@ -262,7 +252,10 @@ fun ColorPicker(
                 initialColor = Color.White
             )
             Button(
-                onClick = { /*TODO*/ }
+                onClick = {
+                    changeColorCategory(colorController.selectedColor.value.copy(alpha = 1f))
+                    changeColorDialogShow(false)
+                }
             ) {
                 Text("Выбрать")
             }
@@ -276,6 +269,9 @@ fun AddCategoryPreview() {
     AddCategory(
         changeColorDialogShow = { _boolean -> },
         changeColorCategory = { _color -> },
+        addCategory = { _category -> },
+        removeSelectedCategoryColor = { },
+        categoryColor = Color.Transparent,
         isColorDialogShow = false
     )
 }

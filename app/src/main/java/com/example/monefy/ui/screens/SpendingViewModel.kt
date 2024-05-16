@@ -57,6 +57,13 @@ class SpendingViewModel(categories: List<Category>) : ViewModel() {
         }
     }
 
+    fun resetAllTapedCategories() {
+        val updatedCategories = _uiState.value.categories.map { category ->
+            category.copy(isTapped = false)
+        }
+        _uiState.update { currentState -> currentState.copy(categories = updatedCategories) }
+    }
+
     fun updateIsTappedFromPieChart(name: String) {
         val updateCategories = _uiState.value.categories.map { category ->
             if (name == category.name) {

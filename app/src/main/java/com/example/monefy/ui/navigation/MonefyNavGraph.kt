@@ -29,6 +29,7 @@ fun MonefyNavGraph(
                 spendingViewModel = spendingViewModel,
                 onAddButtonClick = {
                     navController.navigate(route = "AddSpendScreen")
+                    spendingViewModel.resetAllTapedCategories()
                 }
             )
         }

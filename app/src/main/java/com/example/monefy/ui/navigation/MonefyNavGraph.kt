@@ -33,6 +33,7 @@ fun MonefyNavGraph(
             )
         }
         composable(route = "AddSpendScreen") {
+            spendingViewModel.removeSelectedCategory()
             AddSpendScreen(
                 spendingViewModel = spendingViewModel,
                 context = LocalContext.current,
@@ -42,6 +43,7 @@ fun MonefyNavGraph(
             )
         }
         composable(route = "AddCategoryScreen") {
+            spendingViewModel.removeSelectedCategoryColor()
             AddCategoryScreen(spendingViewModel = spendingViewModel)
         }
     }

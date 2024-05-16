@@ -87,7 +87,7 @@ fun AddCategory(
     var isColorCategoryNotSelected by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(isCategoryNameNotSelected) {
-        for (i in 1..5) {
+        for (i in 1..3) {
             colorTextCategoryName.value = Color.Red
             delay(500)
             colorTextCategoryName.value = Color.Black
@@ -97,7 +97,7 @@ fun AddCategory(
     }
 
     LaunchedEffect(isColorCategoryNotSelected) {
-        for (i in 1..5) {
+        for (i in 1..3) {
             colorTextCategoryColor.value = Color.Red
             delay(500)
             colorTextCategoryColor.value = Color.Black

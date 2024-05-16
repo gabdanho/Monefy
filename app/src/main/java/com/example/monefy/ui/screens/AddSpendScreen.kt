@@ -121,7 +121,7 @@ fun AddSpend(
     val colorTextSelectedCategory = remember { mutableStateOf(Color.Black) }
 
     LaunchedEffect(isSelectedCategoryNotSelected) {
-        for (i in 1..5) {
+        for (i in 1..3) {
             colorTextSelectedCategory.value = Color.Red
             delay(500)
             colorTextSelectedCategory.value = Color.Black
@@ -131,7 +131,7 @@ fun AddSpend(
     }
 
     LaunchedEffect(isSpendNameNotSelected) {
-        for (i in 1..5) {
+        for (i in 1..3) {
             colorTextSpendName.value = Color.Red
             delay(500)
             colorTextSpendName.value = Color.Black

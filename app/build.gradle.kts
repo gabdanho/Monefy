@@ -65,6 +65,8 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.7.7")
     // LocalDate
     implementation("io.github.vanpra.compose-material-dialogs:datetime:0.8.1-rc")
+    // Color Picker
+    implementation("com.github.skydoves:colorpicker-compose:1.0.8")
 
     testImplementation("junit:junit:4.13.2")
 

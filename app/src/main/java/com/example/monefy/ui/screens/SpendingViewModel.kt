@@ -1,5 +1,6 @@
 package com.example.monefy.ui.screens
 
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import com.example.monefy.model.Category
 import com.example.monefy.model.Expense
@@ -11,7 +12,9 @@ import kotlinx.coroutines.flow.update
 data class SpendingUiState(
     val categories: List<Category> = mutableListOf(),
     val totalPriceFromCategories: Double = 0.0,
-    val selectedCategoryName: String = ""
+    val selectedCategoryName: String = "",
+    val selectedColorCategory: Color = Color.Transparent,
+    val isColorDialogShow: Boolean = false
 )
 
 class SpendingViewModel(categories: List<Category>) : ViewModel() {
@@ -33,6 +36,12 @@ class SpendingViewModel(categories: List<Category>) : ViewModel() {
             else {
                 selectedCategory
             }
+        }
+    }
+
+    fun changeColorCategory(color: Color) {
+        _uiState.update { currentState ->
+            currentState.copy(selectedColorCategory = color)
         }
     }
 
@@ -80,6 +89,12 @@ class SpendingViewModel(categories: List<Category>) : ViewModel() {
                 categories = updateCategories,
                 totalPriceFromCategories = currentState.totalPriceFromCategories + totalExpensePrice
             )
+        }
+    }
+
+    fun changeColorDialogShow(isShow: Boolean) {
+        _uiState.update { currentState ->
+            currentState.copy(isColorDialogShow = isShow)
         }
     }
 }

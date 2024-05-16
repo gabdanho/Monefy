@@ -49,11 +49,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
@@ -112,14 +110,14 @@ fun AddSpend(
 
     var isSpendNameNotSelected by rememberSaveable { mutableStateOf(false) }
     var isSelectedCategoryNotSelected by rememberSaveable { mutableStateOf(false) }
-    val colorSpendName = remember { mutableStateOf(Color.Black) }
-    val colorSelectedCategory = remember { mutableStateOf(Color.Black) }
+    val colorTextSpendName = remember { mutableStateOf(Color.Black) }
+    val colorTextSelectedCategory = remember { mutableStateOf(Color.Black) }
 
     LaunchedEffect(isSelectedCategoryNotSelected) {
         for (i in 1..5) {
-            colorSelectedCategory.value = Color.Red
+            colorTextSelectedCategory.value = Color.Red
             delay(500)
-            colorSelectedCategory.value = Color.Black
+            colorTextSelectedCategory.value = Color.Black
             delay(500)
         }
         isSelectedCategoryNotSelected = false
@@ -127,9 +125,9 @@ fun AddSpend(
 
     LaunchedEffect(isSpendNameNotSelected) {
         for (i in 1..5) {
-            colorSpendName.value = Color.Red
+            colorTextSpendName.value = Color.Red
             delay(500)
-            colorSpendName.value = Color.Black
+            colorTextSpendName.value = Color.Black
             delay(500)
         }
         isSpendNameNotSelected = false
@@ -165,7 +163,7 @@ fun AddSpend(
         ) {
             Text(
                 text = "Название траты",
-                color = if (!isSpendNameNotSelected) Color.Black else colorSpendName.value,
+                color = if (!isSpendNameNotSelected) Color.Black else colorTextSpendName.value,
                 modifier = Modifier.padding(4.dp)
             )
             Row(
@@ -316,7 +314,7 @@ fun AddSpend(
             }
             Text(
                 text = "Категория",
-                color = if (!isSelectedCategoryNotSelected) Color.Black else colorSelectedCategory.value,
+                color = if (!isSelectedCategoryNotSelected) Color.Black else colorTextSelectedCategory.value,
                 modifier = Modifier.padding(4.dp)
             )
             LazyHorizontalGrid(

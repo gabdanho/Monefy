@@ -241,10 +241,18 @@ fun SpendingTable(
             )
             LazyColumn {
                 items(categories) { category ->
-                    if (category.expenses.isNotEmpty()) {
+                    if (category.expenses.isNotEmpty() && categories.all { !it.isTapped }) {
                         ExpenseBlock(
                             category = category,
-                            totalPrice = totalPriceFromAllCategories
+                            totalPrice = totalPriceFromAllCategories,
+                            showAllExpensesWithoutClick = false
+                        )
+                    }
+                    else if (category.isTapped) {
+                        ExpenseBlock(
+                            category = category,
+                            totalPrice = totalPriceFromAllCategories,
+                            showAllExpensesWithoutClick = true
                         )
                     }
                 }
@@ -260,6 +268,7 @@ fun SpendingTable(
 fun ExpenseBlock(
     category: Category,
     totalPrice: Double,
+    showAllExpensesWithoutClick: Boolean,
     modifier: Modifier = Modifier
 ) {
     var expanded by rememberSaveable { mutableStateOf(false) }
@@ -293,21 +302,39 @@ fun ExpenseBlock(
                 style = MaterialTheme.typography.titleMedium,
             )
         }
-        // расходы выбранной категории
-        AnimatedVisibility(visible = expanded) {
-            if (expanded) {
-                Column(
-                    modifier = Modifier.padding(8.dp)
-                ) {
-                    (category.expenses).forEach {
-                        Row(
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            modifier = Modifier
-                                .padding(bottom = 8.dp)
-                                .fillMaxWidth()
-                        ) {
-                            Text(text = it.name)
-                            Text(text = it.totalPrice.toString())
+        if (showAllExpensesWithoutClick) {
+            Column(
+                modifier = Modifier.padding(8.dp)
+            ) {
+                (category.expenses).forEach {
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier
+                            .padding(bottom = 8.dp)
+                            .fillMaxWidth()
+                    ) {
+                        Text(text = it.name)
+                        Text(text = it.totalPrice.toString())
+                    }
+                }
+            }
+        }
+        else {
+            AnimatedVisibility(visible = expanded) {
+                if (expanded) {
+                    Column(
+                        modifier = Modifier.padding(8.dp)
+                    ) {
+                        (category.expenses).forEach {
+                            Row(
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                modifier = Modifier
+                                    .padding(bottom = 8.dp)
+                                    .fillMaxWidth()
+                            ) {
+                                Text(text = it.name)
+                                Text(text = it.totalPrice.toString())
+                            }
                         }
                     }
                 }

@@ -15,7 +15,8 @@ data class SpendingUiState(
     val selectedCategoryName: String = "",
     val selectedColorCategory: Color = Color.Transparent,
     val isColorDialogShow: Boolean = false,
-    val selectedSpendingList: List<Expense> = listOf()
+    val selectedSpendingList: List<Expense> = listOf(),
+    val selectedCategoryToRewrite: Category = Category()
 )
 
 class SpendingViewModel(categories: List<Category>) : ViewModel() {
@@ -43,6 +44,12 @@ class SpendingViewModel(categories: List<Category>) : ViewModel() {
     fun changeSelectedSpendingList(newSpendings: List<Expense>) {
         _uiState.update { currentState ->
             currentState.copy(selectedSpendingList = newSpendings)
+        }
+    }
+
+    fun changeSelectedCategoryToRewrite(category: Category) {
+        _uiState.update { currentState ->
+            currentState.copy(selectedCategoryToRewrite = category)
         }
     }
 
@@ -81,6 +88,36 @@ class SpendingViewModel(categories: List<Category>) : ViewModel() {
             }
         }
         _uiState.update { currentState -> currentState.copy(categories = updateCategories) }
+    }
+
+    fun rewriteCategory(
+        initialName: String,
+        newCategoryColor: Color,
+        newCategoryName: String
+    ): Boolean {
+        _uiState.value.categories.map { category ->
+            if (newCategoryName == category.name && newCategoryName != initialName) {
+                return false
+            }
+        }
+        val rewritedCategory = _uiState.value.selectedCategoryToRewrite.copy(
+            name = newCategoryName,
+            color = newCategoryColor
+        )
+
+
+        val updatedCategories = _uiState.value.categories.map { category ->
+            if (category.name == initialName) {
+                category.copy(name = newCategoryName, color = newCategoryColor)
+            }
+            else category
+        }
+
+        _uiState.update { currentState ->
+            currentState.copy(categories = updatedCategories, selectedCategoryToRewrite = rewritedCategory)
+        }
+
+        return true
     }
 
     fun getTotalPriceFromAllCategories() {

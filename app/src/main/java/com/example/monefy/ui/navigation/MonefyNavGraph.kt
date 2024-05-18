@@ -12,6 +12,7 @@ import com.example.monefy.ui.screens.AddCategoryScreen
 import com.example.monefy.ui.screens.AddSpendScreen
 import com.example.monefy.ui.screens.MainScreen
 import com.example.monefy.ui.screens.CategoriesListScreen
+import com.example.monefy.ui.screens.RewriteCategoryScreen
 import com.example.monefy.ui.screens.SpendingListScreen
 import com.example.monefy.ui.screens.SpendingViewModel
 
@@ -50,12 +51,17 @@ fun MonefyNavGraph(
         composable(route = "CategoriesListScreen") {
             CategoriesListScreen(
                 spendingViewModel = spendingViewModel,
-                onCategoryClick = { spendingList ->
+                onCategoryClick = { spendingList, category ->
                     spendingViewModel.changeSelectedSpendingList(spendingList)
+                    spendingViewModel.changeSelectedCategoryToRewrite(category)
                     navController.navigate(route = "SpeningListScreen")
                 },
                 onAddCategoryClick = {
                     navController.navigate(route = "AddCategoryScreen")
+                },
+                rewriteCategoryClick = { category ->
+                    spendingViewModel.changeSelectedCategoryToRewrite(category)
+                    navController.navigate(route = "RewriteCategoryScreen")
                 }
             )
         }
@@ -63,6 +69,9 @@ fun MonefyNavGraph(
             SpendingListScreen(
                 spendings = spendingViewModel.uiState.value.selectedSpendingList
             )
+        }
+        composable(route = "RewriteCategoryScreen") {
+            RewriteCategoryScreen(spendingViewModel = spendingViewModel)
         }
     }
 }

@@ -166,6 +166,17 @@ class SpendingViewModel(categories: List<Category>) : ViewModel() {
         return true
     }
 
+    fun deleteCategory(deleteCategoryName: String) {
+        val updatedCategories = _uiState.value.categories.filter { category ->
+            category.name != deleteCategoryName
+        }
+
+        _uiState.update { currentState ->
+            currentState.copy(categories = updatedCategories)
+        }
+        getTotalPriceFromAllCategories()
+    }
+
     fun changeColorDialogShow(isShow: Boolean) {
         _uiState.update { currentState ->
             currentState.copy(isColorDialogShow = isShow)

@@ -5,13 +5,18 @@ import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
@@ -58,6 +63,7 @@ fun RewriteCategoryScreen(
         changeColorDialogShow = spendingViewModel::changeColorDialogShow,
         changeColorCategory = spendingViewModel::changeColorCategory,
         removeSelectedCategoryColor = spendingViewModel::removeSelectedCategoryColor,
+        deleteCategory = spendingViewModel::deleteCategory,
         endOfScreen = endOfScreen
     )
 }
@@ -74,6 +80,7 @@ fun RewriteCategory(
     changeColorCategory: (Color) -> Unit,
     removeSelectedCategoryColor: () -> Unit,
     endOfScreen: () -> Unit,
+    deleteCategory: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val backPressHandled = remember { mutableStateOf(false) }
@@ -165,39 +172,54 @@ fun RewriteCategory(
                     )
                 }
             }
-            Button(
-                onClick = {
-                    if (categoryName.isEmpty() && categoryColor == Color.Transparent) {
-                        categoryName = initialName
-                        color = initialColor
-                    }
-                    else if (categoryName.isEmpty()) {
-                        categoryName = initialName
-                    }
-                    else if (categoryColor == Color.Transparent) {
-                        changeColorCategory(initialColor)
-                    }
-                    else {
-                        if (rewriteCategory(initialName, categoryColor, categoryName)) {
-                            scope.launch {
-                                snackbarHostState.currentSnackbarData?.dismiss()
-                                snackbarHostState.showSnackbar("Категория изменена")
-                            }
-                            removeSelectedCategoryColor()
-                            endOfScreen()
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Button(
+                    onClick = {
+                        if (categoryName.isEmpty() && categoryColor == Color.Transparent) {
+                            categoryName = initialName
+                            color = initialColor
+                        }
+                        else if (categoryName.isEmpty()) {
+                            categoryName = initialName
+                        }
+                        else if (categoryColor == Color.Transparent) {
+                            changeColorCategory(initialColor)
                         }
                         else {
-                            scope.launch {
-                                isCategoryNameWrong = true
-                                snackbarHostState.currentSnackbarData?.dismiss()
-                                snackbarHostState.showSnackbar("Категория с таким именем существует")
+                            if (rewriteCategory(initialName, categoryColor, categoryName)) {
+                                scope.launch {
+                                    snackbarHostState.currentSnackbarData?.dismiss()
+                                    snackbarHostState.showSnackbar("Категория изменена")
+                                }
+                                removeSelectedCategoryColor()
+                                endOfScreen()
+                            }
+                            else {
+                                scope.launch {
+                                    isCategoryNameWrong = true
+                                    snackbarHostState.currentSnackbarData?.dismiss()
+                                    snackbarHostState.showSnackbar("Категория с таким именем существует")
+                                }
                             }
                         }
-                    }
-                },
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-            ) {
-                Text("Изменить")
+                    },
+                    modifier = Modifier.width(150.dp).padding(end = 8.dp)
+                ) {
+                    Text("Изменить")
+                }
+                Button(
+                    onClick = {
+                        deleteCategory(initialName)
+                        endOfScreen()
+                    },
+                    colors = ButtonDefaults.buttonColors(Color.Red),
+                    modifier = Modifier.width(150.dp)
+                ) {
+                   Text("Удалить")
+                }
             }
         }
     }
@@ -214,6 +236,7 @@ fun RewriteCategoryPreview() {
         rewriteCategory = { _, _, _ -> true },
         removeSelectedCategoryColor = { },
         endOfScreen = { },
+        deleteCategory = { },
         categoryColor = Color.Transparent,
         isColorDialogShow = false
     )

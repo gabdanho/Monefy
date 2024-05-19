@@ -1,6 +1,9 @@
 package com.example.monefy.ui.navigation
 
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
@@ -46,7 +49,12 @@ fun MonefyNavGraph(
         }
         composable(route = "AddCategoryScreen") {
             spendingViewModel.removeSelectedCategoryColor()
-            AddCategoryScreen(spendingViewModel = spendingViewModel)
+            AddCategoryScreen(
+                spendingViewModel = spendingViewModel,
+                endOfScreen = {
+                    navController.popBackStack()
+                }
+            )
         }
         composable(route = "CategoriesListScreen") {
             CategoriesListScreen(
@@ -54,7 +62,7 @@ fun MonefyNavGraph(
                 onCategoryClick = { spendingList, category ->
                     spendingViewModel.changeSelectedSpendingList(spendingList)
                     spendingViewModel.changeSelectedCategoryToRewrite(category)
-                    navController.navigate(route = "SpeningListScreen")
+                    navController.navigate(route = "SpendingListScreen")
                 },
                 onAddCategoryClick = {
                     navController.navigate(route = "AddCategoryScreen")
@@ -65,13 +73,18 @@ fun MonefyNavGraph(
                 }
             )
         }
-        composable(route = "SpeningListScreen") {
+        composable(route = "SpendingListScreen") {
             SpendingListScreen(
                 spendings = spendingViewModel.uiState.value.selectedSpendingList
             )
         }
         composable(route = "RewriteCategoryScreen") {
-            RewriteCategoryScreen(spendingViewModel = spendingViewModel)
+            RewriteCategoryScreen(
+                spendingViewModel = spendingViewModel,
+                endOfScreen = {
+                    navController.popBackStack()
+                }
+            )
         }
     }
 }

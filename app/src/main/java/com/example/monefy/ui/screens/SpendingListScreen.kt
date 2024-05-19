@@ -36,7 +36,7 @@ fun SpendingListScreen(
         }
     }
     else {
-        Text(text = "Расходов нет. Если они есть - добавь их!")
+        Text(text = "Расходов нет. Добавь их!")
     }
 }
 

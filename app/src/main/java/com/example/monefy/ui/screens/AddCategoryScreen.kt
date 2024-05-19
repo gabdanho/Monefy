@@ -3,19 +3,15 @@ package com.example.monefy.ui.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -45,15 +41,13 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.monefy.model.Category
 import com.example.monefy.utils.ColorPicker
-import com.github.skydoves.colorpicker.compose.BrightnessSlider
-import com.github.skydoves.colorpicker.compose.HsvColorPicker
-import com.github.skydoves.colorpicker.compose.rememberColorPickerController
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
 fun AddCategoryScreen(
-    spendingViewModel: SpendingViewModel
+    spendingViewModel: SpendingViewModel,
+    endOfScreen: () -> Unit
 ) {
     val spendingUiState by spendingViewModel.uiState.collectAsState()
     AddCategory(
@@ -62,7 +56,8 @@ fun AddCategoryScreen(
         addCategory = spendingViewModel::addNewCategory,
         changeColorDialogShow = spendingViewModel::changeColorDialogShow,
         changeColorCategory = spendingViewModel::changeColorCategory,
-        removeSelectedCategoryColor = spendingViewModel::removeSelectedCategoryColor
+        removeSelectedCategoryColor = spendingViewModel::removeSelectedCategoryColor,
+        endOfScreen = endOfScreen
     )
 }
 
@@ -75,6 +70,7 @@ fun AddCategory(
     changeColorDialogShow: (Boolean) -> Unit,
     changeColorCategory: (Color) -> Unit,
     removeSelectedCategoryColor: () -> Unit,
+    endOfScreen: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
@@ -201,6 +197,7 @@ fun AddCategory(
                             }
                             removeSelectedCategoryColor()
                             categoryName = ""
+                            endOfScreen()
                         }
                         else {
                             scope.launch {
@@ -227,6 +224,7 @@ fun AddCategoryPreview() {
         changeColorCategory = { _color -> },
         addCategory = { _category -> true},
         removeSelectedCategoryColor = { },
+        endOfScreen = { },
         categoryColor = Color.Transparent,
         isColorDialogShow = false
     )

@@ -1,5 +1,7 @@
 package com.example.monefy.ui.screens
 
+import androidx.activity.compose.BackHandler
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -37,12 +39,14 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.monefy.model.fake.FakeData
 import com.example.monefy.utils.ColorPicker
+import kotlinx.coroutines.android.awaitFrame
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
 fun RewriteCategoryScreen(
-    spendingViewModel: SpendingViewModel
+    spendingViewModel: SpendingViewModel,
+    endOfScreen: () -> Unit
 ) {
     val spendingUiState by spendingViewModel.uiState.collectAsState()
     RewriteCategory(
@@ -53,7 +57,8 @@ fun RewriteCategoryScreen(
         rewriteCategory = spendingViewModel::rewriteCategory,
         changeColorDialogShow = spendingViewModel::changeColorDialogShow,
         changeColorCategory = spendingViewModel::changeColorCategory,
-        removeSelectedCategoryColor = spendingViewModel::removeSelectedCategoryColor
+        removeSelectedCategoryColor = spendingViewModel::removeSelectedCategoryColor,
+        endOfScreen = endOfScreen
     )
 }
 
@@ -68,8 +73,23 @@ fun RewriteCategory(
     changeColorDialogShow: (Boolean) -> Unit,
     changeColorCategory: (Color) -> Unit,
     removeSelectedCategoryColor: () -> Unit,
+    endOfScreen: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val backPressHandled = remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
+    val onBackPressedDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
+
+    BackHandler(enabled = !backPressHandled.value) {
+        backPressHandled.value = true
+        coroutineScope.launch {
+            awaitFrame()
+            removeSelectedCategoryColor()
+            onBackPressedDispatcher?.onBackPressed()
+            backPressHandled.value = false
+        }
+    }
+
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
@@ -164,6 +184,7 @@ fun RewriteCategory(
                                 snackbarHostState.showSnackbar("Категория изменена")
                             }
                             removeSelectedCategoryColor()
+                            endOfScreen()
                         }
                         else {
                             scope.launch {
@@ -192,6 +213,7 @@ fun RewriteCategoryPreview() {
         changeColorCategory = { _ -> },
         rewriteCategory = { _, _, _ -> true },
         removeSelectedCategoryColor = { },
+        endOfScreen = { },
         categoryColor = Color.Transparent,
         isColorDialogShow = false
     )

@@ -1,5 +1,6 @@
 package com.example.monefy.ui.screens
 
+import android.util.Log
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import com.example.monefy.model.Category
@@ -8,6 +9,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import java.time.LocalDate
 
 data class SpendingUiState(
     val categories: List<Category> = listOf(),
@@ -16,7 +18,8 @@ data class SpendingUiState(
     val selectedColorCategory: Color = Color.Transparent,
     val isColorDialogShow: Boolean = false,
     val selectedSpendingList: List<Expense> = listOf(),
-    val selectedCategoryToRewrite: Category = Category()
+    val selectedCategoryToRewrite: Category = Category(),
+    val selectedSpendToRewrite: Expense = Expense()
 )
 
 class SpendingViewModel(categories: List<Category>) : ViewModel() {
@@ -50,6 +53,12 @@ class SpendingViewModel(categories: List<Category>) : ViewModel() {
     fun changeSelectedCategoryToRewrite(category: Category) {
         _uiState.update { currentState ->
             currentState.copy(selectedCategoryToRewrite = category)
+        }
+    }
+
+    fun changeSelectedSpendToRewrite(expense: Expense) {
+        _uiState.update { currentState ->
+            currentState.copy(selectedSpendToRewrite = expense)
         }
     }
 
@@ -120,6 +129,49 @@ class SpendingViewModel(categories: List<Category>) : ViewModel() {
         return true
     }
 
+    fun rewriteExpense(
+        initialSpend: Expense,
+        newSpend: Expense
+    ) {
+        if (initialSpend.categoryName != newSpend.categoryName) {
+            deleteSpend(initialSpend)
+            addExpense(newSpend)
+        }
+        else {
+            val updatedCategories = _uiState.value.categories.map { category ->
+                val updatedSpends = category.expenses.map { expense ->
+                    if (initialSpend.name == expense.name) {
+                        expense.copy(
+                            name = newSpend.name,
+                            categoryName = newSpend.categoryName,
+                            price = newSpend.price,
+                            count = newSpend.count,
+                            description = newSpend.description,
+                            date = newSpend.date,
+                            totalPrice = newSpend.price * newSpend.count.toDouble()
+                        )
+                    }
+                    else {
+                        expense
+                    }
+                }
+                Log.i("SpendViewModel", updatedSpends.toString())
+                if (initialSpend.categoryName == category.name) {
+                    changeSelectedSpendingList(updatedSpends)
+                }
+                category.copy(
+                    expenses = updatedSpends.toMutableList(),
+                    totalCategoryPrice = if (updatedSpends.isNotEmpty()) updatedSpends.sumOf { it.totalPrice } else 0.0
+                )
+            }
+
+            _uiState.update { currentState ->
+                currentState.copy(categories = updatedCategories)
+            }
+            getTotalPriceFromAllCategories()
+        }
+    }
+
     fun getTotalPriceFromAllCategories() {
         _uiState.update { currentState ->
             val categoriesSum = currentState.categories.sumOf { it.totalCategoryPrice }
@@ -147,6 +199,7 @@ class SpendingViewModel(categories: List<Category>) : ViewModel() {
                 totalPriceFromCategories = currentState.totalPriceFromCategories + totalExpensePrice
             )
         }
+        getTotalPriceFromAllCategories()
     }
 
     fun addNewCategory(category: Category): Boolean {
@@ -169,6 +222,30 @@ class SpendingViewModel(categories: List<Category>) : ViewModel() {
     fun deleteCategory(deleteCategoryName: String) {
         val updatedCategories = _uiState.value.categories.filter { category ->
             category.name != deleteCategoryName
+        }
+
+        _uiState.update { currentState ->
+            currentState.copy(categories = updatedCategories)
+        }
+        getTotalPriceFromAllCategories()
+    }
+
+    fun deleteSpend(initialSpend: Expense) {
+        val updatedCategories = _uiState.value.categories.map { category ->
+            val updatedCategoryPrice = if (initialSpend.categoryName == category.name) category.totalCategoryPrice - initialSpend.count.toDouble() * initialSpend.price
+            else category.totalCategoryPrice
+
+            val updatedSpends = if (initialSpend.categoryName == category.name) category.expenses.filter { it.name != initialSpend.name }
+            else category.expenses
+
+            if (initialSpend.categoryName == category.name) {
+                changeSelectedSpendingList(updatedSpends)
+            }
+
+            category.copy(
+                expenses = updatedSpends.toMutableList(),
+                totalCategoryPrice = updatedCategoryPrice
+            )
         }
 
         _uiState.update { currentState ->

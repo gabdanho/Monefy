@@ -220,7 +220,7 @@ fun SpendingPieChart(
                         }
                     }
                 }
-                Text(currentCategorySumPrice.toString())
+                Text(String.format("%.2f", currentCategorySumPrice))
             }
         }
     }
@@ -314,7 +314,7 @@ fun ExpenseBlock(
                             .fillMaxWidth()
                     ) {
                         Text(text = it.name)
-                        Text(text = it.totalPrice.toString())
+                        Text(text = String.format("%.2f", it.totalPrice))
                     }
                 }
             }
@@ -333,7 +333,7 @@ fun ExpenseBlock(
                                     .fillMaxWidth()
                             ) {
                                 Text(text = it.name)
-                                Text(text = it.totalPrice.toString())
+                                Text(text = String.format("%.2f", it.totalPrice))
                             }
                         }
                     }

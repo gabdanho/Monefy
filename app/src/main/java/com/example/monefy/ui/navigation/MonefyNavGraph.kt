@@ -16,6 +16,7 @@ import com.example.monefy.ui.screens.AddSpendScreen
 import com.example.monefy.ui.screens.MainScreen
 import com.example.monefy.ui.screens.CategoriesListScreen
 import com.example.monefy.ui.screens.RewriteCategoryScreen
+import com.example.monefy.ui.screens.RewriteSpendScreen
 import com.example.monefy.ui.screens.SpendingListScreen
 import com.example.monefy.ui.screens.SpendingViewModel
 
@@ -75,12 +76,27 @@ fun MonefyNavGraph(
         }
         composable(route = "SpendingListScreen") {
             SpendingListScreen(
-                spendings = spendingViewModel.uiState.value.selectedSpendingList
+                spendingViewModel = spendingViewModel,
+                rewriteSpendClick = { spend ->
+                    spendingViewModel.changeSelectedSpendToRewrite(spend)
+                    spendingViewModel.changeSelectedCategory(spend.categoryName)
+                    navController.navigate("RewriteSpendScreen")
+                }
             )
         }
         composable(route = "RewriteCategoryScreen") {
             RewriteCategoryScreen(
                 spendingViewModel = spendingViewModel,
+                endOfScreen = {
+                    navController.popBackStack()
+                }
+            )
+        }
+        composable(route = "RewriteSpendScreen") {
+            RewriteSpendScreen(
+                spendingViewModel = spendingViewModel,
+                context = LocalContext.current,
+                deleteSpend = spendingViewModel::deleteSpend,
                 endOfScreen = {
                     navController.popBackStack()
                 }

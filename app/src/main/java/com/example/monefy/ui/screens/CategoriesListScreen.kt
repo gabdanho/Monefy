@@ -125,7 +125,7 @@ fun CategoryCard(
                 )
                 if (category.name != "Добавить категорию (+)") {
                     Text(
-                        text = category.totalCategoryPrice.toString(),
+                        text = String.format("%.2f", category.totalCategoryPrice),
                         style = MaterialTheme.typography.bodyLarge
                     )
                 }

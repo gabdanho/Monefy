@@ -86,12 +86,12 @@ fun SpendingCard(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun SpendingListPreview() {
-    val spendingViewModel = SpendingViewModel(FakeData.fakeCategories)
-    SpendingListScreen(
-        spendingViewModel = spendingViewModel,
-        rewriteSpendClick = { _ -> }
-    )
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun SpendingListPreview() {
+//    val spendingViewModel = SpendingViewModel(FakeData.fakeCategories)
+//    SpendingListScreen(
+//        spendingViewModel = spendingViewModel,
+//        rewriteSpendClick = { _ -> }
+//    )
+//}

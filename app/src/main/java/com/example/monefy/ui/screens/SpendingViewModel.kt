@@ -3,13 +3,18 @@ package com.example.monefy.ui.screens
 import android.util.Log
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import com.example.monefy.MonefyApplication
+import com.example.monefy.data.CategoryDao
 import com.example.monefy.model.Category
 import com.example.monefy.model.Expense
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import java.time.LocalDate
 
 data class SpendingUiState(
     val categories: List<Category> = listOf(),
@@ -22,16 +27,9 @@ data class SpendingUiState(
     val selectedSpendToRewrite: Expense = Expense()
 )
 
-class SpendingViewModel(categories: List<Category>) : ViewModel() {
+class SpendingViewModel(private val categoryDao: CategoryDao) : ViewModel() {
     private val _uiState = MutableStateFlow(SpendingUiState())
     val uiState: StateFlow<SpendingUiState> = _uiState.asStateFlow()
-
-    init {
-        _uiState.update { currentState ->
-            currentState.copy(categories = categories)
-        }
-        getTotalPriceFromAllCategories()
-    }
 
     fun changeSelectedCategory(categoryName: String) {
         _uiState.update { selectedCategory ->
@@ -257,6 +255,15 @@ class SpendingViewModel(categories: List<Category>) : ViewModel() {
     fun changeColorDialogShow(isShow: Boolean) {
         _uiState.update { currentState ->
             currentState.copy(isColorDialogShow = isShow)
+        }
+    }
+
+    companion object {
+        val factory: ViewModelProvider.Factory = viewModelFactory {
+            initializer {
+                val application = (this[APPLICATION_KEY] as MonefyApplication)
+                SpendingViewModel(application.database.categoryDao())
+            }
         }
     }
 }

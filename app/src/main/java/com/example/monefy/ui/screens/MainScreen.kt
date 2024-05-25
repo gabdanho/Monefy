@@ -51,6 +51,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.monefy.R
 import com.example.monefy.model.Category
 import com.example.monefy.model.fake.FakeData
@@ -343,13 +344,13 @@ fun ExpenseBlock(
     }
 }
 
-@Preview
-@Composable
-fun MainPreview() {
-    val spendingViewModel = SpendingViewModel(FakeData.fakeCategories)
-    Main(
-        categories = FakeData.fakeCategories,
-        totalPriceFromAllCategories = 15000.0,
-        spendingViewModel = spendingViewModel
-    )
-}
+//@Preview
+//@Composable
+//fun MainPreview() {
+//    val spendingViewModel = viewModel(factory = SpendingViewModel.factory)
+//    Main(
+//        categories = FakeData.fakeCategories,
+//        totalPriceFromAllCategories = 15000.0,
+//        spendingViewModel = spendingViewModel
+//    )
+//}

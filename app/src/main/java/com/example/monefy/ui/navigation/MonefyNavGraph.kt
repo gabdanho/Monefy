@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -22,11 +23,10 @@ import com.example.monefy.ui.screens.SpendingViewModel
 
 @Composable
 fun MonefyNavGraph(
+    spendingViewModel: SpendingViewModel = viewModel(factory = SpendingViewModel.factory),
     navController: NavHostController,
     modifier: Modifier = Modifier
 ) {
-    val spendingViewModel = SpendingViewModel(FakeData.fakeCategories)
-
     NavHost(
         navController = navController,
         startDestination = "MainScreen",

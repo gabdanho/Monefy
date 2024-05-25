@@ -13,16 +13,19 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface CategoryDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun create(category: Category)
+    suspend fun createCategory(category: Category)
 
     @Delete
-    suspend fun delete(category: Category)
+    suspend fun deleteCategory(category: Category)
 
     @Update
-    suspend fun update(category: Category)
+    suspend fun updateCategory(category: Category)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun addSpend(spend: Spend)
+
+    @Delete
+    suspend fun deleteSpend(spend: Spend)
 
     @Query("SELECT * FROM categories WHERE id = :categoryId")
     fun getCategoryWithSpends(categoryId: Int): Flow<CategoryWithSpends>

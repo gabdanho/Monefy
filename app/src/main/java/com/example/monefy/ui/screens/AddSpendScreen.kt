@@ -55,23 +55,22 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.text.isDigitsOnly
-import com.example.monefy.model.Category
+import com.example.monefy.data.Category
+import com.example.monefy.data.ColorConverter
+import com.example.monefy.data.DateConverter
+import com.example.monefy.data.Spend
 import com.example.monefy.utils.Constants
-import com.example.monefy.model.Expense
-import com.example.monefy.model.addCategory
-import com.example.monefy.model.fake.FakeData
 import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
@@ -82,15 +81,16 @@ fun AddSpendScreen(
     onAddCategoryScreenClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val spendingUiState by spendingViewModel.uiState.collectAsState()
+    val uiState by spendingViewModel.uiState.collectAsState()
+
     AddSpend(
-        categories = spendingUiState.categories,
-        selectedCategoryName = spendingUiState.selectedCategoryName,
-        context = context,
-        changeSelectedCategory = spendingViewModel::changeSelectedCategory,
-        addExpense = spendingViewModel::addExpense,
-        removeCategory = spendingViewModel::removeSelectedCategory,
+        selectedCategoryId = uiState.selectedCategoryId,
+        getAllCategories = spendingViewModel::getAllCategories,
         onAddCategoryScreenClick = onAddCategoryScreenClick,
+        changeSelectedCategory = spendingViewModel::changeSelectedCategory,
+        addSpend = spendingViewModel::addSpend,
+        removeSelectedCategoryId = spendingViewModel::removeSelectedCategoryId,
+        context = context,
         modifier = modifier
     )
 }
@@ -98,15 +98,25 @@ fun AddSpendScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddSpend(
-    categories: List<Category>,
-    selectedCategoryName: String,
-    context: Context,
-    changeSelectedCategory: (String) -> Unit,
-    addExpense: (Expense) -> Unit,
-    removeCategory: () -> Unit,
+    selectedCategoryId: Int,
+    getAllCategories: () -> Flow<List<Category>>,
     onAddCategoryScreenClick: () -> Unit,
+    changeSelectedCategory: (Int) -> Unit,
+    addSpend: suspend (Spend) -> Unit,
+    removeSelectedCategoryId: () -> Unit,
+    context: Context,
     modifier: Modifier = Modifier
 ) {
+    val colorConverter = ColorConverter()
+    val dateConverter = DateConverter()
+
+    val categories by getAllCategories().collectAsState(emptyList())
+    val addCategory = Category(
+        id = -1,
+        name = "Добавить категорию (+)",
+        color = 0L
+    )
+
     val scrollState = rememberScrollState()
 
     var spendName by rememberSaveable { mutableStateOf("") }
@@ -328,8 +338,9 @@ fun AddSpend(
                 items(categories + addCategory) { category ->
                     CategoryCard(
                         categoryName = category.name,
-                        categoryColor = category.color,
-                        currentCategoryName = selectedCategoryName,
+                        categoryId = category.id,
+                        categoryColor = colorConverter.toColor(category.color),
+                        currentCategoryId = selectedCategoryId,
                         onAddCategoryScreenClick = onAddCategoryScreenClick,
                         changeSelectedCategory = changeSelectedCategory
                     )
@@ -393,7 +404,7 @@ fun AddSpend(
             }
             Button(
                 onClick = {
-                    if (spendName.isEmpty() && selectedCategoryName.isEmpty()) {
+                    if (spendName.isEmpty() && selectedCategoryId == 0) {
                     scope.launch {
                         isSpendNameNotSelected = true
                         isSelectedCategoryNotSelected = true
@@ -406,35 +417,36 @@ fun AddSpend(
                             snackbarHostState.showSnackbar("Укажите название траты")
                         }
                     }
-                    else if (selectedCategoryName.isEmpty()) {
+                    else if (selectedCategoryId == 0) {
                         scope.launch {
                             isSelectedCategoryNotSelected = true
                             snackbarHostState.showSnackbar("Укажите категорию")
                         }
                     }
                     else {
-                        addExpense(
-                            Expense(
-                                categoryName = selectedCategoryName,
+                        scope.launch {
+                            val newSpend = Spend(
+                                categoryId = selectedCategoryId,
                                 name = spendName,
                                 description = spendDescription,
                                 count = count,
                                 price = spendPrice,
-                                date = pickedDate
+                                date = dateConverter.toLong(pickedDate)
                             )
-                        )
-                        scope.launch {
+                            addSpend(newSpend)
+
+                            spendName = ""
+                            spendPrice = 0.0
+                            spendPriceForTextFieldValue = "0"
+                            count = 1
+                            countForTextFieldValue = "1"
+                            pickedDate = LocalDate.now()
+                            spendDescription = ""
+                            removeSelectedCategoryId()
+
                             snackbarHostState.currentSnackbarData?.dismiss()
                             snackbarHostState.showSnackbar("Запись добавлена")
                         }
-                        spendName = ""
-                        spendPrice = 0.0
-                        spendPriceForTextFieldValue = "0"
-                        count = 1
-                        countForTextFieldValue = "1"
-                        pickedDate = LocalDate.now()
-                        spendDescription = ""
-                        removeCategory()
                     }
                 },
                 modifier = Modifier.align(Alignment.CenterHorizontally)
@@ -469,9 +481,10 @@ fun AddSpend(
 @Composable
 fun CategoryCard(
     categoryName: String,
+    categoryId: Int,
     categoryColor: Color,
-    currentCategoryName: String,
-    changeSelectedCategory: (String) -> Unit,
+    currentCategoryId: Int,
+    changeSelectedCategory: (Int) -> Unit,
     onAddCategoryScreenClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -482,13 +495,13 @@ fun CategoryCard(
             .size(150.dp)
             .padding(4.dp)
             .clickable {
-                if (categoryName == "Добавить категорию (+)") onAddCategoryScreenClick()
-                else changeSelectedCategory(categoryName)
+                if (categoryId == -1) onAddCategoryScreenClick()
+                else changeSelectedCategory(categoryId)
             }
             .border(
                 width = 1.dp,
                 shape = RoundedCornerShape(10.dp),
-                color = if (currentCategoryName == categoryName) Color.Green else Color.Transparent,
+                color = if (currentCategoryId == categoryId) Color.Green else Color.Transparent,
             )
     ) {
         Box(
@@ -497,7 +510,7 @@ fun CategoryCard(
                 .fillMaxSize()
                 .padding(8.dp)
         ) {
-            if (categoryName != "Добавить категорию (+)") {
+            if (categoryId != -1) {
                 Canvas(
                     modifier = Modifier.fillMaxSize()
                 ) {
@@ -519,16 +532,16 @@ fun CategoryCard(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun AddSpendPreview() {
-    AddSpend(
-        addExpense = { _expense -> },
-        categories = FakeData.fakeCategories,
-        changeSelectedCategory = { _string -> },
-        removeCategory = { },
-        onAddCategoryScreenClick = { },
-        context = LocalContext.current,
-        selectedCategoryName = ""
-    )
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun AddSpendPreview() {
+//    AddSpend(
+//        addExpense = { _expense -> },
+//        categories = FakeData.fakeCategories,
+//        changeSelectedCategory = { _string -> },
+//        removeCategory = { },
+//        onAddCategoryScreenClick = { },
+//        context = LocalContext.current,
+//        selectedCategoryName = ""
+//    )
+//}

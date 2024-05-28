@@ -35,27 +35,30 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import com.example.monefy.model.Category
+import com.example.monefy.data.Category
+import com.example.monefy.data.ColorConverter
 import com.example.monefy.utils.ColorPicker
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun AddCategoryScreen(
     spendingViewModel: SpendingViewModel,
     endOfScreen: () -> Unit
 ) {
-    val spendingUiState by spendingViewModel.uiState.collectAsState()
+    val uiState by spendingViewModel.uiState.collectAsState()
+
     AddCategory(
-        categoryColor = spendingUiState.selectedColorCategory,
-        isColorDialogShow = spendingUiState.isColorDialogShow,
-        addCategory = spendingViewModel::addNewCategory,
+        currentCategoryColor = spendingViewModel.uiState.value.selectedCategoryColor,
+        isColorDialogShow = uiState.isColorDialogShow,
         changeColorDialogShow = spendingViewModel::changeColorDialogShow,
         changeColorCategory = spendingViewModel::changeColorCategory,
+        addCategory = spendingViewModel::addCategory,
         removeSelectedCategoryColor = spendingViewModel::removeSelectedCategoryColor,
         endOfScreen = endOfScreen
     )
@@ -64,15 +67,17 @@ fun AddCategoryScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddCategory(
+    currentCategoryColor: Color,
     isColorDialogShow: Boolean,
-    categoryColor: Color,
-    addCategory: (Category) -> Boolean,
     changeColorDialogShow: (Boolean) -> Unit,
     changeColorCategory: (Color) -> Unit,
+    addCategory: suspend (Category) -> Boolean,
     removeSelectedCategoryColor: () -> Unit,
     endOfScreen: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val colorConverter = ColorConverter()
+
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
@@ -147,14 +152,14 @@ fun AddCategory(
             }
             Text(
                 text = "Цвет категории",
-                color = if (!isColorCategoryNotSelected) Color.Black else colorTextCategoryName.value,
+                color = if (!isColorCategoryNotSelected) Color.Black else colorTextCategoryColor.value,
                 modifier = Modifier.padding(4.dp)
             )
             Box(
                 modifier = Modifier
                     .padding(start = 4.dp)
                     .size(30.dp)
-                    .background(color = categoryColor)
+                    .background(color = currentCategoryColor)
                     .border(color = Color.Black, width = 1.dp, shape = RoundedCornerShape(2.dp))
                     .clickable { changeColorDialogShow(true) }
             )
@@ -169,41 +174,44 @@ fun AddCategory(
             }
             Button(
                 onClick = {
-                    if (categoryName.isEmpty() && categoryColor == Color.Transparent) {
-                        scope.launch {
-                            isCategoryNameNotSelected = true
-                            isColorCategoryNotSelected = true
-                            snackbarHostState.showSnackbar("Укажите название и цвет категории")
-                        }
-                    }
-                    else if (categoryName.isEmpty()) {
-                        scope.launch {
-                            isCategoryNameNotSelected = true
-                            snackbarHostState.showSnackbar("Укажите название категории")
-                        }
-                    }
-                    else if (categoryColor == Color.Transparent) {
-                        scope.launch {
-                            isColorCategoryNotSelected = true
-                            snackbarHostState.showSnackbar("Укажите цвет категории")
-                        }
-                    }
-                    else {
-                        val newCategory = Category(name = categoryName, color = categoryColor)
-                        if (addCategory(newCategory)) {
-                            scope.launch {
-                                snackbarHostState.currentSnackbarData?.dismiss()
-                                snackbarHostState.showSnackbar("Категория создана")
-                            }
-                            removeSelectedCategoryColor()
-                            categoryName = ""
-                            endOfScreen()
-                        }
-                        else {
+                    scope.launch {
+                        if (categoryName.isEmpty() && currentCategoryColor == Color.Transparent) {
                             scope.launch {
                                 isCategoryNameNotSelected = true
-                                snackbarHostState.currentSnackbarData?.dismiss()
-                                snackbarHostState.showSnackbar("Категория с таким именем уже существует")
+                                isColorCategoryNotSelected = true
+                                snackbarHostState.showSnackbar("Укажите название и цвет категории")
+                            }
+                        }
+                        else if (categoryName.isEmpty()) {
+                            scope.launch {
+                                isCategoryNameNotSelected = true
+                                snackbarHostState.showSnackbar("Укажите название категории")
+                            }
+                        }
+                        else if (currentCategoryColor == Color.Transparent) {
+                            scope.launch {
+                                isColorCategoryNotSelected = true
+                                snackbarHostState.showSnackbar("Укажите цвет категории")
+                            }
+                        }
+                        else {
+                            val newCategory = Category(name = categoryName, color = colorConverter.toLong(currentCategoryColor))
+                            val addCategoryResult = addCategory(newCategory)
+                            if (addCategoryResult) {
+                                scope.launch {
+                                    snackbarHostState.currentSnackbarData?.dismiss()
+                                    snackbarHostState.showSnackbar("Категория создана")
+                                }
+                                removeSelectedCategoryColor()
+                                categoryName = ""
+                                endOfScreen()
+                            }
+                            else {
+                                scope.launch {
+                                    isCategoryNameNotSelected = true
+                                    snackbarHostState.currentSnackbarData?.dismiss()
+                                    snackbarHostState.showSnackbar("Категория с таким именем уже существует")
+                                }
                             }
                         }
                     }
@@ -216,16 +224,16 @@ fun AddCategory(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun AddCategoryPreview() {
-    AddCategory(
-        changeColorDialogShow = { _boolean -> },
-        changeColorCategory = { _color -> },
-        addCategory = { _category -> true},
-        removeSelectedCategoryColor = { },
-        endOfScreen = { },
-        categoryColor = Color.Transparent,
-        isColorDialogShow = false
-    )
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun AddCategoryPreview() {
+//    AddCategory(
+//        changeColorDialogShow = { _boolean -> },
+//        changeColorCategory = { _color -> },
+//        addCategory = { _category -> true},
+//        removeSelectedCategoryColor = { },
+//        endOfScreen = { },
+//        categoryColor = Color.Transparent,
+//        isColorDialogShow = false
+//    )
+//}

@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
@@ -38,11 +37,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import com.example.monefy.model.fake.FakeData
+import com.example.monefy.data.Category
+import com.example.monefy.data.ColorConverter
 import com.example.monefy.utils.ColorPicker
 import kotlinx.coroutines.android.awaitFrame
 import kotlinx.coroutines.delay
@@ -53,16 +52,16 @@ fun RewriteCategoryScreen(
     spendingViewModel: SpendingViewModel,
     endOfScreen: () -> Unit
 ) {
-    val spendingUiState by spendingViewModel.uiState.collectAsState()
+    val uiState by spendingViewModel.uiState.collectAsState()
+
     RewriteCategory(
-        initialColor = spendingUiState.selectedCategoryToRewrite.color,
-        initialName = spendingUiState.selectedCategoryToRewrite.name,
-        categoryColor = spendingUiState.selectedColorCategory,
-        isColorDialogShow = spendingUiState.isColorDialogShow,
-        rewriteCategory = spendingViewModel::rewriteCategory,
+        initialCategory = uiState.categoryToRewrite,
+        colorToChange = uiState.colorToChange,
+        isColorDialogShow = uiState.isColorDialogShow,
         changeColorDialogShow = spendingViewModel::changeColorDialogShow,
-        changeColorCategory = spendingViewModel::changeColorCategory,
-        removeSelectedCategoryColor = spendingViewModel::removeSelectedCategoryColor,
+        changeColorToChange = spendingViewModel::changeColorToChange,
+        removeColorToChange = spendingViewModel::removeColorToChange,
+        rewriteCategory = spendingViewModel::rewriteCategory,
         deleteCategory = spendingViewModel::deleteCategory,
         endOfScreen = endOfScreen
     )
@@ -71,36 +70,36 @@ fun RewriteCategoryScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RewriteCategory(
-    initialName: String,
-    initialColor: Color,
     isColorDialogShow: Boolean,
-    categoryColor: Color,
-    rewriteCategory: (String, Color, String) -> Boolean,
-    changeColorDialogShow: (Boolean) -> Unit,
-    changeColorCategory: (Color) -> Unit,
-    removeSelectedCategoryColor: () -> Unit,
+    colorToChange: Color,
+    initialCategory: Category,
     endOfScreen: () -> Unit,
-    deleteCategory: (String) -> Unit,
+    removeColorToChange: () -> Unit,
+    changeColorDialogShow: (Boolean) -> Unit,
+    changeColorToChange: (Color) -> Unit,
+    rewriteCategory: suspend (Category, Category) -> Boolean,
+    deleteCategory: (Category) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val colorConverter = ColorConverter()
+
     val backPressHandled = remember { mutableStateOf(false) }
-    val coroutineScope = rememberCoroutineScope()
+    val scope = rememberCoroutineScope()
     val onBackPressedDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
 
     BackHandler(enabled = !backPressHandled.value) {
         backPressHandled.value = true
-        coroutineScope.launch {
+        scope.launch {
             awaitFrame()
-            removeSelectedCategoryColor()
+            removeColorToChange()
             onBackPressedDispatcher?.onBackPressed()
             backPressHandled.value = false
         }
     }
 
     val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
 
-    var categoryName by rememberSaveable { mutableStateOf(initialName) }
+    var categoryName by rememberSaveable { mutableStateOf(initialCategory.name) }
 
     val colorTextCategoryName = remember { mutableStateOf(Color.Black) }
     var isCategoryNameWrong by rememberSaveable { mutableStateOf(false) }
@@ -159,7 +158,11 @@ fun RewriteCategory(
                 modifier = Modifier
                     .padding(start = 4.dp)
                     .size(30.dp)
-                    .background(color = if (categoryColor == Color.Transparent) initialColor else categoryColor)
+                    .background(
+                        color = if (colorToChange == Color.Transparent) colorConverter.toColor(
+                            initialCategory.color
+                        ) else colorToChange
+                    )
                     .border(color = Color.Black, width = 1.dp, shape = RoundedCornerShape(2.dp))
                     .clickable { changeColorDialogShow(true) }
             )
@@ -167,7 +170,7 @@ fun RewriteCategory(
             if (isColorDialogShow) {
                 Dialog(onDismissRequest = { changeColorDialogShow(false) }) {
                     ColorPicker(
-                        changeColorCategory = changeColorCategory,
+                        changeColorCategory = changeColorToChange,
                         changeColorDialogShow = changeColorDialogShow
                     )
                 }
@@ -178,23 +181,19 @@ fun RewriteCategory(
             ) {
                 Button(
                     onClick = {
-                        if (categoryName.isEmpty() && categoryColor == Color.Transparent) {
-                            categoryName = initialName
-                            color = initialColor
-                        }
-                        else if (categoryName.isEmpty()) {
-                            categoryName = initialName
-                        }
-                        else if (categoryColor == Color.Transparent) {
-                            changeColorCategory(initialColor)
-                        }
-                        else {
-                            if (rewriteCategory(initialName, categoryColor, categoryName)) {
+                        scope.launch {
+                            if (categoryName.isEmpty()) categoryName = initialCategory.name
+                            if (colorToChange == Color.Transparent) changeColorToChange(colorConverter.toColor(initialCategory.color))
+
+                            val newCategory = initialCategory.copy(name = categoryName, color = colorConverter.toLong(colorToChange))
+                            val rewriteCategoryResult = rewriteCategory(initialCategory, newCategory)
+
+                            if (rewriteCategoryResult) {
                                 scope.launch {
                                     snackbarHostState.currentSnackbarData?.dismiss()
                                     snackbarHostState.showSnackbar("Категория изменена")
                                 }
-                                removeSelectedCategoryColor()
+                                removeColorToChange()
                                 endOfScreen()
                             }
                             else {
@@ -206,13 +205,15 @@ fun RewriteCategory(
                             }
                         }
                     },
-                    modifier = Modifier.width(150.dp).padding(end = 8.dp)
+                    modifier = Modifier
+                        .width(150.dp)
+                        .padding(end = 8.dp)
                 ) {
                     Text("Изменить")
                 }
                 Button(
                     onClick = {
-                        deleteCategory(initialName)
+                        deleteCategory(initialCategory)
                         endOfScreen()
                     },
                     colors = ButtonDefaults.buttonColors(Color.Red),
@@ -225,19 +226,19 @@ fun RewriteCategory(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun RewriteCategoryPreview() {
-    RewriteCategory(
-        initialName = FakeData.fakeCategories.first().name,
-        initialColor = FakeData.fakeCategories.first().color,
-        changeColorDialogShow = { _ -> },
-        changeColorCategory = { _ -> },
-        rewriteCategory = { _, _, _ -> true },
-        removeSelectedCategoryColor = { },
-        endOfScreen = { },
-        deleteCategory = { },
-        categoryColor = Color.Transparent,
-        isColorDialogShow = false
-    )
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun RewriteCategoryPreview() {
+//    RewriteCategory(
+//        initialName = FakeData.fakeCategories.first().name,
+//        initialColor = FakeData.fakeCategories.first().color,
+//        changeColorDialogShow = { _ -> },
+//        changeColorCategory = { _ -> },
+//        rewriteCategory = { _, _, _ -> true },
+//        removeSelectedCategoryColor = { },
+//        endOfScreen = { },
+//        deleteCategory = { },
+//        categoryColor = Color.Transparent,
+//        isColorDialogShow = false
+//    )
+//}

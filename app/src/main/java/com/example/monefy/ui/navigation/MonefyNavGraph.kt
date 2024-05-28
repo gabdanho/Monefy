@@ -1,23 +1,19 @@
 package com.example.monefy.ui.navigation
 
-import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.navArgument
-import com.example.monefy.model.fake.FakeData
 import com.example.monefy.ui.screens.AddCategoryScreen
 import com.example.monefy.ui.screens.AddSpendScreen
 import com.example.monefy.ui.screens.MainScreen
 import com.example.monefy.ui.screens.CategoriesListScreen
 import com.example.monefy.ui.screens.RewriteCategoryScreen
 import com.example.monefy.ui.screens.RewriteSpendScreen
+import com.example.monefy.ui.screens.SpendingList
 import com.example.monefy.ui.screens.SpendingListScreen
 import com.example.monefy.ui.screens.SpendingViewModel
 
@@ -39,7 +35,6 @@ fun MonefyNavGraph(
             spendingViewModel.resetAllTapedCategories()
         }
         composable(route = "AddSpendScreen") {
-            spendingViewModel.removeSelectedCategory()
             AddSpendScreen(
                 spendingViewModel = spendingViewModel,
                 context = LocalContext.current,
@@ -60,16 +55,13 @@ fun MonefyNavGraph(
         composable(route = "CategoriesListScreen") {
             CategoriesListScreen(
                 spendingViewModel = spendingViewModel,
-                onCategoryClick = { spendingList, category ->
-                    spendingViewModel.changeSelectedSpendingList(spendingList)
-                    spendingViewModel.changeSelectedCategoryToRewrite(category)
+                onCategoryClick = {
                     navController.navigate(route = "SpendingListScreen")
                 },
                 onAddCategoryClick = {
                     navController.navigate(route = "AddCategoryScreen")
                 },
-                rewriteCategoryClick = { category ->
-                    spendingViewModel.changeSelectedCategoryToRewrite(category)
+                rewriteCategoryClick = {
                     navController.navigate(route = "RewriteCategoryScreen")
                 }
             )
@@ -77,9 +69,7 @@ fun MonefyNavGraph(
         composable(route = "SpendingListScreen") {
             SpendingListScreen(
                 spendingViewModel = spendingViewModel,
-                rewriteSpendClick = { spend ->
-                    spendingViewModel.changeSelectedSpendToRewrite(spend)
-                    spendingViewModel.changeSelectedCategory(spend.categoryName)
+                rewriteSpendClick = {
                     navController.navigate("RewriteSpendScreen")
                 }
             )
@@ -96,7 +86,6 @@ fun MonefyNavGraph(
             RewriteSpendScreen(
                 spendingViewModel = spendingViewModel,
                 context = LocalContext.current,
-                deleteSpend = spendingViewModel::deleteSpend,
                 endOfScreen = {
                     navController.popBackStack()
                 }

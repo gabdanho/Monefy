@@ -18,6 +18,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -28,24 +30,25 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.monefy.R
-import com.example.monefy.model.Category
-import com.example.monefy.model.Expense
-import com.example.monefy.model.addCategory
-import com.example.monefy.model.fake.FakeData
+import com.example.monefy.data.Category
+import com.example.monefy.data.ColorConverter
+import kotlinx.coroutines.flow.Flow
 
 @Composable
 fun CategoriesListScreen(
     spendingViewModel: SpendingViewModel,
     onAddCategoryClick: () -> Unit,
-    rewriteCategoryClick: (Category) -> Unit,
-    onCategoryClick: (List<Expense>, Category) -> Unit
+    onCategoryClick: () -> Unit,
+    rewriteCategoryClick: () -> Unit,
 ) {
     Scaffold { innerPadding ->
         CategoriesList(
-            categories = spendingViewModel.uiState.value.categories,
+            getAllCategories = spendingViewModel::getAllCategories,
+            changeSelectedCategoryIdSpends = spendingViewModel::changeSelectedCategoryIdSpends,
+            changeCategoryToRewrite = spendingViewModel::changeCategoryToRewrite,
             onCategoryClick = onCategoryClick,
-            onAddCategoryClick = onAddCategoryClick,
             rewriteCategoryClick = rewriteCategoryClick,
+            onAddCategoryClick = onAddCategoryClick,
             modifier = Modifier.padding(innerPadding)
         )
     }
@@ -53,16 +56,25 @@ fun CategoriesListScreen(
 
 @Composable
 fun CategoriesList(
-    categories: List<Category>,
-    onCategoryClick: (List<Expense>, Category) -> Unit,
+    getAllCategories: () -> Flow<List<Category>>,
+    changeSelectedCategoryIdSpends: (Int) -> Unit,
+    changeCategoryToRewrite: (Category) -> Unit,
+    onCategoryClick: () -> Unit,
     onAddCategoryClick: () -> Unit,
-    rewriteCategoryClick: (Category) -> Unit,
+    rewriteCategoryClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val colorConverter = ColorConverter()
+
+    val categories by getAllCategories().collectAsState(emptyList())
+    val addCategory = Category(id = -1, name = "Добавить категорию (+)", color = colorConverter.toLong(Color.Transparent))
+
     LazyColumn(modifier = modifier) {
         items(categories + addCategory) { category ->
             CategoryCard(
                 category = category,
+                changeSelectedCategoryIdSpends = changeSelectedCategoryIdSpends,
+                changeCategoryToRewrite = changeCategoryToRewrite,
                 onCategoryClick = onCategoryClick,
                 onAddCategoryClick = onAddCategoryClick,
                 rewriteCategoryClick = rewriteCategoryClick,
@@ -75,32 +87,39 @@ fun CategoriesList(
 @Composable
 fun CategoryCard(
     category: Category,
-    onCategoryClick: (List<Expense>, Category) -> Unit,
+    changeSelectedCategoryIdSpends: (Int) -> Unit,
+    changeCategoryToRewrite: (Category) -> Unit,
+    onCategoryClick: () -> Unit,
     onAddCategoryClick: () -> Unit,
-    rewriteCategoryClick: (Category) -> Unit,
+    rewriteCategoryClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val colorConverter = ColorConverter()
+
     Box {
         Card(
             modifier = modifier
                 .fillMaxWidth()
                 .shadow(
                     elevation = 10.dp,
-                    ambientColor = category.color,
-                    spotColor = category.color,
+                    ambientColor = colorConverter.toColor(category.color),
+                    spotColor = colorConverter.toColor(category.color),
                     shape = RoundedCornerShape(20.dp)
                 )
                 .clickable {
-                    if (category.name != "Добавить категорию (+)") onCategoryClick(category.expenses, category)
+                    if (category.id != -1) {
+                        changeSelectedCategoryIdSpends(category.id)
+                        onCategoryClick()
+                    }
                     else onAddCategoryClick()
                 }
         ) {
-            if (category.name != "Добавить категорию (+)") {
+            if (category.id != -1) {
                 Canvas(
                     modifier = Modifier
                 ) {
                     drawCircle(
-                        color = category.color,
+                        color = colorConverter.toColor(category.color),
                         radius = 20f,
                         center = Offset(50f, 50f)
                     )
@@ -123,7 +142,7 @@ fun CategoryCard(
                     text = category.name,
                     style = MaterialTheme.typography.bodyLarge
                 )
-                if (category.name != "Добавить категорию (+)") {
+                if (category.id != -1) {
                     Text(
                         text = String.format("%.2f", category.totalCategoryPrice),
                         style = MaterialTheme.typography.bodyLarge
@@ -131,12 +150,16 @@ fun CategoryCard(
                 }
             }
         }
-        if (category.name != "Добавить категорию (+)") {
+        if (category.id != -1) {
             Row(
                 horizontalArrangement = Arrangement.Absolute.Right,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                IconButton(onClick = { rewriteCategoryClick(category) }) {
+                IconButton(onClick = {
+                    changeCategoryToRewrite(category)
+                    rewriteCategoryClick()
+                }
+                ) {
                     Icon(
                         painter = painterResource(R.drawable.change),
                         contentDescription = "Редактировать",
@@ -148,24 +171,24 @@ fun CategoryCard(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun CategoriesListPreview() {
-    CategoriesList(
-        categories = FakeData.fakeCategories,
-        onAddCategoryClick = { },
-        onCategoryClick = { _, _ -> },
-        rewriteCategoryClick = { }
-    )
-}
-
-@Preview
-@Composable
-fun CategoryPreview() {
-    CategoryCard(
-        category = FakeData.fakeCategories.first(),
-        onCategoryClick = { _, _ -> },
-        onAddCategoryClick = { },
-        rewriteCategoryClick = { }
-    )
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun CategoriesListPreview() {
+//    CategoriesList(
+//        categories = FakeData.fakeCategories,
+//        onAddCategoryClick = { },
+//        onCategoryClick = { _, _ -> },
+//        rewriteCategoryClick = { }
+//    )
+//}
+//
+//@Preview
+//@Composable
+//fun CategoryPreview() {
+//    CategoryCard(
+//        category = FakeData.fakeCategories.first(),
+//        onCategoryClick = { _, _ -> },
+//        onAddCategoryClick = { },
+//        rewriteCategoryClick = { }
+//    )
+//}

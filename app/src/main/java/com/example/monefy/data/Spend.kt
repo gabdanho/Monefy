@@ -7,10 +7,10 @@ import androidx.room.PrimaryKey
 data class Spend(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
-    val categoryId: Int,
-    val name: String,
-    val description: String,
-    val date: Long,
-    val price: Double,
-    val count: Int
+    val categoryId: Int = 0,
+    val name: String = "",
+    val description: String = "",
+    val date: Long = 0L,
+    val price: Double = 0.0,
+    val count: Int = 0
 )

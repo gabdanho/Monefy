@@ -7,8 +7,8 @@ import androidx.room.PrimaryKey
 data class Category(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
-    val name: String,
-    val color: Long,
-    val totalCategoryPrice: Double,
+    val name: String = "",
+    val color: Long = 0L,
+    val totalCategoryPrice: Double = 0.0,
     val isTapped: Boolean = false
 )

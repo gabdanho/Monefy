@@ -66,46 +66,38 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.text.isDigitsOnly
-import com.example.monefy.model.Category
+import com.example.monefy.data.Category
+import com.example.monefy.data.ColorConverter
+import com.example.monefy.data.DateConverter
+import com.example.monefy.data.Spend
 import com.example.monefy.utils.Constants
-import com.example.monefy.model.Expense
-import com.example.monefy.model.addCategory
-import com.example.monefy.model.fake.FakeData
 import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
 @Composable
 fun RewriteSpendScreen(
     spendingViewModel: SpendingViewModel,
-    context: Context,
     endOfScreen: () -> Unit,
-    deleteSpend: (Expense) -> Unit,
+    context: Context,
     modifier: Modifier = Modifier
 ) {
-    val spendingUiState by spendingViewModel.uiState.collectAsState()
-    val initialSpend = Expense(
-        name = spendingUiState.selectedSpendToRewrite.name,
-        price = spendingUiState.selectedSpendToRewrite.price,
-        count = spendingUiState.selectedSpendToRewrite.count,
-        date = spendingUiState.selectedSpendToRewrite.date,
-        description = spendingUiState.selectedSpendToRewrite.description,
-        categoryName = spendingUiState.selectedSpendToRewrite.categoryName,
-    )
+    val uiState by spendingViewModel.uiState.collectAsState()
 
     RewriteSpend(
-        initialSpend = initialSpend,
-        categories = spendingUiState.categories,
-        selectedCategoryName = spendingUiState.selectedCategoryName,
-        context = context,
-        changeSelectedCategory = spendingViewModel::changeSelectedCategory,
-        rewriteExpense = spendingViewModel::rewriteExpense,
-        removeCategory = spendingViewModel::removeSelectedCategory,
+        selectedCategoryId = uiState.selectedCategoryId,
+        initialSpend = uiState.selectedSpendToChange,
         endOfScreen = endOfScreen,
-        deleteSpend = deleteSpend,
+        getAllCategories = spendingViewModel::getAllCategories,
+        changeSelectedCategory = spendingViewModel::changeSelectedCategory,
+        rewriteSpend = spendingViewModel::rewriteSpend,
+        removeSelectedCategoryId = spendingViewModel::removeSelectedCategoryId,
+        deleteSpend = spendingViewModel::deleteSpend,
+        context = context,
         modifier = modifier
     )
 }
@@ -113,18 +105,22 @@ fun RewriteSpendScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RewriteSpend(
-    initialSpend: Expense,
-    categories: List<Category>,
-    selectedCategoryName: String,
-    context: Context,
-    changeSelectedCategory: (String) -> Unit,
-    rewriteExpense: (Expense, Expense) -> Unit,
-    removeCategory: () -> Unit,
-    deleteSpend: (Expense) -> Unit,
+    selectedCategoryId: Int,
+    initialSpend: Spend,
     endOfScreen: () -> Unit,
+    getAllCategories: () -> Flow<List<Category>>,
+    changeSelectedCategory: (Int) -> Unit,
+    rewriteSpend: (Spend) -> Unit,
+    removeSelectedCategoryId: () -> Unit,
+    deleteSpend: (Spend) -> Unit,
+    context: Context,
     modifier: Modifier = Modifier
 ) {
+    val dateConverter = DateConverter()
+
     val scrollState = rememberScrollState()
+
+    val categories by getAllCategories().collectAsState(emptyList())
 
     var spendName by rememberSaveable { mutableStateOf(initialSpend.name) }
     var spendPrice by rememberSaveable { mutableStateOf(initialSpend.price) }
@@ -158,7 +154,7 @@ fun RewriteSpend(
         isSpendNameNotSelected = false
     }
 
-    var pickedDate by rememberSaveable { mutableStateOf(initialSpend.date) }
+    var pickedDate by rememberSaveable { mutableStateOf(dateConverter.toDate(initialSpend.date)) }
     val dateDialogState = rememberMaterialDialogState()
 
     val scope = rememberCoroutineScope()
@@ -323,9 +319,8 @@ fun RewriteSpend(
             ) {
                 items(categories) { category ->
                     ChangeCategoryCard(
-                        categoryName = category.name,
-                        categoryColor = category.color,
-                        currentCategoryName = selectedCategoryName,
+                        category = category,
+                        currentCategoryId = selectedCategoryId,
                         changeSelectedCategory = changeSelectedCategory
                     )
                 }
@@ -399,26 +394,26 @@ fun RewriteSpend(
                             }
                         }
                         else {
-                            rewriteExpense(
-                                initialSpend,
-                                Expense(
-                                    categoryName = selectedCategoryName,
-                                    name = spendName,
-                                    description = spendDescription,
-                                    count = count,
-                                    price = spendPrice,
-                                    date = pickedDate
-                                )
+                            val newSpend = initialSpend.copy(
+                                name = spendName,
+                                categoryId = selectedCategoryId,
+                                description = spendDescription,
+                                price = spendPrice,
+                                date = dateConverter.toLong(pickedDate),
+                                count = count
                             )
+                            rewriteSpend(newSpend)
                             scope.launch {
                                 snackbarHostState.currentSnackbarData?.dismiss()
                                 snackbarHostState.showSnackbar("Запись изменена")
                             }
-                            removeCategory()
+                            removeSelectedCategoryId()
                             endOfScreen()
                         }
                     },
-                    modifier = Modifier.width(150.dp).padding(end = 8.dp)
+                    modifier = Modifier
+                        .width(150.dp)
+                        .padding(end = 8.dp)
                 ) {
                     Text("Изменить")
                 }
@@ -460,12 +455,13 @@ fun RewriteSpend(
 
 @Composable
 fun ChangeCategoryCard(
-    categoryName: String,
-    categoryColor: Color,
-    currentCategoryName: String,
-    changeSelectedCategory: (String) -> Unit,
+    category: Category,
+    currentCategoryId: Int,
+    changeSelectedCategory: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val colorConverter = ColorConverter()
+
     Card(
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
         shape = RoundedCornerShape(10.dp),
@@ -473,12 +469,12 @@ fun ChangeCategoryCard(
             .size(150.dp)
             .padding(4.dp)
             .clickable {
-                changeSelectedCategory(categoryName)
+                changeSelectedCategory(category.id)
             }
             .border(
                 width = 1.dp,
                 shape = RoundedCornerShape(10.dp),
-                color = if (currentCategoryName == categoryName) Color.Green else Color.Transparent,
+                color = if (currentCategoryId == category.id) Color.Green else Color.Transparent,
             )
     ) {
         Box(
@@ -491,7 +487,7 @@ fun ChangeCategoryCard(
                 modifier = Modifier.fillMaxSize()
             ) {
                 drawCircle(
-                    color = categoryColor,
+                    color = colorConverter.toColor(category.color),
                     radius = 10f,
                     center = Offset(5f, 5f)
                 )
@@ -502,26 +498,26 @@ fun ChangeCategoryCard(
                     style = Stroke(width = 1f)
                 )
             }
-            Text(text = categoryName)
+            Text(text = category.name)
         }
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun RewriteSpendPreview() {
-    val _category = Category()
-    val _expense = Expense()
-    val _expense2 = Expense()
-    RewriteSpend(
-        initialSpend = Expense(),
-        rewriteExpense = { _expense, _expense2 -> },
-        categories = FakeData.fakeCategories,
-        changeSelectedCategory = { _ -> },
-        removeCategory = { },
-        deleteSpend = { _expense -> },
-        endOfScreen = { },
-        context = LocalContext.current,
-        selectedCategoryName = "",
-    )
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun RewriteSpendPreview() {
+//    val _category = Category()
+//    val _expense = Expense()
+//    val _expense2 = Expense()
+//    RewriteSpend(
+//        initialSpend = Expense(),
+//        rewriteExpense = { _expense, _expense2 -> },
+//        categories = FakeData.fakeCategories,
+//        changeSelectedCategory = { _ -> },
+//        removeCategory = { },
+//        deleteSpend = { _expense -> },
+//        endOfScreen = { },
+//        context = LocalContext.current,
+//        selectedCategoryName = "",
+//    )
+//}

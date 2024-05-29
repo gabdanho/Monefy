@@ -37,10 +37,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.monefy.data.Category
-import com.example.monefy.data.ColorConverter
 import com.example.monefy.data.Spend
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import java.lang.Math.pow
@@ -299,8 +296,6 @@ fun ExpenseBlock(
     getSpendsByCategoryId: (Int) -> Flow<List<Spend>>,
     modifier: Modifier = Modifier
 ) {
-    val colorConverter = ColorConverter()
-
     val spends by getSpendsByCategoryId(category.id).collectAsState(emptyList())
 
     var expanded by rememberSaveable { mutableStateOf(false) }
@@ -320,7 +315,7 @@ fun ExpenseBlock(
             ) {
                 Canvas(Modifier.size(10.dp)) {
                     drawCircle(
-                        color = colorConverter.toColor(category.color)
+                        color = Color(category.color)
                     )
                 }
                 Text(

@@ -55,14 +55,15 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.graphics.toColor
 import androidx.core.text.isDigitsOnly
 import com.example.monefy.data.Category
-import com.example.monefy.data.ColorConverter
 import com.example.monefy.data.DateConverter
 import com.example.monefy.data.Spend
 import com.example.monefy.utils.Constants
@@ -107,14 +108,11 @@ fun AddSpend(
     context: Context,
     modifier: Modifier = Modifier
 ) {
-    val colorConverter = ColorConverter()
-    val dateConverter = DateConverter()
-
     val categories by getAllCategories().collectAsState(emptyList())
     val addCategory = Category(
         id = -1,
         name = "Добавить категорию (+)",
-        color = 0L
+        color = Color.Transparent.toArgb()
     )
 
     val scrollState = rememberScrollState()
@@ -339,7 +337,7 @@ fun AddSpend(
                     CategoryCard(
                         categoryName = category.name,
                         categoryId = category.id,
-                        categoryColor = colorConverter.toColor(category.color),
+                        categoryColor = Color(category.color),
                         currentCategoryId = selectedCategoryId,
                         onAddCategoryScreenClick = onAddCategoryScreenClick,
                         changeSelectedCategory = changeSelectedCategory
@@ -431,7 +429,7 @@ fun AddSpend(
                                 description = spendDescription,
                                 count = count,
                                 price = spendPrice,
-                                date = dateConverter.toLong(pickedDate)
+                                date = pickedDate
                             )
                             addSpend(newSpend)
 

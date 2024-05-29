@@ -34,17 +34,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.monefy.data.Category
-import com.example.monefy.data.ColorConverter
 import com.example.monefy.utils.ColorPicker
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 @Composable
 fun AddCategoryScreen(
@@ -76,8 +74,6 @@ fun AddCategory(
     endOfScreen: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val colorConverter = ColorConverter()
-
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
@@ -195,7 +191,7 @@ fun AddCategory(
                             }
                         }
                         else {
-                            val newCategory = Category(name = categoryName, color = colorConverter.toLong(currentCategoryColor))
+                            val newCategory = Category(name = categoryName, color = currentCategoryColor.toArgb())
                             val addCategoryResult = addCategory(newCategory)
                             if (addCategoryResult) {
                                 scope.launch {

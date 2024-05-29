@@ -67,7 +67,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.text.isDigitsOnly
 import com.example.monefy.data.Category
-import com.example.monefy.data.ColorConverter
 import com.example.monefy.data.DateConverter
 import com.example.monefy.data.Spend
 import com.example.monefy.utils.Constants
@@ -154,7 +153,7 @@ fun RewriteSpend(
         isSpendNameNotSelected = false
     }
 
-    var pickedDate by rememberSaveable { mutableStateOf(dateConverter.toDate(initialSpend.date)) }
+    var pickedDate by rememberSaveable { mutableStateOf(initialSpend.date) }
     val dateDialogState = rememberMaterialDialogState()
 
     val scope = rememberCoroutineScope()
@@ -399,7 +398,7 @@ fun RewriteSpend(
                                 categoryId = selectedCategoryId,
                                 description = spendDescription,
                                 price = spendPrice,
-                                date = dateConverter.toLong(pickedDate),
+                                date = pickedDate,
                                 count = count
                             )
                             rewriteSpend(newSpend)
@@ -460,8 +459,6 @@ fun ChangeCategoryCard(
     changeSelectedCategory: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val colorConverter = ColorConverter()
-
     Card(
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
         shape = RoundedCornerShape(10.dp),
@@ -487,7 +484,7 @@ fun ChangeCategoryCard(
                 modifier = Modifier.fillMaxSize()
             ) {
                 drawCircle(
-                    color = colorConverter.toColor(category.color),
+                    color = Color(category.color),
                     radius = 10f,
                     center = Offset(5f, 5f)
                 )

@@ -2,6 +2,7 @@ package com.example.monefy.data
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import java.time.LocalDate
 
 @Entity(tableName = "spends")
 data class Spend(
@@ -10,7 +11,7 @@ data class Spend(
     val categoryId: Int = 0,
     val name: String = "",
     val description: String = "",
-    val date: Long = 0L,
+    val date: LocalDate = LocalDate.now(),
     val price: Double = 0.0,
     val count: Int = 0
 )

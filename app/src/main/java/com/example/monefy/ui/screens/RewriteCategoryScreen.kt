@@ -36,12 +36,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.monefy.data.Category
-import com.example.monefy.data.ColorConverter
 import com.example.monefy.utils.ColorPicker
 import kotlinx.coroutines.android.awaitFrame
 import kotlinx.coroutines.delay
@@ -81,8 +81,6 @@ fun RewriteCategory(
     deleteCategory: (Category) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val colorConverter = ColorConverter()
-
     val backPressHandled = remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val onBackPressedDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
@@ -159,9 +157,8 @@ fun RewriteCategory(
                     .padding(start = 4.dp)
                     .size(30.dp)
                     .background(
-                        color = if (colorToChange == Color.Transparent) colorConverter.toColor(
-                            initialCategory.color
-                        ) else colorToChange
+                        color = if (colorToChange == Color.Transparent) Color(initialCategory.color)
+                        else colorToChange
                     )
                     .border(color = Color.Black, width = 1.dp, shape = RoundedCornerShape(2.dp))
                     .clickable { changeColorDialogShow(true) }
@@ -183,9 +180,9 @@ fun RewriteCategory(
                     onClick = {
                         scope.launch {
                             if (categoryName.isEmpty()) categoryName = initialCategory.name
-                            if (colorToChange == Color.Transparent) changeColorToChange(colorConverter.toColor(initialCategory.color))
+                            if (colorToChange == Color.Transparent) changeColorToChange(Color(initialCategory.color))
 
-                            val newCategory = initialCategory.copy(name = categoryName, color = colorConverter.toLong(colorToChange))
+                            val newCategory = initialCategory.copy(name = categoryName, color = colorToChange.toArgb())
                             val rewriteCategoryResult = rewriteCategory(initialCategory, newCategory)
 
                             if (rewriteCategoryResult) {

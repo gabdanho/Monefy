@@ -26,12 +26,11 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.monefy.R
 import com.example.monefy.data.Category
-import com.example.monefy.data.ColorConverter
 import kotlinx.coroutines.flow.Flow
 
 @Composable
@@ -64,10 +63,8 @@ fun CategoriesList(
     rewriteCategoryClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val colorConverter = ColorConverter()
-
     val categories by getAllCategories().collectAsState(emptyList())
-    val addCategory = Category(id = -1, name = "Добавить категорию (+)", color = colorConverter.toLong(Color.Transparent))
+    val addCategory = Category(id = -1, name = "Добавить категорию (+)", color = Color.Transparent.toArgb())
 
     LazyColumn(modifier = modifier) {
         items(categories + addCategory) { category ->
@@ -94,16 +91,14 @@ fun CategoryCard(
     rewriteCategoryClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val colorConverter = ColorConverter()
-
     Box {
         Card(
             modifier = modifier
                 .fillMaxWidth()
                 .shadow(
                     elevation = 10.dp,
-                    ambientColor = colorConverter.toColor(category.color),
-                    spotColor = colorConverter.toColor(category.color),
+                    ambientColor = Color(category.color),
+                    spotColor = Color(category.color),
                     shape = RoundedCornerShape(20.dp)
                 )
                 .clickable {
@@ -119,7 +114,7 @@ fun CategoryCard(
                     modifier = Modifier
                 ) {
                     drawCircle(
-                        color = colorConverter.toColor(category.color),
+                        color = Color(category.color),
                         radius = 20f,
                         center = Offset(50f, 50f)
                     )

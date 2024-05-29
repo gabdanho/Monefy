@@ -1,10 +1,7 @@
 package com.example.monefy.ui.screens
 
 import android.util.Log
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.graphics.Color
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY

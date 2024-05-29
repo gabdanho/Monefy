@@ -4,8 +4,10 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 import kotlinx.coroutines.InternalCoroutinesApi
 
+@TypeConverters(DateConverter::class)
 @Database(entities = [Category::class, Spend::class], version = 1, exportSchema = false)
 abstract class MonefyDatabase : RoomDatabase() {
     abstract fun categoryDao() : CategoryDao

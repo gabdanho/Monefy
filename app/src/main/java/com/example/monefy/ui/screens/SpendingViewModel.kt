@@ -195,12 +195,6 @@ class SpendingViewModel(private val categoryDao: CategoryDao) : ViewModel() {
         }
     }
 
-    fun removeSelectedSpendToChange() {
-        _uiState.update { currentState ->
-            currentState.copy(selectedSpendToChange = Spend())
-        }
-    }
-
     fun resetAllTapedCategories() {
         viewModelScope.launch {
             val categories = categoryDao.getAllCategories().first()

@@ -115,15 +115,13 @@ fun RewriteSpend(
     context: Context,
     modifier: Modifier = Modifier
 ) {
-    val dateConverter = DateConverter()
-
     val scrollState = rememberScrollState()
 
     val categories by getAllCategories().collectAsState(emptyList())
 
     var spendName by rememberSaveable { mutableStateOf(initialSpend.name) }
     var spendPrice by rememberSaveable { mutableStateOf(initialSpend.price) }
-    var spendPriceForTextFieldValue by rememberSaveable { mutableStateOf(initialSpend.price.toString()) }
+    var spendPriceForTextFieldValue by rememberSaveable { mutableStateOf(String.format("%.2f", initialSpend.price)) }
     var spendDescription by rememberSaveable { mutableStateOf(initialSpend.description) }
     var count by rememberSaveable { mutableStateOf(initialSpend.count) }
     var countForTextFieldValue by rememberSaveable { mutableStateOf(initialSpend.count.toString()) }

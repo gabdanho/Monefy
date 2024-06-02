@@ -102,7 +102,7 @@ fun SpendingCard(
                 style = MaterialTheme.typography.bodyLarge
             )
             Text(
-                text = String.format("%.2f", 52.525252),
+                text = String.format("%.2f", spend.count.toDouble() * spend.price),
                 style = MaterialTheme.typography.bodyLarge
             )
         }

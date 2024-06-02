@@ -8,14 +8,13 @@ import androidx.room.TypeConverters
 import kotlinx.coroutines.InternalCoroutinesApi
 
 @TypeConverters(DateConverter::class)
-@Database(entities = [Category::class, Spend::class], version = 1, exportSchema = false)
+@Database(entities = [Category::class, Spend::class], version = 2, exportSchema = false)
 abstract class MonefyDatabase : RoomDatabase() {
     abstract fun categoryDao() : CategoryDao
     companion object {
         @Volatile
         private var Instance: MonefyDatabase ?= null
 
-        @OptIn(InternalCoroutinesApi::class)
         fun getDatabase(context: Context): MonefyDatabase {
             return Instance ?: synchronized(this) {
                 Room.databaseBuilder(context, MonefyDatabase::class.java, "monefy_database")

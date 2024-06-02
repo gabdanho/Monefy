@@ -1,5 +1,6 @@
 package com.example.monefy.ui.screens
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
@@ -38,8 +39,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.monefy.data.Category
 import com.example.monefy.data.Spend
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.lang.Math.pow
 import kotlin.math.PI
 import kotlin.math.atan2
@@ -49,6 +52,8 @@ fun MainScreen(
     spendingViewModel: SpendingViewModel,
     modifier: Modifier = Modifier
 ) {
+    spendingViewModel.resetAllTapedCategories()
+
     Main(
         getAllCategories = spendingViewModel::getAllCategories,
         isHasSpends = spendingViewModel::isHasSpends,
@@ -63,7 +68,7 @@ fun MainScreen(
 fun Main(
     getAllCategories: () -> Flow<List<Category>>,
     isHasSpends: suspend () -> Boolean,
-    totalPriceFromAllCategories: () -> Double,
+    totalPriceFromAllCategories: suspend () -> Double,
     updateIsTapped: suspend (Category) -> Unit,
     getSpendsByCategoryId: (Int) -> Flow<List<Spend>>,
     modifier: Modifier = Modifier
@@ -96,31 +101,37 @@ fun Main(
 fun SpendingPieChart(
     isHasSpends: suspend () -> Boolean,
     getAllCategories: () -> Flow<List<Category>>,
-    totalPriceFromAllCategories: () -> Double,
+    totalPriceFromAllCategories: suspend () -> Double,
     updateIsTapped: suspend (Category) -> Unit,
     getSpendsByCategoryId: (Int) -> Flow<List<Spend>>,
     radius: Float = 300f,
     modifier: Modifier = Modifier
 ) {
     val categories by getAllCategories().collectAsState(emptyList())
+    var totalCategoriesPrice by rememberSaveable { mutableStateOf(0.0) }
     val spendsMap = categories.associate { category ->
         category.id to getSpendsByCategoryId(category.id).collectAsState(emptyList()).value
     }
+
     val scope = rememberCoroutineScope()
 
     var hasSpends by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
-        hasSpends = isHasSpends()
+        withContext(Dispatchers.IO) {
+            hasSpends = isHasSpends()
+            totalCategoriesPrice = totalPriceFromAllCategories()
+        }
     }
 
     if (hasSpends) {
-        val anglePerValue = (360 / totalPriceFromAllCategories())
+        Log.i("MainScreen", "totalCategoriesPrice = $totalCategoriesPrice")
+        val anglePerValue = (360 / totalCategoriesPrice)
         val sweepAnglePercentage = categories.map {
             (it.totalCategoryPrice * anglePerValue).toFloat()
         }
         var circleCenter by remember { mutableStateOf(Offset.Zero) }
         var currentCategoryName by remember { mutableStateOf("Все расходы") }
-        var currentCategorySumPrice by remember { mutableStateOf(totalPriceFromAllCategories()) }
+        var currentCategorySumPrice by remember { mutableStateOf(totalCategoriesPrice) }
 
         Column(
             modifier = modifier,
@@ -164,6 +175,7 @@ fun SpendingPieChart(
 
                                         // по углу смотрим в какую категорию попадаем
                                         var currentAngle = 0f
+
                                         categories.forEach { category ->
                                             currentAngle += category.totalCategoryPrice.toFloat() * anglePerValue.toFloat()
                                             if (tapAngleInDegrees < currentAngle) {
@@ -209,7 +221,7 @@ fun SpendingPieChart(
                             val scale = if (categories[i].isTapped) 1.1f else 1.0f
                             scale(scale) {
                                 drawArc(
-                                    color = Color.Red,
+                                    color = Color(categories[i].color),
                                     startAngle = startAngle,
                                     sweepAngle = sweepAnglePercentage[i],
                                     useCenter = false,
@@ -234,12 +246,15 @@ fun SpendingPieChart(
             }
         }
     }
+    else {
+        Text("Расходов/доходов не найдено. Добавьте их!")
+    }
 }
 
 @Composable
 fun SpendingTable(
     isHasSpends: suspend () -> Boolean,
-    totalPriceFromAllCategories: () -> Double,
+    totalPriceFromAllCategories: suspend () -> Double,
     getAllCategories: () -> Flow<List<Category>>,
     getSpendsByCategoryId: (Int) -> Flow<List<Spend>>,
     modifier: Modifier = Modifier
@@ -248,7 +263,7 @@ fun SpendingTable(
 
     val coroutineScope = rememberCoroutineScope()
 
-    var hasSpends = false
+    var hasSpends by remember { mutableStateOf(false) }
     coroutineScope.launch {
         hasSpends = isHasSpends()
     }
@@ -263,10 +278,15 @@ fun SpendingTable(
             LazyColumn {
                 items(categories) { category ->
                     val spends by getSpendsByCategoryId(category.id).collectAsState(emptyList())
+                    var totalCategoriesPrice by rememberSaveable { mutableStateOf(0.0) }
+                    LaunchedEffect(Unit) {
+                        totalCategoriesPrice = totalPriceFromAllCategories()
+                    }
+
                     if (spends.isNotEmpty() && categories.all { !it.isTapped }) {
                         ExpenseBlock(
                             category = category,
-                            totalPrice = totalPriceFromAllCategories(),
+                            totalPrice = totalCategoriesPrice,
                             getSpendsByCategoryId = getSpendsByCategoryId,
                             showAllExpensesWithoutClick = false
                         )
@@ -274,7 +294,7 @@ fun SpendingTable(
                     else if (category.isTapped) {
                         ExpenseBlock(
                             category = category,
-                            totalPrice = totalPriceFromAllCategories(),
+                            totalPrice = totalCategoriesPrice,
                             getSpendsByCategoryId = getSpendsByCategoryId,
                             showAllExpensesWithoutClick = true
                         )
@@ -282,9 +302,6 @@ fun SpendingTable(
                 }
             }
         }
-    }
-    else {
-        Text("Расходов/доходов не найдено. Добавьте их!")
     }
 }
 
@@ -341,7 +358,7 @@ fun ExpenseBlock(
                             .fillMaxWidth()
                     ) {
                         Text(text = it.name)
-                        Text(text = String.format("%.2f", 52.52525252))
+                        Text(text = String.format("%.2f", it.count.toDouble() * it.price))
                     }
                 }
             }
@@ -360,7 +377,7 @@ fun ExpenseBlock(
                                     .fillMaxWidth()
                             ) {
                                 Text(text = it.name)
-                                Text(text = String.format("%.2f", 52.525252))
+                                Text(text = String.format("%.2f", it.count.toDouble() * it.price))
                             }
                         }
                     }

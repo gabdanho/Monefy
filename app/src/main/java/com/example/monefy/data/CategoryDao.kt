@@ -30,8 +30,14 @@ interface CategoryDao {
     @Delete
     suspend fun deleteSpend(spend: Spend)
 
-    @Query("SELECT COUNT(*) FROM categories")
-    fun getCountCategories(): Int
+    @Query("SELECT COUNT(*) FROM spends")
+    fun getCountSpends(): Int
+
+    @Query("SELECT id FROM categories")
+    fun getCategoriesId(): Flow<List<Int>>
+
+    @Query("SELECT * FROM spends WHERE id = :spendId")
+    fun getSpend(spendId: Int): Flow<Spend>
 
     @Query("SELECT * FROM categories WHERE id = :categoryId")
     fun getCategoryWithSpends(categoryId: Int): Flow<CategoryWithSpends>

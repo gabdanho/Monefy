@@ -1,6 +1,5 @@
 package com.example.monefy.ui.screens
 
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -32,7 +31,8 @@ data class SpendingUiState(
     val colorToChange: Color = Color.Transparent,
     val selectedTabIndex: Int = 1,
     val currentCategoryIdForFinances: Int = 0,
-    val selectedFinanceToChange: Finance = Finance()
+    val selectedFinanceToChange: Finance = Finance(),
+    val showEmptyFinancesText: Boolean = false
 )
 
 class SpendingViewModel(private val categoryDao: CategoryDao) : ViewModel() {
@@ -41,7 +41,16 @@ class SpendingViewModel(private val categoryDao: CategoryDao) : ViewModel() {
 
     init {
         viewModelScope.launch {
+            updateShowEmptyFinancesText()
             updateTotalCategoryPrice()
+        }
+    }
+
+    suspend fun updateShowEmptyFinancesText() {
+        withContext(Dispatchers.IO) {
+            _uiState.update { currentState ->
+                currentState.copy(showEmptyFinancesText = categoryDao.getCountFinances() > 0)
+            }
         }
     }
 
@@ -115,6 +124,8 @@ class SpendingViewModel(private val categoryDao: CategoryDao) : ViewModel() {
         else
             categoryDao.addFinance(newFinance.copy(type = "Доход"))
 
+        if (uiState.value.showEmptyFinancesText == false ) updateShowEmptyFinancesText()
+
         updateTotalCategoryPrice()
     }
 
@@ -128,6 +139,12 @@ class SpendingViewModel(private val categoryDao: CategoryDao) : ViewModel() {
                 category.copy(isTapped = false)
             }
             categoryDao.updateCategory(updatedCategory)
+        }
+    }
+
+    suspend fun isAllNotTapped(): Boolean {
+        return withContext(Dispatchers.IO) {
+            return@withContext categoryDao.getAllCategories().first().all { !it.isTapped }
         }
     }
 

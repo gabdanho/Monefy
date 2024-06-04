@@ -1,7 +1,5 @@
 package com.example.monefy.ui.screens
 
-import android.annotation.SuppressLint
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
@@ -59,6 +57,8 @@ fun MainScreen(
     spendingViewModel.resetAllTapedCategories()
 
     Main(
+        isAllNotTapped = spendingViewModel::isAllNotTapped,
+        showEmptyFinancesText = spendingUiState.showEmptyFinancesText,
         selectedTabIndex = spendingUiState.selectedTabIndex,
         getAllCategories = spendingViewModel::getAllCategories,
         getCategoriesByType = spendingViewModel::getCategoriesByType,
@@ -73,6 +73,8 @@ fun MainScreen(
 
 @Composable
 fun Main(
+    isAllNotTapped: suspend () -> Boolean,
+    showEmptyFinancesText: Boolean,
     selectedTabIndex: Int,
     changeSelectedTabIndex: (Int) -> Unit,
     getAllCategories: () -> Flow<List<Category>>,
@@ -89,6 +91,8 @@ fun Main(
             modifier = modifier.padding(innerPadding)
         ) {
             SpendingPieChart(
+                isAllNotTapped = isAllNotTapped,
+                showEmptyFinancesText = showEmptyFinancesText,
                 selectedTabIndex = selectedTabIndex,
                 isHasSpends = isHasSpends,
                 getAllCategories = getAllCategories,
@@ -113,6 +117,8 @@ fun Main(
 
 @Composable
 fun SpendingPieChart(
+    isAllNotTapped: suspend () -> Boolean,
+    showEmptyFinancesText: Boolean,
     selectedTabIndex: Int,
     changeSelectedTabIndex: (Int) -> Unit,
     isHasSpends: suspend () -> Boolean,
@@ -146,14 +152,15 @@ fun SpendingPieChart(
             hasSpends = isHasSpends()
         }
     }
-
+    if (!showEmptyFinancesText) {
+        Text("Расходов/доходов не найдено. Добавьте их!")
+    }
     if (hasSpends) {
         val anglePerValue = (360 / totalPriceFromAllCategories)
         val sweepAnglePercentage = categories.map {
             (it.totalCategoryPrice * anglePerValue).toFloat()
         }
         var circleCenter by remember { mutableStateOf(Offset.Zero) }
-        var currentCategoryName by remember { mutableStateOf("Все расходы") }
         var currentCategorySumPrice by remember { mutableStateOf(totalPriceFromAllCategories) }
 
         Column(
@@ -212,13 +219,10 @@ fun SpendingPieChart(
                                             if (tapAngleInDegrees < currentAngle) {
                                                 scope.launch {
                                                     updateIsTapped(category)
-                                                    if (!category.isTapped) {
-                                                        currentCategoryName = category.name
+                                                    if (!category.isTapped)
                                                         currentCategorySumPrice = category.totalCategoryPrice
-                                                    } else {
-                                                        currentCategoryName = "Все расходы"
+                                                    if (isAllNotTapped())
                                                         currentCategorySumPrice = totalPriceFromAllCategories
-                                                    }
                                                 }
                                                 return@detectTapGestures
                                             }
@@ -274,9 +278,6 @@ fun SpendingPieChart(
                 Text(String.format("%.2f", currentCategorySumPrice))
             }
         }
-    }
-    else {
-        Text("Расходов/доходов не найдено. Добавьте их!")
     }
 }
 

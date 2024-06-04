@@ -1,8 +1,7 @@
 package com.example.monefy.ui.screens
 
-import android.util.Log
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.graphics.Color
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
@@ -12,14 +11,13 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.monefy.MonefyApplication
 import com.example.monefy.data.Category
 import com.example.monefy.data.CategoryDao
-import com.example.monefy.data.Spend
+import com.example.monefy.data.Finance
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.forEach
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -29,10 +27,12 @@ data class SpendingUiState(
     val selectedCategoryColor: Color = Color.Transparent,
     val selectedCategoryId: Int = 0,
     val isColorDialogShow: Boolean = false,
-    val selectedCategoryIdSpends: Int = 0,
+    val selectedCategoryIdFinances: Int = 0,
     val categoryToRewrite: Category = Category(),
     val colorToChange: Color = Color.Transparent,
-    val selectedSpendToChange: Spend = Spend()
+    val selectedTabIndex: Int = 1,
+    val currentCategoryIdForFinances: Int = 0,
+    val selectedFinanceToChange: Finance = Finance()
 )
 
 class SpendingViewModel(private val categoryDao: CategoryDao) : ViewModel() {
@@ -40,14 +40,36 @@ class SpendingViewModel(private val categoryDao: CategoryDao) : ViewModel() {
     val uiState: StateFlow<SpendingUiState> = _uiState.asStateFlow()
 
     init {
-        viewModelScope.launch { updateTotalCategoryPrice() }
+        viewModelScope.launch {
+            updateTotalCategoryPrice()
+        }
+    }
+
+    suspend fun isHasSpends(): Boolean {
+        return withContext(Dispatchers.IO) {
+            categoryDao.getCountFinances() > 0
+        }
+    }
+
+    fun changeSelectedTabIndex(index: Int) {
+        _uiState.update { currentState ->
+            currentState.copy(selectedTabIndex = index)
+        }
     }
 
     fun getAllCategories(): Flow<List<Category>> = categoryDao.getAllCategories()
 
-    fun getSpendsByCategoryId(categoryId: Int): Flow<List<Spend>> {
-        return categoryDao.getCategoryWithSpends(categoryId).map { categoryWithSpends ->
-            categoryWithSpends.spends
+    fun getCategoriesByType(type: String): Flow<List<Category>> = categoryDao.getCategoriesByType(type)
+
+    fun getFinancesByCategoryId(categoryId: Int): Flow<List<Finance>> {
+        return categoryDao.getCategoryWithFinances(categoryId).map { categoryWithFinances ->
+            categoryWithFinances.finances
+        }
+    }
+
+    fun changeCurrentCategoryIdForFinances(categoryId: Int) {
+        _uiState.update { currentState ->
+            currentState.copy(currentCategoryIdForFinances = categoryId)
         }
     }
 
@@ -67,12 +89,12 @@ class SpendingViewModel(private val categoryDao: CategoryDao) : ViewModel() {
     suspend fun updateTotalCategoryPrice() {
         val categoriesIdList = categoryDao.getCategoriesId().first()
         categoriesIdList.forEach { categoryId ->
-            val categoryWithSpends = categoryDao.getCategoryWithSpends(categoryId).first()
-            val spends = categoryWithSpends.spends
+            val categoryWithSpends = categoryDao.getCategoryWithFinances(categoryId).first()
+            val finances = categoryWithSpends.finances
             var newTotalCategoryPrice = 0.0
 
-            spends.forEach { spend ->
-                newTotalCategoryPrice += spend.price * spend.count.toDouble()
+            finances.forEach { finance ->
+                newTotalCategoryPrice += finance.price * finance.count.toDouble()
             }
 
             val updatedCategory = categoryWithSpends.category.copy(totalCategoryPrice = newTotalCategoryPrice)
@@ -87,22 +109,13 @@ class SpendingViewModel(private val categoryDao: CategoryDao) : ViewModel() {
         }
     }
 
-    suspend fun addSpend(newSpend: Spend) {
-        categoryDao.addSpend(newSpend)
+    suspend fun addFinance(newFinance: Finance) {
+        if (categoryDao.getCategoryById(newFinance.categoryId).first().type == "Расходы")
+            categoryDao.addFinance(newFinance.copy(type = "Трата"))
+        else
+            categoryDao.addFinance(newFinance.copy(type = "Доход"))
+
         updateTotalCategoryPrice()
-    }
-
-    suspend fun isHasSpends(): Boolean {
-        return withContext(Dispatchers.IO) {
-            categoryDao.getCountSpends() > 0
-        }
-    }
-
-    suspend fun totalPriceFromAllCategories(): Double {
-        return withContext(Dispatchers.IO) {
-            val categories = categoryDao.getAllCategories().first()
-            categories.sumOf { it.totalCategoryPrice }
-        }
     }
 
     suspend fun updateIsTapped(tappedCategory: Category) {
@@ -141,12 +154,6 @@ class SpendingViewModel(private val categoryDao: CategoryDao) : ViewModel() {
         }
     }
 
-    fun changeSelectedCategoryIdSpends(categoryId: Int) {
-        _uiState.update { currentState ->
-            currentState.copy(selectedCategoryIdSpends = categoryId)
-        }
-    }
-
     fun changeCategoryToRewrite(category: Category) {
         _uiState.update { currentState ->
             currentState.copy(categoryToRewrite = category)
@@ -178,6 +185,7 @@ class SpendingViewModel(private val categoryDao: CategoryDao) : ViewModel() {
         return withContext(Dispatchers.IO) {
             val categories = getAllCategories().first()
             if (initialCategory.name == newCategory.name) {
+                categoryDao.updateCategory(newCategory)
                 return@withContext true
             }
             else if (categories.count { it.name == newCategory.name } != 0)
@@ -189,9 +197,9 @@ class SpendingViewModel(private val categoryDao: CategoryDao) : ViewModel() {
         }
     }
 
-    fun changeSelectedSpendToChange(spend: Spend) {
+    fun changeSelectedFinanceToChange(finance: Finance) {
         _uiState.update { currentState ->
-            currentState.copy(selectedSpendToChange = spend)
+            currentState.copy(selectedFinanceToChange = finance)
         }
     }
 
@@ -209,19 +217,33 @@ class SpendingViewModel(private val categoryDao: CategoryDao) : ViewModel() {
     ) {
         viewModelScope.launch {
             categoryDao.deleteCategory(category)
-        }
-    }
 
-    fun deleteSpend(spend: Spend) {
-        viewModelScope.launch {
-            categoryDao.deleteSpend(spend)
             updateTotalCategoryPrice()
         }
     }
 
-    fun rewriteSpend(newSpend: Spend) {
+    fun deleteFinance(finance: Finance) {
         viewModelScope.launch {
-            categoryDao.updateSpend(newSpend)
+            categoryDao.deleteFinance(finance)
+        }
+    }
+
+    fun rewriteFinance(initialFinance: Finance, newFinance: Finance) {
+        viewModelScope.launch {
+            if (initialFinance.categoryId != newFinance.categoryId) {
+                categoryDao.deleteFinance(initialFinance)
+
+                if (categoryDao.getCategoryById(newFinance.categoryId).first().type == "Расходы") {
+                    categoryDao.addFinance(newFinance.copy(type = "Трата"))
+                }
+                else {
+                    categoryDao.addFinance(newFinance.copy(type = "Доход"))
+                }
+            }
+            else {
+                categoryDao.updateFinance(newFinance)
+            }
+
             updateTotalCategoryPrice()
         }
     }

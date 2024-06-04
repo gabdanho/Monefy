@@ -1,5 +1,6 @@
 package com.example.monefy.ui.screens
 
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.foundation.background
@@ -17,6 +18,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
@@ -98,11 +100,21 @@ fun RewriteCategory(
     val snackbarHostState = remember { SnackbarHostState() }
 
     var categoryName by rememberSaveable { mutableStateOf(initialCategory.name) }
+    var selectedType by rememberSaveable { mutableStateOf(initialCategory.type) }
 
     val colorTextCategoryName = remember { mutableStateOf(Color.Black) }
     var isCategoryNameWrong by rememberSaveable { mutableStateOf(false) }
 
-    var color by remember { mutableStateOf(Color.Transparent) }
+    var spendFieldEnabled by rememberSaveable { mutableStateOf(false) }
+    var revenueFieldEnabled by rememberSaveable { mutableStateOf(false) }
+    if (selectedType == "Расходы") {
+        spendFieldEnabled = false
+        revenueFieldEnabled = true
+    }
+    if (selectedType == "Доходы") {
+        spendFieldEnabled = true
+        revenueFieldEnabled = false
+    }
 
     LaunchedEffect(isCategoryNameWrong) {
         for (i in 1..3) {
@@ -148,6 +160,32 @@ fun RewriteCategory(
                 )
             }
             Text(
+                text = "Тип категории",
+                modifier = Modifier.padding(4.dp)
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(
+                    enabled = spendFieldEnabled,
+                    onClick = {
+                        selectedType = "Расходы"
+                        revenueFieldEnabled = true
+                        spendFieldEnabled = false
+                    }
+                ) {
+                    Text(text = "Расходы")
+                }
+                OutlinedButton(
+                    enabled = revenueFieldEnabled,
+                    onClick = {
+                        selectedType = "Доходы"
+                        revenueFieldEnabled = false
+                        spendFieldEnabled = true
+                    }
+                ) {
+                    Text(text = "Доходы")
+                }
+            }
+            Text(
                 text = "Цвет категории",
                 color = Color.Black,
                 modifier = Modifier.padding(4.dp)
@@ -179,10 +217,11 @@ fun RewriteCategory(
                 Button(
                     onClick = {
                         scope.launch {
-                            if (categoryName.isEmpty()) categoryName = initialCategory.name
-                            if (colorToChange == Color.Transparent) changeColorToChange(Color(initialCategory.color))
-
-                            val newCategory = initialCategory.copy(name = categoryName, color = colorToChange.toArgb())
+                            val newCategory = initialCategory.copy(
+                                name = if (categoryName.isEmpty()) initialCategory.name else categoryName,
+                                color = if (colorToChange.toArgb() == 0) initialCategory.color else colorToChange.toArgb(),
+                                type = selectedType
+                            )
                             val rewriteCategoryResult = rewriteCategory(initialCategory, newCategory)
 
                             if (rewriteCategoryResult) {

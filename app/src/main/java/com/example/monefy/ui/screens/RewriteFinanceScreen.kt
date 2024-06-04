@@ -58,17 +58,14 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.text.isDigitsOnly
 import com.example.monefy.data.Category
-import com.example.monefy.data.DateConverter
-import com.example.monefy.data.Spend
+import com.example.monefy.data.Finance
 import com.example.monefy.utils.Constants
 import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
@@ -89,13 +86,13 @@ fun RewriteSpendScreen(
 
     RewriteSpend(
         selectedCategoryId = uiState.selectedCategoryId,
-        initialSpend = uiState.selectedSpendToChange,
+        initialFinance = uiState.selectedFinanceToChange,
         endOfScreen = endOfScreen,
         getAllCategories = spendingViewModel::getAllCategories,
         changeSelectedCategory = spendingViewModel::changeSelectedCategory,
-        rewriteSpend = spendingViewModel::rewriteSpend,
+        rewriteFinance = spendingViewModel::rewriteFinance,
         removeSelectedCategoryId = spendingViewModel::removeSelectedCategoryId,
-        deleteSpend = spendingViewModel::deleteSpend,
+        deleteFinance = spendingViewModel::deleteFinance,
         context = context,
         modifier = modifier
     )
@@ -105,13 +102,13 @@ fun RewriteSpendScreen(
 @Composable
 fun RewriteSpend(
     selectedCategoryId: Int,
-    initialSpend: Spend,
+    initialFinance: Finance,
     endOfScreen: () -> Unit,
     getAllCategories: () -> Flow<List<Category>>,
     changeSelectedCategory: (Int) -> Unit,
-    rewriteSpend: (Spend) -> Unit,
+    rewriteFinance: (Finance, Finance) -> Unit,
     removeSelectedCategoryId: () -> Unit,
-    deleteSpend: (Spend) -> Unit,
+    deleteFinance: (Finance) -> Unit,
     context: Context,
     modifier: Modifier = Modifier
 ) {
@@ -119,12 +116,12 @@ fun RewriteSpend(
 
     val categories by getAllCategories().collectAsState(emptyList())
 
-    var spendName by rememberSaveable { mutableStateOf(initialSpend.name) }
-    var spendPrice by rememberSaveable { mutableStateOf(initialSpend.price) }
-    var spendPriceForTextFieldValue by rememberSaveable { mutableStateOf(String.format("%.2f", initialSpend.price)) }
-    var spendDescription by rememberSaveable { mutableStateOf(initialSpend.description) }
-    var count by rememberSaveable { mutableStateOf(initialSpend.count) }
-    var countForTextFieldValue by rememberSaveable { mutableStateOf(initialSpend.count.toString()) }
+    var spendName by rememberSaveable { mutableStateOf(initialFinance.name) }
+    var spendPrice by rememberSaveable { mutableStateOf(initialFinance.price) }
+    var spendPriceForTextFieldValue by rememberSaveable { mutableStateOf(String.format("%.2f", initialFinance.price)) }
+    var spendDescription by rememberSaveable { mutableStateOf(initialFinance.description) }
+    var count by rememberSaveable { mutableStateOf(initialFinance.count) }
+    var countForTextFieldValue by rememberSaveable { mutableStateOf(initialFinance.count.toString()) }
 
     var isSpendNameNotSelected by rememberSaveable { mutableStateOf(false) }
     var isSelectedCategoryNotSelected by rememberSaveable { mutableStateOf(false) }
@@ -151,7 +148,7 @@ fun RewriteSpend(
         isSpendNameNotSelected = false
     }
 
-    var pickedDate by rememberSaveable { mutableStateOf(initialSpend.date) }
+    var pickedDate by rememberSaveable { mutableStateOf(initialFinance.date) }
     val dateDialogState = rememberMaterialDialogState()
 
     val scope = rememberCoroutineScope()
@@ -391,7 +388,7 @@ fun RewriteSpend(
                             }
                         }
                         else {
-                            val newSpend = initialSpend.copy(
+                            val newFinance = initialFinance.copy(
                                 name = spendName,
                                 categoryId = selectedCategoryId,
                                 description = spendDescription,
@@ -399,7 +396,7 @@ fun RewriteSpend(
                                 date = pickedDate,
                                 count = count
                             )
-                            rewriteSpend(newSpend)
+                            rewriteFinance(initialFinance, newFinance)
                             scope.launch {
                                 snackbarHostState.currentSnackbarData?.dismiss()
                                 snackbarHostState.showSnackbar("Запись изменена")
@@ -416,7 +413,7 @@ fun RewriteSpend(
                 }
                 Button(
                     onClick = {
-                        deleteSpend(initialSpend)
+                        deleteFinance(initialFinance)
                         endOfScreen()
                     },
                     colors = ButtonDefaults.buttonColors(Color.Red),

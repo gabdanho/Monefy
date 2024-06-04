@@ -15,7 +15,7 @@ fun MonefyApp(navController: NavHostController = rememberNavController()) {
     Scaffold(
         bottomBar = {
             BottomMenuBar(
-                onAddButtonClick = { navController.navigate(route = "AddSpendScreen") },
+                onAddButtonClick = { navController.navigate(route = "AddFinancesScreen") },
                 onSpendingListClick = { navController.navigate(route = "CategoriesListScreen") },
                 onPieChartClick = { navController.navigate(route = "MainScreen") }
             )

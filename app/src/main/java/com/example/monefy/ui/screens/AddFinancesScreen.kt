@@ -56,27 +56,28 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.graphics.toColor
 import androidx.core.text.isDigitsOnly
 import com.example.monefy.data.Category
-import com.example.monefy.data.DateConverter
-import com.example.monefy.data.Spend
+import com.example.monefy.data.Finance
 import com.example.monefy.utils.Constants
 import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
 @Composable
-fun AddSpendScreen(
+fun AddFinanceScreen(
     spendingViewModel: SpendingViewModel,
     context: Context,
     onAddCategoryScreenClick: () -> Unit,
@@ -84,12 +85,12 @@ fun AddSpendScreen(
 ) {
     val uiState by spendingViewModel.uiState.collectAsState()
 
-    AddSpend(
+    AddFinance(
         selectedCategoryId = uiState.selectedCategoryId,
         getAllCategories = spendingViewModel::getAllCategories,
         onAddCategoryScreenClick = onAddCategoryScreenClick,
         changeSelectedCategory = spendingViewModel::changeSelectedCategory,
-        addSpend = spendingViewModel::addSpend,
+        addFinance = spendingViewModel::addFinance,
         removeSelectedCategoryId = spendingViewModel::removeSelectedCategoryId,
         context = context,
         modifier = modifier
@@ -98,12 +99,12 @@ fun AddSpendScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddSpend(
+fun AddFinance(
     selectedCategoryId: Int,
     getAllCategories: () -> Flow<List<Category>>,
     onAddCategoryScreenClick: () -> Unit,
     changeSelectedCategory: (Int) -> Unit,
-    addSpend: suspend (Spend) -> Unit,
+    addFinance: suspend (Finance) -> Unit,
     removeSelectedCategoryId: () -> Unit,
     context: Context,
     modifier: Modifier = Modifier
@@ -423,7 +424,7 @@ fun AddSpend(
                     }
                     else {
                         scope.launch {
-                            val newSpend = Spend(
+                            val newFinance = Finance(
                                 categoryId = selectedCategoryId,
                                 name = spendName,
                                 description = spendDescription,
@@ -431,7 +432,7 @@ fun AddSpend(
                                 price = spendPrice,
                                 date = pickedDate
                             )
-                            addSpend(newSpend)
+                            addFinance(newFinance)
 
                             spendName = ""
                             spendPrice = 0.0
@@ -530,16 +531,16 @@ fun CategoryCard(
     }
 }
 
-//@Preview(showBackground = true)
-//@Composable
-//fun AddSpendPreview() {
-//    AddSpend(
-//        addExpense = { _expense -> },
-//        categories = FakeData.fakeCategories,
-//        changeSelectedCategory = { _string -> },
-//        removeCategory = { },
-//        onAddCategoryScreenClick = { },
-//        context = LocalContext.current,
-//        selectedCategoryName = ""
-//    )
-//}
+@Preview(showBackground = true)
+@Composable
+fun AddFinancePreview() {
+    AddFinance(
+        selectedCategoryId = 0,
+        getAllCategories = { flowOf(listOf()) },
+        onAddCategoryScreenClick = { /*TODO*/ },
+        changeSelectedCategory = { _int -> },
+        addFinance = { _ -> },
+        removeSelectedCategoryId = { /*TODO*/ },
+        context = LocalContext.current
+    )
+}

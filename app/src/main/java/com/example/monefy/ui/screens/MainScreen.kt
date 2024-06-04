@@ -1,5 +1,6 @@
 package com.example.monefy.ui.screens
 
+import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Canvas
@@ -17,6 +18,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -35,10 +38,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.monefy.data.Category
-import com.example.monefy.data.Spend
+import com.example.monefy.data.Finance
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
@@ -50,27 +52,35 @@ import kotlin.math.atan2
 @Composable
 fun MainScreen(
     spendingViewModel: SpendingViewModel,
+    updateScreen: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val spendingUiState by spendingViewModel.uiState.collectAsState()
     spendingViewModel.resetAllTapedCategories()
 
     Main(
+        selectedTabIndex = spendingUiState.selectedTabIndex,
         getAllCategories = spendingViewModel::getAllCategories,
-        isHasSpends = spendingViewModel::isHasSpends,
-        totalPriceFromAllCategories = spendingViewModel::totalPriceFromAllCategories,
+        getCategoriesByType = spendingViewModel::getCategoriesByType,
         updateIsTapped = spendingViewModel::updateIsTapped,
-        getSpendsByCategoryId = spendingViewModel::getSpendsByCategoryId,
+        getFinancesByCategoryId = spendingViewModel::getFinancesByCategoryId,
+        changeSelectedTabIndex = spendingViewModel::changeSelectedTabIndex,
+        isHasSpends = spendingViewModel::isHasSpends,
+        updateScreen = updateScreen,
         modifier = modifier
     )
 }
 
 @Composable
 fun Main(
+    selectedTabIndex: Int,
+    changeSelectedTabIndex: (Int) -> Unit,
     getAllCategories: () -> Flow<List<Category>>,
+    getCategoriesByType: (String) -> Flow<List<Category>>,
     isHasSpends: suspend () -> Boolean,
-    totalPriceFromAllCategories: suspend () -> Double,
     updateIsTapped: suspend (Category) -> Unit,
-    getSpendsByCategoryId: (Int) -> Flow<List<Spend>>,
+    getFinancesByCategoryId: (Int) -> Flow<List<Finance>>,
+    updateScreen: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(modifier = modifier) { innerPadding ->
@@ -79,18 +89,22 @@ fun Main(
             modifier = modifier.padding(innerPadding)
         ) {
             SpendingPieChart(
+                selectedTabIndex = selectedTabIndex,
                 isHasSpends = isHasSpends,
                 getAllCategories = getAllCategories,
-                totalPriceFromAllCategories = totalPriceFromAllCategories,
+                getCategoriesByType = getCategoriesByType,
                 updateIsTapped = updateIsTapped,
-                getSpendsByCategoryId = getSpendsByCategoryId,
+                getFinancesByCategoryId = getFinancesByCategoryId,
+                changeSelectedTabIndex = changeSelectedTabIndex,
+                updateScreen = updateScreen,
                 modifier = modifier.weight(1.2f)
             )
             SpendingTable(
+                selectedTabIndex = selectedTabIndex,
                 getAllCategories = getAllCategories,
-                totalPriceFromAllCategories = totalPriceFromAllCategories,
+                getCategoriesByType = getCategoriesByType,
                 isHasSpends = isHasSpends,
-                getSpendsByCategoryId = getSpendsByCategoryId,
+                getFinancesByCategoryId = getFinancesByCategoryId,
                 modifier = modifier.weight(1f)
             )
         }
@@ -99,49 +113,65 @@ fun Main(
 
 @Composable
 fun SpendingPieChart(
+    selectedTabIndex: Int,
+    changeSelectedTabIndex: (Int) -> Unit,
     isHasSpends: suspend () -> Boolean,
+    getCategoriesByType: (String) -> Flow<List<Category>>,
     getAllCategories: () -> Flow<List<Category>>,
-    totalPriceFromAllCategories: suspend () -> Double,
     updateIsTapped: suspend (Category) -> Unit,
-    getSpendsByCategoryId: (Int) -> Flow<List<Spend>>,
+    getFinancesByCategoryId: (Int) -> Flow<List<Finance>>,
+    updateScreen: () -> Unit,
     radius: Float = 300f,
     modifier: Modifier = Modifier
 ) {
-    val categories by getAllCategories().collectAsState(emptyList())
-    var totalCategoriesPrice by rememberSaveable { mutableStateOf(0.0) }
-    val spendsMap = categories.associate { category ->
-        category.id to getSpendsByCategoryId(category.id).collectAsState(emptyList()).value
-    }
+    val tabItems = listOf(
+        "Расходы", "Общий оборот", "Доходы"
+    )
 
+    val categories = when(selectedTabIndex) {
+        0 -> getCategoriesByType("Расходы").collectAsState(emptyList()).value
+        1 -> getAllCategories().collectAsState(emptyList()).value
+        2 -> getCategoriesByType("Доходы").collectAsState(emptyList()).value
+        else -> emptyList()
+    }
+    val totalPriceFromAllCategories = categories.sumOf { it.totalCategoryPrice }
+    val spendsMap = categories.associate { category ->
+        category.id to getFinancesByCategoryId(category.id).collectAsState(emptyList()).value
+    }
     val scope = rememberCoroutineScope()
 
     var hasSpends by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
         withContext(Dispatchers.IO) {
             hasSpends = isHasSpends()
-            totalCategoriesPrice = totalPriceFromAllCategories()
         }
     }
 
     if (hasSpends) {
-        Log.i("MainScreen", "totalCategoriesPrice = $totalCategoriesPrice")
-        val anglePerValue = (360 / totalCategoriesPrice)
+        val anglePerValue = (360 / totalPriceFromAllCategories)
         val sweepAnglePercentage = categories.map {
             (it.totalCategoryPrice * anglePerValue).toFloat()
         }
         var circleCenter by remember { mutableStateOf(Offset.Zero) }
         var currentCategoryName by remember { mutableStateOf("Все расходы") }
-        var currentCategorySumPrice by remember { mutableStateOf(totalCategoriesPrice) }
+        var currentCategorySumPrice by remember { mutableStateOf(totalPriceFromAllCategories) }
 
         Column(
             modifier = modifier,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = currentCategoryName,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(vertical = 8.dp)
-            )
+            TabRow(selectedTabIndex = selectedTabIndex) {
+                tabItems.forEachIndexed { index, item ->
+                    Tab(
+                        selected = index == selectedTabIndex,
+                        onClick = {
+                            changeSelectedTabIndex(index)
+                            updateScreen()
+                        },
+                        text = { Text(item) }
+                    )
+                }
+            }
             Box(
                 contentAlignment = Alignment.Center
             ) {
@@ -167,6 +197,7 @@ fun SpendingPieChart(
                                             2.0
                                         ) >= pow(radius.toDouble() - radius / 3f, 2.0)
                                     ) {
+
                                         // тап -> переводим в углы
                                         val tapAngleInDegrees = (-atan2(
                                             x = circleCenter.y - offset.y,
@@ -183,12 +214,10 @@ fun SpendingPieChart(
                                                     updateIsTapped(category)
                                                     if (!category.isTapped) {
                                                         currentCategoryName = category.name
-                                                        currentCategorySumPrice =
-                                                            category.totalCategoryPrice
+                                                        currentCategorySumPrice = category.totalCategoryPrice
                                                     } else {
                                                         currentCategoryName = "Все расходы"
-                                                        currentCategorySumPrice =
-                                                            totalPriceFromAllCategories()
+                                                        currentCategorySumPrice = totalPriceFromAllCategories
                                                     }
                                                 }
                                                 return@detectTapGestures
@@ -253,19 +282,26 @@ fun SpendingPieChart(
 
 @Composable
 fun SpendingTable(
+    selectedTabIndex: Int,
     isHasSpends: suspend () -> Boolean,
-    totalPriceFromAllCategories: suspend () -> Double,
     getAllCategories: () -> Flow<List<Category>>,
-    getSpendsByCategoryId: (Int) -> Flow<List<Spend>>,
+    getCategoriesByType: (String) -> Flow<List<Category>>,
+    getFinancesByCategoryId: (Int) -> Flow<List<Finance>>,
     modifier: Modifier = Modifier
 ) {
-    val categories by getAllCategories().collectAsState(emptyList())
-
-    val coroutineScope = rememberCoroutineScope()
+    val categories = when(selectedTabIndex) {
+        0 -> getCategoriesByType("Расходы").collectAsState(emptyList()).value
+        1 -> getAllCategories().collectAsState(emptyList()).value
+        2 -> getCategoriesByType("Доходы").collectAsState(emptyList()).value
+        else -> emptyList()
+    }
+    val totalPriceFromAllCategories = categories.sumOf { it.totalCategoryPrice }
 
     var hasSpends by remember { mutableStateOf(false) }
-    coroutineScope.launch {
-        hasSpends = isHasSpends()
+    LaunchedEffect(Unit) {
+        withContext(Dispatchers.IO) {
+            hasSpends = isHasSpends()
+        }
     }
 
     if (hasSpends) {
@@ -277,17 +313,17 @@ fun SpendingTable(
             )
             LazyColumn {
                 items(categories) { category ->
-                    val spends by getSpendsByCategoryId(category.id).collectAsState(emptyList())
+                    val spends by getFinancesByCategoryId(category.id).collectAsState(emptyList())
                     var totalCategoriesPrice by rememberSaveable { mutableStateOf(0.0) }
                     LaunchedEffect(Unit) {
-                        totalCategoriesPrice = totalPriceFromAllCategories()
+                        totalCategoriesPrice = totalPriceFromAllCategories
                     }
 
                     if (spends.isNotEmpty() && categories.all { !it.isTapped }) {
                         ExpenseBlock(
                             category = category,
                             totalPrice = totalCategoriesPrice,
-                            getSpendsByCategoryId = getSpendsByCategoryId,
+                            getFinancesByCategoryId = getFinancesByCategoryId,
                             showAllExpensesWithoutClick = false
                         )
                     }
@@ -295,7 +331,7 @@ fun SpendingTable(
                         ExpenseBlock(
                             category = category,
                             totalPrice = totalCategoriesPrice,
-                            getSpendsByCategoryId = getSpendsByCategoryId,
+                            getFinancesByCategoryId = getFinancesByCategoryId,
                             showAllExpensesWithoutClick = true
                         )
                     }
@@ -310,10 +346,10 @@ fun ExpenseBlock(
     category: Category,
     totalPrice: Double,
     showAllExpensesWithoutClick: Boolean,
-    getSpendsByCategoryId: (Int) -> Flow<List<Spend>>,
+    getFinancesByCategoryId: (Int) -> Flow<List<Finance>>,
     modifier: Modifier = Modifier
 ) {
-    val spends by getSpendsByCategoryId(category.id).collectAsState(emptyList())
+    val spends by getFinancesByCategoryId(category.id).collectAsState(emptyList())
 
     var expanded by rememberSaveable { mutableStateOf(false) }
     val percentage = String.format("%.2f", (category.totalCategoryPrice / totalPrice) * 100)

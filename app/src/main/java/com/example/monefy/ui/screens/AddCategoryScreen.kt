@@ -3,6 +3,7 @@ package com.example.monefy.ui.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,6 +16,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
@@ -36,6 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -78,11 +81,17 @@ fun AddCategory(
     val scope = rememberCoroutineScope()
 
     var categoryName by rememberSaveable { mutableStateOf("") }
+    var selectedType by rememberSaveable { mutableStateOf("") }
+
+    var revenueFieldEnabled by rememberSaveable { mutableStateOf(true) }
+    var spendFieldEnabled by rememberSaveable { mutableStateOf(true) }
 
     val colorTextCategoryName = remember { mutableStateOf(Color.Black) }
     var isCategoryNameNotSelected by rememberSaveable { mutableStateOf(false) }
     val colorTextCategoryColor = remember { mutableStateOf(Color.Black) }
     var isColorCategoryNotSelected by rememberSaveable { mutableStateOf(false) }
+    val colorTextCategoryType = remember { mutableStateOf(Color.Black) }
+    var isTypeCategoryNotSelected by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(isCategoryNameNotSelected) {
         for (i in 1..3) {
@@ -102,6 +111,16 @@ fun AddCategory(
             delay(500)
         }
         isColorCategoryNotSelected = false
+    }
+
+    LaunchedEffect(isTypeCategoryNotSelected) {
+        for (i in 1..3) {
+            colorTextCategoryType.value = Color.Red
+            delay(500)
+            colorTextCategoryType.value = Color.Black
+            delay(500)
+        }
+        isTypeCategoryNotSelected = false
     }
 
     Scaffold(
@@ -147,6 +166,33 @@ fun AddCategory(
                 }
             }
             Text(
+                text = "Тип категории",
+                color = if (!isTypeCategoryNotSelected) Color.Black else colorTextCategoryType.value,
+                modifier = Modifier.padding(4.dp)
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(
+                    enabled = spendFieldEnabled,
+                    onClick = {
+                        selectedType = "Расходы"
+                        revenueFieldEnabled = true
+                        spendFieldEnabled = false
+                    }
+                ) {
+                    Text(text = "Расходы")
+                }
+                OutlinedButton(
+                    enabled = revenueFieldEnabled,
+                    onClick = {
+                        selectedType = "Доходы"
+                        revenueFieldEnabled = false
+                        spendFieldEnabled = true
+                    }
+                ) {
+                    Text(text = "Доходы")
+                }
+            }
+            Text(
                 text = "Цвет категории",
                 color = if (!isColorCategoryNotSelected) Color.Black else colorTextCategoryColor.value,
                 modifier = Modifier.padding(4.dp)
@@ -171,11 +217,33 @@ fun AddCategory(
             Button(
                 onClick = {
                     scope.launch {
-                        if (categoryName.isEmpty() && currentCategoryColor == Color.Transparent) {
+                        if (categoryName.isEmpty() && currentCategoryColor == Color.Transparent && selectedType == "") {
+                            scope.launch {
+                                isCategoryNameNotSelected = true
+                                isColorCategoryNotSelected = true
+                                isTypeCategoryNotSelected = true
+                                snackbarHostState.showSnackbar("Укажите название, цвет категории и тип категории")
+                            }
+                        }
+                        else if (categoryName.isEmpty() && currentCategoryColor == Color.Transparent) {
                             scope.launch {
                                 isCategoryNameNotSelected = true
                                 isColorCategoryNotSelected = true
                                 snackbarHostState.showSnackbar("Укажите название и цвет категории")
+                            }
+                        }
+                        else if (selectedType == "" && currentCategoryColor == Color.Transparent) {
+                            scope.launch {
+                                isColorCategoryNotSelected = true
+                                isTypeCategoryNotSelected = true
+                                snackbarHostState.showSnackbar("Укажите тип и цвет категории")
+                            }
+                        }
+                        else if (selectedType == "" && categoryName.isEmpty()) {
+                            scope.launch {
+                                isCategoryNameNotSelected = true
+                                isTypeCategoryNotSelected = true
+                                snackbarHostState.showSnackbar("Укажите тип и название категории")
                             }
                         }
                         else if (categoryName.isEmpty()) {
@@ -190,8 +258,14 @@ fun AddCategory(
                                 snackbarHostState.showSnackbar("Укажите цвет категории")
                             }
                         }
+                        else if (selectedType == "") {
+                            scope.launch {
+                                isTypeCategoryNotSelected = true
+                                snackbarHostState.showSnackbar("Укажите тип категории")
+                            }
+                        }
                         else {
-                            val newCategory = Category(name = categoryName, color = currentCategoryColor.toArgb())
+                            val newCategory = Category(name = categoryName, color = currentCategoryColor.toArgb(), type = selectedType)
                             val addCategoryResult = addCategory(newCategory)
                             if (addCategoryResult) {
                                 scope.launch {
@@ -220,16 +294,15 @@ fun AddCategory(
     }
 }
 
-//@Preview(showBackground = true)
-//@Composable
-//fun AddCategoryPreview() {
-//    AddCategory(
-//        changeColorDialogShow = { _boolean -> },
-//        changeColorCategory = { _color -> },
-//        addCategory = { _category -> true},
-//        removeSelectedCategoryColor = { },
-//        endOfScreen = { },
-//        categoryColor = Color.Transparent,
-//        isColorDialogShow = false
-//    )
-//}
+@Preview(showBackground = true)
+@Composable
+fun AddCategoryPreview() {
+    AddCategory(
+        currentCategoryColor = Color.Transparent,
+        isColorDialogShow = false,
+        changeColorDialogShow = { _boolean ->  },
+        changeColorCategory = { _color ->  },
+        addCategory = { _category -> false },
+        removeSelectedCategoryColor = { /*TODO*/ },
+        endOfScreen = { /*TODO*/ })
+}

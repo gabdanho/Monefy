@@ -1,5 +1,10 @@
 package com.example.monefy.ui.navigation
 
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -8,12 +13,11 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.monefy.ui.screens.AddCategoryScreen
-import com.example.monefy.ui.screens.AddSpendScreen
+import com.example.monefy.ui.screens.AddFinanceScreen
 import com.example.monefy.ui.screens.MainScreen
 import com.example.monefy.ui.screens.CategoriesListScreen
 import com.example.monefy.ui.screens.RewriteCategoryScreen
 import com.example.monefy.ui.screens.RewriteSpendScreen
-import com.example.monefy.ui.screens.SpendingList
 import com.example.monefy.ui.screens.SpendingListScreen
 import com.example.monefy.ui.screens.SpendingViewModel
 
@@ -28,14 +32,19 @@ fun MonefyNavGraph(
         startDestination = "MainScreen",
         modifier = modifier
     ) {
-        composable(route = "MainScreen") {
+        composable(
+            route = "MainScreen",
+            enterTransition = { EnterTransition.None },
+            exitTransition = { ExitTransition.None }
+        ) {
             MainScreen(
-                spendingViewModel = spendingViewModel
+                spendingViewModel = spendingViewModel,
+                updateScreen = { navController.navigate(route = "MainScreen") }
             )
             spendingViewModel.resetAllTapedCategories()
         }
-        composable(route = "AddSpendScreen") {
-            AddSpendScreen(
+        composable(route = "AddFinancesScreen") {
+            AddFinanceScreen(
                 spendingViewModel = spendingViewModel,
                 context = LocalContext.current,
                 onAddCategoryScreenClick = {

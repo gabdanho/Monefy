@@ -12,15 +12,21 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.example.monefy.data.Spend
+import com.example.monefy.data.Finance
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.withContext
 
 @Composable
 fun SpendingListScreen(
@@ -30,10 +36,10 @@ fun SpendingListScreen(
     val uiState by spendingViewModel.uiState.collectAsState()
 
     SpendingList(
-        currentCategoryId = uiState.selectedCategoryIdSpends,
-        getSpendsByCategoryId = spendingViewModel::getSpendsByCategoryId,
-        changeSelectedSpendToChange = spendingViewModel::changeSelectedSpendToChange,
+        currentCategoryId = uiState.currentCategoryIdForFinances,
+        changeSelectedFinanceToChange = spendingViewModel::changeSelectedFinanceToChange,
         changeSelectedCategory = spendingViewModel::changeSelectedCategory,
+        getFinancesByCategoryId = spendingViewModel::getFinancesByCategoryId,
         rewriteSpendClick = rewriteSpendClick
     )
 }
@@ -41,21 +47,22 @@ fun SpendingListScreen(
 @Composable
 fun SpendingList(
     currentCategoryId: Int,
-    getSpendsByCategoryId: (Int) -> Flow<List<Spend>>,
-    changeSelectedSpendToChange: (Spend) -> Unit,
+    getFinancesByCategoryId: (Int) -> Flow<List<Finance>>,
+    changeSelectedFinanceToChange: (Finance) -> Unit,
     rewriteSpendClick: () -> Unit,
     changeSelectedCategory: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val spends by getSpendsByCategoryId(currentCategoryId).collectAsState(emptyList())
+    var finances by rememberSaveable { mutableStateOf(listOf<Finance>()) }
+    finances = getFinancesByCategoryId(currentCategoryId).collectAsState(initial = emptyList()).value
 
-    if (spends.isNotEmpty()) {
+    if (finances.isNotEmpty()) {
         LazyColumn(modifier = modifier) {
-            items(spends) { spend ->
+            items(finances) { finance ->
                 SpendingCard(
-                    spend = spend,
+                    finance = finance,
                     rewriteSpendClick = rewriteSpendClick,
-                    changeSelectedSpendToChange = changeSelectedSpendToChange,
+                    changeSelectedSpendToChange = changeSelectedFinanceToChange,
                     changeSelectedCategory = changeSelectedCategory,
                     modifier = Modifier.padding(16.dp)
                 )
@@ -69,9 +76,9 @@ fun SpendingList(
 
 @Composable
 fun SpendingCard(
-    spend: Spend,
+    finance: Finance,
     rewriteSpendClick: () -> Unit,
-    changeSelectedSpendToChange: (Spend) -> Unit,
+    changeSelectedSpendToChange: (Finance) -> Unit,
     changeSelectedCategory: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -85,8 +92,8 @@ fun SpendingCard(
                 shape = RoundedCornerShape(20.dp)
             )
             .clickable {
-                changeSelectedCategory(spend.categoryId)
-                changeSelectedSpendToChange(spend)
+                changeSelectedCategory(finance.categoryId)
+                changeSelectedSpendToChange(finance)
                 rewriteSpendClick()
             }
     ) {
@@ -98,11 +105,11 @@ fun SpendingCard(
                 .fillMaxWidth()
         ) {
             Text(
-                text = spend.name,
+                text = finance.name,
                 style = MaterialTheme.typography.bodyLarge
             )
             Text(
-                text = String.format("%.2f", spend.count.toDouble() * spend.price),
+                text = String.format("%.2f", finance.count.toDouble() * finance.price),
                 style = MaterialTheme.typography.bodyLarge
             )
         }

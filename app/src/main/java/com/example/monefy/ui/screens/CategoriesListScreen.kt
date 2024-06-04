@@ -28,10 +28,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.monefy.R
 import com.example.monefy.data.Category
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 
 @Composable
 fun CategoriesListScreen(
@@ -43,7 +45,7 @@ fun CategoriesListScreen(
     Scaffold { innerPadding ->
         CategoriesList(
             getAllCategories = spendingViewModel::getAllCategories,
-            changeSelectedCategoryIdSpends = spendingViewModel::changeSelectedCategoryIdSpends,
+            changeCurrentCategoryIdForFinances = spendingViewModel::changeCurrentCategoryIdForFinances,
             changeCategoryToRewrite = spendingViewModel::changeCategoryToRewrite,
             onCategoryClick = onCategoryClick,
             rewriteCategoryClick = rewriteCategoryClick,
@@ -56,7 +58,7 @@ fun CategoriesListScreen(
 @Composable
 fun CategoriesList(
     getAllCategories: () -> Flow<List<Category>>,
-    changeSelectedCategoryIdSpends: (Int) -> Unit,
+    changeCurrentCategoryIdForFinances: (Int) -> Unit,
     changeCategoryToRewrite: (Category) -> Unit,
     onCategoryClick: () -> Unit,
     onAddCategoryClick: () -> Unit,
@@ -70,7 +72,7 @@ fun CategoriesList(
         items(categories + addCategory) { category ->
             CategoryCard(
                 category = category,
-                changeSelectedCategoryIdSpends = changeSelectedCategoryIdSpends,
+                changeCurrentCategoryIdForFinances = changeCurrentCategoryIdForFinances,
                 changeCategoryToRewrite = changeCategoryToRewrite,
                 onCategoryClick = onCategoryClick,
                 onAddCategoryClick = onAddCategoryClick,
@@ -84,7 +86,7 @@ fun CategoriesList(
 @Composable
 fun CategoryCard(
     category: Category,
-    changeSelectedCategoryIdSpends: (Int) -> Unit,
+    changeCurrentCategoryIdForFinances: (Int) -> Unit,
     changeCategoryToRewrite: (Category) -> Unit,
     onCategoryClick: () -> Unit,
     onAddCategoryClick: () -> Unit,
@@ -103,10 +105,9 @@ fun CategoryCard(
                 )
                 .clickable {
                     if (category.id != -1) {
-                        changeSelectedCategoryIdSpends(category.id)
+                        changeCurrentCategoryIdForFinances(category.id)
                         onCategoryClick()
-                    }
-                    else onAddCategoryClick()
+                    } else onAddCategoryClick()
                 }
         ) {
             if (category.id != -1) {
@@ -166,24 +167,15 @@ fun CategoryCard(
     }
 }
 
-//@Preview(showBackground = true)
-//@Composable
-//fun CategoriesListPreview() {
-//    CategoriesList(
-//        categories = FakeData.fakeCategories,
-//        onAddCategoryClick = { },
-//        onCategoryClick = { _, _ -> },
-//        rewriteCategoryClick = { }
-//    )
-//}
-//
-//@Preview
-//@Composable
-//fun CategoryPreview() {
-//    CategoryCard(
-//        category = FakeData.fakeCategories.first(),
-//        onCategoryClick = { _, _ -> },
-//        onAddCategoryClick = { },
-//        rewriteCategoryClick = { }
-//    )
-//}
+@Preview
+@Composable
+fun CategoriesListPreview() {
+    CategoriesList(
+        getAllCategories = { flowOf(listOf()) },
+        changeCurrentCategoryIdForFinances = { },
+        changeCategoryToRewrite = { },
+        onCategoryClick = { /*TODO*/ },
+        onAddCategoryClick = { /*TODO*/ },
+        rewriteCategoryClick = { /*TODO*/ }
+    )
+}

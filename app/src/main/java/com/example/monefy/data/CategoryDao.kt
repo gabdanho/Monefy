@@ -21,36 +21,39 @@ interface CategoryDao {
     @Update
     suspend fun updateCategory(category: Category)
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun addSpend(spend: Spend)
-
-    @Update
-    suspend fun updateSpend(spend: Spend)
-
-    @Delete
-    suspend fun deleteSpend(spend: Spend)
-
-    @Query("SELECT COUNT(*) FROM spends")
-    fun getCountSpends(): Int
-
     @Query("SELECT id FROM categories")
     fun getCategoriesId(): Flow<List<Int>>
 
-    @Query("SELECT * FROM spends WHERE id = :spendId")
-    fun getSpend(spendId: Int): Flow<Spend>
+    @Query("SELECT * FROM categories WHERE id = :categoryId")
+    fun getCategoryById(categoryId: Int): Flow<Category>
 
     @Query("SELECT * FROM categories WHERE id = :categoryId")
-    fun getCategoryWithSpends(categoryId: Int): Flow<CategoryWithSpends>
+    fun getCategoryWithFinances(categoryId: Int): Flow<CategoryWithFinances>
 
     @Query("SELECT * FROM categories")
     fun getAllCategories(): Flow<List<Category>>
+
+    @Query("SELECT * FROM categories WHERE type = :categoryType")
+    fun getCategoriesByType(categoryType: String): Flow<List<Category>>
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun addFinance(finance: Finance)
+
+    @Delete
+    suspend fun deleteFinance(finance: Finance)
+
+    @Update
+    suspend fun updateFinance(finance: Finance)
+
+    @Query("SELECT COUNT(*) FROM finances")
+    fun getCountFinances(): Int
 }
 
-data class CategoryWithSpends(
+data class CategoryWithFinances(
     @Embedded val category: Category,
     @Relation(
         parentColumn = "id",
         entityColumn = "categoryId"
     )
-    val spends: List<Spend>
+    val finances: List<Finance>
 )

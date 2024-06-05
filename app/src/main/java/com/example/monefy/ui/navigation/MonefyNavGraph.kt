@@ -39,7 +39,11 @@ fun MonefyNavGraph(
         ) {
             MainScreen(
                 spendingViewModel = spendingViewModel,
-                updateScreen = { navController.navigate(route = "MainScreen") }
+                updateScreen = { navController.navigate(route = "MainScreen") },
+                goToFinance = { finance ->
+                    spendingViewModel.changeSelectedFinanceToChange(finance)
+                    navController.navigate(route = "RewriteSpendScreen")
+                }
             )
             spendingViewModel.resetAllTapedCategories()
         }

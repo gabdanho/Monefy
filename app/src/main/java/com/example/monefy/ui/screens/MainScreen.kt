@@ -1,5 +1,6 @@
 package com.example.monefy.ui.screens
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
@@ -50,6 +51,7 @@ import kotlin.math.atan2
 @Composable
 fun MainScreen(
     spendingViewModel: SpendingViewModel,
+    goToFinance: (Finance) -> Unit,
     updateScreen: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -67,6 +69,7 @@ fun MainScreen(
         changeSelectedTabIndex = spendingViewModel::changeSelectedTabIndex,
         isHasSpends = spendingViewModel::isHasSpends,
         updateScreen = updateScreen,
+        goToFinance = goToFinance,
         modifier = modifier
     )
 }
@@ -83,6 +86,7 @@ fun Main(
     updateIsTapped: suspend (Category) -> Unit,
     getFinancesByCategoryId: (Int) -> Flow<List<Finance>>,
     updateScreen: () -> Unit,
+    goToFinance: (Finance) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(modifier = modifier) { innerPadding ->
@@ -109,6 +113,7 @@ fun Main(
                 getCategoriesByType = getCategoriesByType,
                 isHasSpends = isHasSpends,
                 getFinancesByCategoryId = getFinancesByCategoryId,
+                goToFinance = goToFinance,
                 modifier = modifier.weight(1f)
             )
         }
@@ -139,11 +144,11 @@ fun SpendingPieChart(
         1 -> getAllCategories().collectAsState(emptyList()).value
         2 -> getCategoriesByType("Доходы").collectAsState(emptyList()).value
         else -> emptyList()
-    }
+    }.filter { it.totalCategoryPrice != 0.0 }
     val totalPriceFromAllCategories = categories.sumOf { it.totalCategoryPrice }
     val spendsMap = categories.associate { category ->
         category.id to getFinancesByCategoryId(category.id).collectAsState(emptyList()).value
-    }
+    }.filterValues { it.isNotEmpty() }
     val scope = rememberCoroutineScope()
 
     var hasSpends by remember { mutableStateOf(false) }
@@ -288,6 +293,7 @@ fun SpendingTable(
     getAllCategories: () -> Flow<List<Category>>,
     getCategoriesByType: (String) -> Flow<List<Category>>,
     getFinancesByCategoryId: (Int) -> Flow<List<Finance>>,
+    goToFinance: (Finance) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val categories = when(selectedTabIndex) {
@@ -307,11 +313,6 @@ fun SpendingTable(
 
     if (hasSpends) {
         Column(modifier = modifier.padding(8.dp)) {
-            Text(
-                text = "Расходы",
-                style = MaterialTheme.typography.displaySmall,
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-            )
             LazyColumn {
                 items(categories) { category ->
                     val spends by getFinancesByCategoryId(category.id).collectAsState(emptyList())
@@ -325,6 +326,7 @@ fun SpendingTable(
                             category = category,
                             totalPrice = totalCategoriesPrice,
                             getFinancesByCategoryId = getFinancesByCategoryId,
+                            goToFinance = goToFinance,
                             showAllExpensesWithoutClick = false
                         )
                     }
@@ -333,6 +335,7 @@ fun SpendingTable(
                             category = category,
                             totalPrice = totalCategoriesPrice,
                             getFinancesByCategoryId = getFinancesByCategoryId,
+                            goToFinance = goToFinance,
                             showAllExpensesWithoutClick = true
                         )
                     }
@@ -348,6 +351,7 @@ fun ExpenseBlock(
     totalPrice: Double,
     showAllExpensesWithoutClick: Boolean,
     getFinancesByCategoryId: (Int) -> Flow<List<Finance>>,
+    goToFinance: (Finance) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val spends by getFinancesByCategoryId(category.id).collectAsState(emptyList())
@@ -392,6 +396,7 @@ fun ExpenseBlock(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         modifier = Modifier
                             .padding(bottom = 8.dp)
+                            .clickable { goToFinance(it) }
                             .fillMaxWidth()
                     ) {
                         Text(text = it.name)
@@ -411,6 +416,7 @@ fun ExpenseBlock(
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 modifier = Modifier
                                     .padding(bottom = 8.dp)
+                                    .clickable { goToFinance(it) }
                                     .fillMaxWidth()
                             ) {
                                 Text(text = it.name)

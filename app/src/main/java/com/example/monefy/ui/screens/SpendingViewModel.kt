@@ -242,6 +242,7 @@ class SpendingViewModel(private val categoryDao: CategoryDao) : ViewModel() {
     fun deleteFinance(finance: Finance) {
         viewModelScope.launch {
             categoryDao.deleteFinance(finance)
+            updateTotalCategoryPrice()
         }
     }
 

@@ -78,20 +78,20 @@ import java.time.LocalDate
 
 @Composable
 fun AddFinanceScreen(
-    spendingViewModel: SpendingViewModel,
+    financesViewModel: FinancesViewModel,
     context: Context,
     onAddCategoryScreenClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val uiState by spendingViewModel.uiState.collectAsState()
+    val uiState by financesViewModel.uiState.collectAsState()
 
     AddFinance(
         selectedCategoryId = uiState.selectedCategoryId,
-        getAllCategories = spendingViewModel::getAllCategories,
+        getAllCategories = financesViewModel::getAllCategories,
         onAddCategoryScreenClick = onAddCategoryScreenClick,
-        changeSelectedCategory = spendingViewModel::changeSelectedCategory,
-        addFinance = spendingViewModel::addFinance,
-        removeSelectedCategoryId = spendingViewModel::removeSelectedCategoryId,
+        changeSelectedCategory = financesViewModel::changeSelectedCategory,
+        addFinance = financesViewModel::addFinance,
+        removeSelectedCategoryId = financesViewModel::removeSelectedCategoryId,
         context = context,
         modifier = modifier
     )
@@ -118,16 +118,16 @@ fun AddFinance(
 
     val scrollState = rememberScrollState()
 
-    var spendName by rememberSaveable { mutableStateOf("") }
-    var spendPrice by rememberSaveable { mutableStateOf(0.0) }
-    var spendPriceForTextFieldValue by rememberSaveable { mutableStateOf("") }
-    var spendDescription by rememberSaveable { mutableStateOf("") }
+    var financeName by rememberSaveable { mutableStateOf("") }
+    var financePrice by rememberSaveable { mutableStateOf(0.0) }
+    var financePriceForTextFieldValue by rememberSaveable { mutableStateOf("") }
+    var financeDescription by rememberSaveable { mutableStateOf("") }
     var count by rememberSaveable { mutableStateOf(1) }
     var countForTextFieldValue by rememberSaveable { mutableStateOf("1") }
 
-    var isSpendNameNotSelected by rememberSaveable { mutableStateOf(false) }
+    var isFinanceNameNotSelected by rememberSaveable { mutableStateOf(false) }
     var isSelectedCategoryNotSelected by rememberSaveable { mutableStateOf(false) }
-    val colorTextSpendName = remember { mutableStateOf(Color.Black) }
+    val colorTextFinanceName = remember { mutableStateOf(Color.Black) }
     val colorTextSelectedCategory = remember { mutableStateOf(Color.Black) }
 
     LaunchedEffect(isSelectedCategoryNotSelected) {
@@ -140,14 +140,14 @@ fun AddFinance(
         isSelectedCategoryNotSelected = false
     }
 
-    LaunchedEffect(isSpendNameNotSelected) {
+    LaunchedEffect(isFinanceNameNotSelected) {
         for (i in 1..3) {
-            colorTextSpendName.value = Color.Red
+            colorTextFinanceName.value = Color.Red
             delay(500)
-            colorTextSpendName.value = Color.Black
+            colorTextFinanceName.value = Color.Black
             delay(500)
         }
-        isSpendNameNotSelected = false
+        isFinanceNameNotSelected = false
     }
 
     var pickedDate by rememberSaveable { mutableStateOf(LocalDate.now()) }
@@ -173,8 +173,8 @@ fun AddFinance(
                 .verticalScroll(state = scrollState)
         ) {
             Text(
-                text = "Название траты",
-                color = if (!isSpendNameNotSelected) Color.Black else colorTextSpendName.value,
+                text = "Название",
+                color = if (!isFinanceNameNotSelected) Color.Black else colorTextFinanceName.value,
                 modifier = Modifier.padding(4.dp)
             )
             Row(
@@ -182,15 +182,15 @@ fun AddFinance(
                 modifier = Modifier.padding(bottom = 8.dp)
             ) {
                 TextField(
-                    value = spendName,
-                    onValueChange = { spendName = it },
+                    value = financeName,
+                    onValueChange = { financeName = it },
                     singleLine = true,
                     colors = TextFieldDefaults.textFieldColors(containerColor = Color.Transparent),
                     textStyle = TextStyle(fontSize = 20.sp),
                     modifier = Modifier.weight(4f)
                 )
                 IconButton(
-                    onClick = { spendName = "" },
+                    onClick = { financeName = "" },
                     modifier = Modifier.weight(1f)
                 ) {
                     Icon(
@@ -200,25 +200,25 @@ fun AddFinance(
                 }
             }
             Text(
-                text = "Цена",
+                text = "Стоимость / доход",
                 modifier = Modifier.padding(4.dp)
             )
             Row {
                 TextField(
-                    value = spendPriceForTextFieldValue,
+                    value = financePriceForTextFieldValue,
                     onValueChange = {
                         if (it == "" || it == ".") {
-                            spendPriceForTextFieldValue = ""
-                            spendPrice = 0.0
+                            financePriceForTextFieldValue = ""
+                            financePrice = 0.0
                         }
-                        else if (it.length < spendPriceForTextFieldValue.length) {
-                            spendPriceForTextFieldValue = it
-                            spendPrice = it.toDouble()
+                        else if (it.length < financePriceForTextFieldValue.length) {
+                            financePriceForTextFieldValue = it
+                            financePrice = it.toDouble()
                         }
                         else if (it == "00") { }
                         else if (it.all { it.isDigit() || it == '.' } && it.count { it == '.' } <= 1 && it.toDouble() < Constants.maxPrice) {
-                            spendPriceForTextFieldValue = it
-                            spendPrice = it.toDouble()
+                            financePriceForTextFieldValue = it
+                            financePrice = it.toDouble()
                         }
                     },
                     textStyle = LocalTextStyle.current.copy(fontSize = 20.sp),
@@ -229,22 +229,22 @@ fun AddFinance(
                         .weight(4f)
                         .onFocusChanged { focusState ->
                             if (focusState.isFocused) {
-                                if (spendPrice == 0.0) {
-                                    spendPrice = 0.0
-                                    spendPriceForTextFieldValue = ""
+                                if (financePrice == 0.0) {
+                                    financePrice = 0.0
+                                    financePriceForTextFieldValue = ""
                                 }
                             } else {
-                                if (spendPriceForTextFieldValue.isEmpty()) {
-                                    spendPrice = 0.0
-                                    spendPriceForTextFieldValue = "0"
+                                if (financePriceForTextFieldValue.isEmpty()) {
+                                    financePrice = 0.0
+                                    financePriceForTextFieldValue = "0"
                                 }
                             }
                         }
                 )
                 IconButton(
                     onClick = {
-                        spendPrice = 0.0
-                        spendPriceForTextFieldValue = "0"
+                        financePrice = 0.0
+                        financePriceForTextFieldValue = "0"
                     },
                     modifier = Modifier.weight(1f)
                 ) {
@@ -385,14 +385,14 @@ fun AddFinance(
                 modifier = Modifier.padding(bottom = 8.dp)
             ) {
                 TextField(
-                    value = spendDescription,
-                    onValueChange = { spendDescription = it },
+                    value = financeDescription,
+                    onValueChange = { financeDescription = it },
                     singleLine = true,
                     colors = TextFieldDefaults.textFieldColors(containerColor = Color.Transparent),
                     modifier = Modifier.weight(4f)
                 )
                 IconButton(
-                    onClick = { spendDescription = "" },
+                    onClick = { financeDescription = "" },
                     modifier = Modifier.weight(1f)
                 ) {
                     Icon(
@@ -403,16 +403,16 @@ fun AddFinance(
             }
             Button(
                 onClick = {
-                    if (spendName.isEmpty() && selectedCategoryId == 0) {
+                    if (financeName.isEmpty() && selectedCategoryId == 0) {
                     scope.launch {
-                        isSpendNameNotSelected = true
+                        isFinanceNameNotSelected = true
                         isSelectedCategoryNotSelected = true
                         snackbarHostState.showSnackbar("Укажите название и категорию траты")
                         }
                     }
-                    else if (spendName.isEmpty()) {
+                    else if (financeName.isEmpty()) {
                         scope.launch {
-                            isSpendNameNotSelected = true
+                            isFinanceNameNotSelected = true
                             snackbarHostState.showSnackbar("Укажите название траты")
                         }
                     }
@@ -426,21 +426,21 @@ fun AddFinance(
                         scope.launch {
                             val newFinance = Finance(
                                 categoryId = selectedCategoryId,
-                                name = spendName,
-                                description = spendDescription,
+                                name = financeName,
+                                description = financeDescription,
                                 count = count,
-                                price = spendPrice,
+                                price = financePrice,
                                 date = pickedDate
                             )
                             addFinance(newFinance)
 
-                            spendName = ""
-                            spendPrice = 0.0
-                            spendPriceForTextFieldValue = "0"
+                            financeName = ""
+                            financePrice = 0.0
+                            financePriceForTextFieldValue = "0"
                             count = 1
                             countForTextFieldValue = "1"
                             pickedDate = LocalDate.now()
-                            spendDescription = ""
+                            financeDescription = ""
                             removeSelectedCategoryId()
 
                             snackbarHostState.currentSnackbarData?.dismiss()

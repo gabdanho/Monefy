@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.monefy.ui.navigation.MonefyNavGraph
@@ -15,8 +14,8 @@ fun MonefyApp(navController: NavHostController = rememberNavController()) {
     Scaffold(
         bottomBar = {
             BottomMenuBar(
-                onAddButtonClick = { navController.navigate(route = "AddFinancesScreen") },
-                onSpendingListClick = { navController.navigate(route = "CategoriesListScreen") },
+                onAddButtonClick = { navController.navigate(route = "AddFinanceScreen") },
+                onFinancesListClick = { navController.navigate(route = "CategoriesListScreen") },
                 onPieChartClick = { navController.navigate(route = "MainScreen") }
             )
         }

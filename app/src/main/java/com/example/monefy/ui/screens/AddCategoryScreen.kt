@@ -49,18 +49,18 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun AddCategoryScreen(
-    spendingViewModel: SpendingViewModel,
+    financesViewModel: FinancesViewModel,
     endOfScreen: () -> Unit
 ) {
-    val uiState by spendingViewModel.uiState.collectAsState()
+    val uiState by financesViewModel.uiState.collectAsState()
 
     AddCategory(
-        currentCategoryColor = spendingViewModel.uiState.value.selectedCategoryColor,
+        currentCategoryColor = financesViewModel.uiState.value.selectedCategoryColor,
         isColorDialogShow = uiState.isColorDialogShow,
-        changeColorDialogShow = spendingViewModel::changeColorDialogShow,
-        changeColorCategory = spendingViewModel::changeColorCategory,
-        addCategory = spendingViewModel::addCategory,
-        removeSelectedCategoryColor = spendingViewModel::removeSelectedCategoryColor,
+        changeColorDialogShow = financesViewModel::changeColorDialogShow,
+        changeColorCategory = financesViewModel::changeColorCategory,
+        addCategory = financesViewModel::addCategory,
+        removeSelectedCategoryColor = financesViewModel::removeSelectedCategoryColor,
         endOfScreen = endOfScreen
     )
 }
@@ -84,7 +84,7 @@ fun AddCategory(
     var selectedType by rememberSaveable { mutableStateOf("") }
 
     var revenueFieldEnabled by rememberSaveable { mutableStateOf(true) }
-    var spendFieldEnabled by rememberSaveable { mutableStateOf(true) }
+    var financeFieldEnabled by rememberSaveable { mutableStateOf(true) }
 
     val colorTextCategoryName = remember { mutableStateOf(Color.Black) }
     var isCategoryNameNotSelected by rememberSaveable { mutableStateOf(false) }
@@ -172,11 +172,11 @@ fun AddCategory(
             )
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedButton(
-                    enabled = spendFieldEnabled,
+                    enabled = financeFieldEnabled,
                     onClick = {
                         selectedType = "Расходы"
                         revenueFieldEnabled = true
-                        spendFieldEnabled = false
+                        financeFieldEnabled = false
                     }
                 ) {
                     Text(text = "Расходы")
@@ -186,7 +186,7 @@ fun AddCategory(
                     onClick = {
                         selectedType = "Доходы"
                         revenueFieldEnabled = false
-                        spendFieldEnabled = true
+                        financeFieldEnabled = true
                     }
                 ) {
                     Text(text = "Доходы")

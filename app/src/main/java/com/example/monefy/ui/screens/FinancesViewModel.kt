@@ -22,7 +22,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-data class SpendingUiState(
+data class FinancesUiState(
     val selectedCategoryColor: Color = Color.Transparent,
     val selectedCategoryId: Int = 0,
     val isColorDialogShow: Boolean = false,
@@ -35,9 +35,9 @@ data class SpendingUiState(
     val showEmptyFinancesText: Boolean = false
 )
 
-class SpendingViewModel(private val categoryDao: CategoryDao) : ViewModel() {
-    private val _uiState = MutableStateFlow(SpendingUiState())
-    val uiState: StateFlow<SpendingUiState> = _uiState.asStateFlow()
+class FinancesViewModel(private val categoryDao: CategoryDao) : ViewModel() {
+    private val _uiState = MutableStateFlow(FinancesUiState())
+    val uiState: StateFlow<FinancesUiState> = _uiState.asStateFlow()
 
     init {
         viewModelScope.launch {
@@ -54,7 +54,7 @@ class SpendingViewModel(private val categoryDao: CategoryDao) : ViewModel() {
         }
     }
 
-    suspend fun isHasSpends(): Boolean {
+    suspend fun isHasFinances(): Boolean {
         return withContext(Dispatchers.IO) {
             categoryDao.getCountFinances() > 0
         }
@@ -98,15 +98,15 @@ class SpendingViewModel(private val categoryDao: CategoryDao) : ViewModel() {
     suspend fun updateTotalCategoryPrice() {
         val categoriesIdList = categoryDao.getCategoriesId().first()
         categoriesIdList.forEach { categoryId ->
-            val categoryWithSpends = categoryDao.getCategoryWithFinances(categoryId).first()
-            val finances = categoryWithSpends.finances
+            val categoryWithFinances = categoryDao.getCategoryWithFinances(categoryId).first()
+            val finances = categoryWithFinances.finances
             var newTotalCategoryPrice = 0.0
 
             finances.forEach { finance ->
                 newTotalCategoryPrice += finance.price * finance.count.toDouble()
             }
 
-            val updatedCategory = categoryWithSpends.category.copy(totalCategoryPrice = newTotalCategoryPrice)
+            val updatedCategory = categoryWithFinances.category.copy(totalCategoryPrice = newTotalCategoryPrice)
 
             categoryDao.updateCategory(updatedCategory)
         }
@@ -270,7 +270,7 @@ class SpendingViewModel(private val categoryDao: CategoryDao) : ViewModel() {
         val factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
                 val application = (this[APPLICATION_KEY] as MonefyApplication)
-                SpendingViewModel(application.database.categoryDao())
+                FinancesViewModel(application.database.categoryDao())
             }
         }
     }

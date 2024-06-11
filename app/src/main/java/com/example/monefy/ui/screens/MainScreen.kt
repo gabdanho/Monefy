@@ -49,23 +49,23 @@ import kotlin.math.atan2
 
 @Composable
 fun MainScreen(
-    spendingViewModel: SpendingViewModel,
+    financesViewModel: FinancesViewModel,
     goToFinance: (Finance) -> Unit,
     updateScreen: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val spendingUiState by spendingViewModel.uiState.collectAsState()
-    spendingViewModel.resetAllTapedCategories()
+    val financesUiState by financesViewModel.uiState.collectAsState()
+    financesViewModel.resetAllTapedCategories()
 
     Main(
-        isAllNotTapped = spendingViewModel::isAllNotTapped,
-        showEmptyFinancesText = spendingUiState.showEmptyFinancesText,
-        selectedTabIndex = spendingUiState.selectedTabIndex,
-        getCategoriesByType = spendingViewModel::getCategoriesByType,
-        updateIsTapped = spendingViewModel::updateIsTapped,
-        getFinancesByCategoryId = spendingViewModel::getFinancesByCategoryId,
-        changeSelectedTabIndex = spendingViewModel::changeSelectedTabIndex,
-        isHasSpends = spendingViewModel::isHasSpends,
+        isAllNotTapped = financesViewModel::isAllNotTapped,
+        showEmptyFinancesText = financesUiState.showEmptyFinancesText,
+        selectedTabIndex = financesUiState.selectedTabIndex,
+        getCategoriesByType = financesViewModel::getCategoriesByType,
+        updateIsTapped = financesViewModel::updateIsTapped,
+        getFinancesByCategoryId = financesViewModel::getFinancesByCategoryId,
+        changeSelectedTabIndex = financesViewModel::changeSelectedTabIndex,
+        isHasFinances = financesViewModel::isHasFinances,
         updateScreen = updateScreen,
         goToFinance = goToFinance,
         modifier = modifier
@@ -79,7 +79,7 @@ fun Main(
     selectedTabIndex: Int,
     changeSelectedTabIndex: (Int) -> Unit,
     getCategoriesByType: (String) -> Flow<List<Category>>,
-    isHasSpends: suspend () -> Boolean,
+    isHasFinances: suspend () -> Boolean,
     updateIsTapped: suspend (Category) -> Unit,
     getFinancesByCategoryId: (Int) -> Flow<List<Finance>>,
     updateScreen: () -> Unit,
@@ -91,11 +91,11 @@ fun Main(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = modifier.padding(innerPadding)
         ) {
-            SpendingPieChart(
+            FinancesPieChart(
                 isAllNotTapped = isAllNotTapped,
                 showEmptyFinancesText = showEmptyFinancesText,
                 selectedTabIndex = selectedTabIndex,
-                isHasSpends = isHasSpends,
+                isHasFinances = isHasFinances,
                 getCategoriesByType = getCategoriesByType,
                 updateIsTapped = updateIsTapped,
                 getFinancesByCategoryId = getFinancesByCategoryId,
@@ -103,10 +103,10 @@ fun Main(
                 updateScreen = updateScreen,
                 modifier = modifier.weight(1.2f)
             )
-            SpendingTable(
+            FinancesTable(
                 selectedTabIndex = selectedTabIndex,
                 getCategoriesByType = getCategoriesByType,
-                isHasSpends = isHasSpends,
+                isHasFinances = isHasFinances,
                 getFinancesByCategoryId = getFinancesByCategoryId,
                 goToFinance = goToFinance,
                 modifier = modifier.weight(1f)
@@ -116,12 +116,12 @@ fun Main(
 }
 
 @Composable
-fun SpendingPieChart(
+fun FinancesPieChart(
     isAllNotTapped: suspend () -> Boolean,
     showEmptyFinancesText: Boolean,
     selectedTabIndex: Int,
     changeSelectedTabIndex: (Int) -> Unit,
-    isHasSpends: suspend () -> Boolean,
+    isHasFinances: suspend () -> Boolean,
     getCategoriesByType: (String) -> Flow<List<Category>>,
     updateIsTapped: suspend (Category) -> Unit,
     getFinancesByCategoryId: (Int) -> Flow<List<Finance>>,
@@ -137,21 +137,21 @@ fun SpendingPieChart(
         else -> emptyList()
     }.filter { it.totalCategoryPrice != 0.0 }
     val totalPriceFromAllCategories = categories.sumOf { it.totalCategoryPrice }
-    val spendsMap = categories.associate { category ->
+    val financesMap = categories.associate { category ->
         category.id to getFinancesByCategoryId(category.id).collectAsState(emptyList()).value
     }.filterValues { it.isNotEmpty() }
     val scope = rememberCoroutineScope()
 
-    var hasSpends by remember { mutableStateOf(false) }
+    var hasFinances by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
         withContext(Dispatchers.IO) {
-            hasSpends = isHasSpends()
+            hasFinances = isHasFinances()
         }
     }
     if (!showEmptyFinancesText) {
         Text("Расходов/доходов не найдено. Добавьте их!")
     }
-    if (hasSpends) {
+    if (hasFinances) {
         val anglePerValue = (360 / totalPriceFromAllCategories)
         val sweepAnglePercentage = categories.map {
             (it.totalCategoryPrice * anglePerValue).toFloat()
@@ -245,8 +245,8 @@ fun SpendingPieChart(
                     )
 
                     for (i in categories.indices) {
-                        val spends = spendsMap[categories[i].id] ?: emptyList()
-                        if (spends.isNotEmpty()) {
+                        val finances = financesMap[categories[i].id] ?: emptyList()
+                        if (finances.isNotEmpty()) {
                             val scale = if (categories[i].isTapped) 1.1f else 1.0f
                             scale(scale) {
                                 drawArc(
@@ -278,9 +278,9 @@ fun SpendingPieChart(
 }
 
 @Composable
-fun SpendingTable(
+fun FinancesTable(
     selectedTabIndex: Int,
-    isHasSpends: suspend () -> Boolean,
+    isHasFinances: suspend () -> Boolean,
     getCategoriesByType: (String) -> Flow<List<Category>>,
     getFinancesByCategoryId: (Int) -> Flow<List<Finance>>,
     goToFinance: (Finance) -> Unit,
@@ -293,24 +293,24 @@ fun SpendingTable(
     }
     val totalPriceFromAllCategories = categories.sumOf { it.totalCategoryPrice }
 
-    var hasSpends by remember { mutableStateOf(false) }
+    var hasFinances by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
         withContext(Dispatchers.IO) {
-            hasSpends = isHasSpends()
+            hasFinances = isHasFinances()
         }
     }
 
-    if (hasSpends) {
+    if (hasFinances) {
         Column(modifier = modifier.padding(8.dp)) {
             LazyColumn {
                 items(categories) { category ->
-                    val spends by getFinancesByCategoryId(category.id).collectAsState(emptyList())
+                    val finances by getFinancesByCategoryId(category.id).collectAsState(emptyList())
                     var totalCategoriesPrice by rememberSaveable { mutableStateOf(0.0) }
                     LaunchedEffect(Unit) {
                         totalCategoriesPrice = totalPriceFromAllCategories
                     }
 
-                    if (spends.isNotEmpty() && categories.all { !it.isTapped }) {
+                    if (finances.isNotEmpty() && categories.all { !it.isTapped }) {
                         ExpenseBlock(
                             category = category,
                             totalPrice = totalCategoriesPrice,
@@ -343,7 +343,7 @@ fun ExpenseBlock(
     goToFinance: (Finance) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val spends by getFinancesByCategoryId(category.id).collectAsState(emptyList())
+    val finances by getFinancesByCategoryId(category.id).collectAsState(emptyList())
 
     var expanded by rememberSaveable { mutableStateOf(false) }
     val percentage = String.format("%.2f", (category.totalCategoryPrice / totalPrice) * 100)
@@ -380,7 +380,7 @@ fun ExpenseBlock(
             Column(
                 modifier = Modifier.padding(8.dp)
             ) {
-                spends.forEach {
+                finances.forEach {
                     Row(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         modifier = Modifier
@@ -403,7 +403,7 @@ fun ExpenseBlock(
                     Column(
                         modifier = Modifier.padding(8.dp)
                     ) {
-                        spends.forEach {
+                        finances.forEach {
                             Row(
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 modifier = Modifier

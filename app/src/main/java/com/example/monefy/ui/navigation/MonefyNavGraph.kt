@@ -2,9 +2,6 @@ package com.example.monefy.ui.navigation
 
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -17,13 +14,13 @@ import com.example.monefy.ui.screens.AddFinanceScreen
 import com.example.monefy.ui.screens.MainScreen
 import com.example.monefy.ui.screens.CategoriesListScreen
 import com.example.monefy.ui.screens.RewriteCategoryScreen
-import com.example.monefy.ui.screens.RewriteSpendScreen
-import com.example.monefy.ui.screens.SpendingListScreen
-import com.example.monefy.ui.screens.SpendingViewModel
+import com.example.monefy.ui.screens.FinanceListScreen
+import com.example.monefy.ui.screens.RewriteFinanceScreen
+import com.example.monefy.ui.screens.FinancesViewModel
 
 @Composable
 fun MonefyNavGraph(
-    spendingViewModel: SpendingViewModel = viewModel(factory = SpendingViewModel.factory),
+    financesViewModel: FinancesViewModel = viewModel(factory = FinancesViewModel.factory),
     navController: NavHostController,
     modifier: Modifier = Modifier
 ) {
@@ -38,18 +35,18 @@ fun MonefyNavGraph(
             exitTransition = { ExitTransition.None }
         ) {
             MainScreen(
-                spendingViewModel = spendingViewModel,
+                financesViewModel = financesViewModel,
                 updateScreen = { navController.navigate(route = "MainScreen") },
                 goToFinance = { finance ->
-                    spendingViewModel.changeSelectedFinanceToChange(finance)
-                    navController.navigate(route = "RewriteSpendScreen")
+                    financesViewModel.changeSelectedFinanceToChange(finance)
+                    navController.navigate(route = "RewriteFinanceScreen")
                 }
             )
-            spendingViewModel.resetAllTapedCategories()
+            financesViewModel.resetAllTapedCategories()
         }
-        composable(route = "AddFinancesScreen") {
+        composable(route = "AddFinanceScreen") {
             AddFinanceScreen(
-                spendingViewModel = spendingViewModel,
+                financesViewModel = financesViewModel,
                 context = LocalContext.current,
                 onAddCategoryScreenClick = {
                     navController.navigate(route = "AddCategoryScreen")
@@ -57,9 +54,9 @@ fun MonefyNavGraph(
             )
         }
         composable(route = "AddCategoryScreen") {
-            spendingViewModel.removeSelectedCategoryColor()
+            financesViewModel.removeSelectedCategoryColor()
             AddCategoryScreen(
-                spendingViewModel = spendingViewModel,
+                financesViewModel = financesViewModel,
                 endOfScreen = {
                     navController.popBackStack()
                 }
@@ -67,9 +64,9 @@ fun MonefyNavGraph(
         }
         composable(route = "CategoriesListScreen") {
             CategoriesListScreen(
-                spendingViewModel = spendingViewModel,
+                financesViewModel = financesViewModel,
                 onCategoryClick = {
-                    navController.navigate(route = "SpendingListScreen")
+                    navController.navigate(route = "FinanceListScreen")
                 },
                 onAddCategoryClick = {
                     navController.navigate(route = "AddCategoryScreen")
@@ -79,25 +76,25 @@ fun MonefyNavGraph(
                 }
             )
         }
-        composable(route = "SpendingListScreen") {
-            SpendingListScreen(
-                spendingViewModel = spendingViewModel,
-                rewriteSpendClick = {
-                    navController.navigate("RewriteSpendScreen")
+        composable(route = "FinanceListScreen") {
+            FinanceListScreen(
+                financesViewModel = financesViewModel,
+                rewriteFinanceClick = {
+                    navController.navigate("RewriteFinanceScreen")
                 }
             )
         }
         composable(route = "RewriteCategoryScreen") {
             RewriteCategoryScreen(
-                spendingViewModel = spendingViewModel,
+                financesViewModel = financesViewModel,
                 endOfScreen = {
                     navController.popBackStack()
                 }
             )
         }
-        composable(route = "RewriteSpendScreen") {
-            RewriteSpendScreen(
-                spendingViewModel = spendingViewModel,
+        composable(route = "RewriteFinanceScreen") {
+            RewriteFinanceScreen(
+                financesViewModel = financesViewModel,
                 context = LocalContext.current,
                 endOfScreen = {
                     navController.popBackStack()

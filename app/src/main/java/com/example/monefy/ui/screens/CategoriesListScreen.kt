@@ -37,16 +37,16 @@ import kotlinx.coroutines.flow.flowOf
 
 @Composable
 fun CategoriesListScreen(
-    spendingViewModel: SpendingViewModel,
+    financesViewModel: FinancesViewModel,
     onAddCategoryClick: () -> Unit,
     onCategoryClick: () -> Unit,
     rewriteCategoryClick: () -> Unit,
 ) {
     Scaffold { innerPadding ->
         CategoriesList(
-            getAllCategories = spendingViewModel::getAllCategories,
-            changeCurrentCategoryIdForFinances = spendingViewModel::changeCurrentCategoryIdForFinances,
-            changeCategoryToRewrite = spendingViewModel::changeCategoryToRewrite,
+            getAllCategories = financesViewModel::getAllCategories,
+            changeCurrentCategoryIdForFinances = financesViewModel::changeCurrentCategoryIdForFinances,
+            changeCategoryToRewrite = financesViewModel::changeCategoryToRewrite,
             onCategoryClick = onCategoryClick,
             rewriteCategoryClick = rewriteCategoryClick,
             onAddCategoryClick = onAddCategoryClick,

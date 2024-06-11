@@ -76,23 +76,23 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 
 @Composable
-fun RewriteSpendScreen(
-    spendingViewModel: SpendingViewModel,
+fun RewriteFinanceScreen(
+    financesViewModel: FinancesViewModel,
     endOfScreen: () -> Unit,
     context: Context,
     modifier: Modifier = Modifier
 ) {
-    val uiState by spendingViewModel.uiState.collectAsState()
+    val uiState by financesViewModel.uiState.collectAsState()
 
-    RewriteSpend(
+    RewriteFinance(
         selectedCategoryId = uiState.selectedCategoryId,
         initialFinance = uiState.selectedFinanceToChange,
         endOfScreen = endOfScreen,
-        getAllCategories = spendingViewModel::getAllCategories,
-        changeSelectedCategory = spendingViewModel::changeSelectedCategory,
-        rewriteFinance = spendingViewModel::rewriteFinance,
-        removeSelectedCategoryId = spendingViewModel::removeSelectedCategoryId,
-        deleteFinance = spendingViewModel::deleteFinance,
+        getAllCategories = financesViewModel::getAllCategories,
+        changeSelectedCategory = financesViewModel::changeSelectedCategory,
+        rewriteFinance = financesViewModel::rewriteFinance,
+        removeSelectedCategoryId = financesViewModel::removeSelectedCategoryId,
+        deleteFinance = financesViewModel::deleteFinance,
         context = context,
         modifier = modifier
     )
@@ -100,7 +100,7 @@ fun RewriteSpendScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RewriteSpend(
+fun RewriteFinance(
     selectedCategoryId: Int,
     initialFinance: Finance,
     endOfScreen: () -> Unit,
@@ -116,16 +116,16 @@ fun RewriteSpend(
 
     val categories by getAllCategories().collectAsState(emptyList())
 
-    var spendName by rememberSaveable { mutableStateOf(initialFinance.name) }
-    var spendPrice by rememberSaveable { mutableStateOf(initialFinance.price) }
-    var spendPriceForTextFieldValue by rememberSaveable { mutableStateOf(String.format("%.2f", initialFinance.price)) }
-    var spendDescription by rememberSaveable { mutableStateOf(initialFinance.description) }
+    var financeName by rememberSaveable { mutableStateOf(initialFinance.name) }
+    var financePrice by rememberSaveable { mutableStateOf(initialFinance.price) }
+    var financePriceForTextFieldValue by rememberSaveable { mutableStateOf(String.format("%.2f", initialFinance.price)) }
+    var financeDescription by rememberSaveable { mutableStateOf(initialFinance.description) }
     var count by rememberSaveable { mutableStateOf(initialFinance.count) }
     var countForTextFieldValue by rememberSaveable { mutableStateOf(initialFinance.count.toString()) }
 
-    var isSpendNameNotSelected by rememberSaveable { mutableStateOf(false) }
+    var isFinanceNameNotSelected by rememberSaveable { mutableStateOf(false) }
     var isSelectedCategoryNotSelected by rememberSaveable { mutableStateOf(false) }
-    val colorTextSpendName = remember { mutableStateOf(Color.Black) }
+    val colorTextFinanceName = remember { mutableStateOf(Color.Black) }
     val colorTextSelectedCategory = remember { mutableStateOf(Color.Black) }
 
     LaunchedEffect(isSelectedCategoryNotSelected) {
@@ -138,14 +138,14 @@ fun RewriteSpend(
         isSelectedCategoryNotSelected = false
     }
 
-    LaunchedEffect(isSpendNameNotSelected) {
+    LaunchedEffect(isFinanceNameNotSelected) {
         for (i in 1..3) {
-            colorTextSpendName.value = Color.Red
+            colorTextFinanceName.value = Color.Red
             delay(500)
-            colorTextSpendName.value = Color.Black
+            colorTextFinanceName.value = Color.Black
             delay(500)
         }
-        isSpendNameNotSelected = false
+        isFinanceNameNotSelected = false
     }
 
     var pickedDate by rememberSaveable { mutableStateOf(initialFinance.date) }
@@ -172,7 +172,7 @@ fun RewriteSpend(
         ) {
             Text(
                 text = "Название траты",
-                color = if (!isSpendNameNotSelected) Color.Black else colorTextSpendName.value,
+                color = if (!isFinanceNameNotSelected) Color.Black else colorTextFinanceName.value,
                 modifier = Modifier.padding(4.dp)
             )
             Row(
@@ -180,8 +180,8 @@ fun RewriteSpend(
                 modifier = Modifier.padding(bottom = 8.dp)
             ) {
                 TextField(
-                    value = spendName,
-                    onValueChange = { spendName = it },
+                    value = financeName,
+                    onValueChange = { financeName = it },
                     singleLine = true,
                     colors = TextFieldDefaults.textFieldColors(containerColor = Color.Transparent),
                     textStyle = TextStyle(fontSize = 20.sp),
@@ -194,20 +194,20 @@ fun RewriteSpend(
             )
             Row {
                 TextField(
-                    value = spendPriceForTextFieldValue,
+                    value = financePriceForTextFieldValue,
                     onValueChange = {
                         if (it == "" || it == ".") {
-                            spendPriceForTextFieldValue = ""
-                            spendPrice = 0.0
+                            financePriceForTextFieldValue = ""
+                            financePrice = 0.0
                         }
-                        else if (it.length < spendPriceForTextFieldValue.length) {
-                            spendPriceForTextFieldValue = it
-                            spendPrice = it.toDouble()
+                        else if (it.length < financePriceForTextFieldValue.length) {
+                            financePriceForTextFieldValue = it
+                            financePrice = it.toDouble()
                         }
                         else if (it == "00") { }
                         else if (it.all { it.isDigit() || it == '.' } && it.count { it == '.' } <= 1 && it.toDouble() < Constants.maxPrice) {
-                            spendPriceForTextFieldValue = it
-                            spendPrice = it.toDouble()
+                            financePriceForTextFieldValue = it
+                            financePrice = it.toDouble()
                         }
                     },
                     textStyle = LocalTextStyle.current.copy(fontSize = 20.sp),
@@ -218,14 +218,14 @@ fun RewriteSpend(
                         .weight(4f)
                         .onFocusChanged { focusState ->
                             if (focusState.isFocused) {
-                                if (spendPrice == 0.0) {
-                                    spendPrice = 0.0
-                                    spendPriceForTextFieldValue = ""
+                                if (financePrice == 0.0) {
+                                    financePrice = 0.0
+                                    financePriceForTextFieldValue = ""
                                 }
                             } else {
-                                if (spendPriceForTextFieldValue.isEmpty()) {
-                                    spendPrice = 0.0
-                                    spendPriceForTextFieldValue = "0"
+                                if (financePriceForTextFieldValue.isEmpty()) {
+                                    financePrice = 0.0
+                                    financePriceForTextFieldValue = "0"
                                 }
                             }
                         }
@@ -359,14 +359,14 @@ fun RewriteSpend(
                 modifier = Modifier.padding(bottom = 8.dp)
             ) {
                 TextField(
-                    value = spendDescription,
-                    onValueChange = { spendDescription = it },
+                    value = financeDescription,
+                    onValueChange = { financeDescription = it },
                     singleLine = true,
                     colors = TextFieldDefaults.textFieldColors(containerColor = Color.Transparent),
                     modifier = Modifier.weight(4f)
                 )
                 IconButton(
-                    onClick = { spendDescription = "" },
+                    onClick = { financeDescription = "" },
                     modifier = Modifier.weight(1f)
                 ) {
                     Icon(
@@ -381,18 +381,18 @@ fun RewriteSpend(
             ) {
                 Button(
                     onClick = {
-                        if (spendName.isEmpty()) {
+                        if (financeName.isEmpty()) {
                             scope.launch {
-                                isSpendNameNotSelected = true
+                                isFinanceNameNotSelected = true
                                 snackbarHostState.showSnackbar("Укажите название траты")
                             }
                         }
                         else {
                             val newFinance = initialFinance.copy(
-                                name = spendName,
+                                name = financeName,
                                 categoryId = selectedCategoryId,
-                                description = spendDescription,
-                                price = spendPrice,
+                                description = financeDescription,
+                                price = financePrice,
                                 date = pickedDate,
                                 count = count
                             )

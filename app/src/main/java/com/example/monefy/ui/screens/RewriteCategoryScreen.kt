@@ -1,6 +1,5 @@
 package com.example.monefy.ui.screens
 
-import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.foundation.background
@@ -51,20 +50,20 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun RewriteCategoryScreen(
-    spendingViewModel: SpendingViewModel,
+    financesViewModel: FinancesViewModel,
     endOfScreen: () -> Unit
 ) {
-    val uiState by spendingViewModel.uiState.collectAsState()
+    val uiState by financesViewModel.uiState.collectAsState()
 
     RewriteCategory(
         initialCategory = uiState.categoryToRewrite,
         colorToChange = uiState.colorToChange,
         isColorDialogShow = uiState.isColorDialogShow,
-        changeColorDialogShow = spendingViewModel::changeColorDialogShow,
-        changeColorToChange = spendingViewModel::changeColorToChange,
-        removeColorToChange = spendingViewModel::removeColorToChange,
-        rewriteCategory = spendingViewModel::rewriteCategory,
-        deleteCategory = spendingViewModel::deleteCategory,
+        changeColorDialogShow = financesViewModel::changeColorDialogShow,
+        changeColorToChange = financesViewModel::changeColorToChange,
+        removeColorToChange = financesViewModel::removeColorToChange,
+        rewriteCategory = financesViewModel::rewriteCategory,
+        deleteCategory = financesViewModel::deleteCategory,
         endOfScreen = endOfScreen
     )
 }
@@ -105,14 +104,14 @@ fun RewriteCategory(
     val colorTextCategoryName = remember { mutableStateOf(Color.Black) }
     var isCategoryNameWrong by rememberSaveable { mutableStateOf(false) }
 
-    var spendFieldEnabled by rememberSaveable { mutableStateOf(false) }
+    var financeFieldEnabled by rememberSaveable { mutableStateOf(false) }
     var revenueFieldEnabled by rememberSaveable { mutableStateOf(false) }
     if (selectedType == "Расходы") {
-        spendFieldEnabled = false
+        financeFieldEnabled = false
         revenueFieldEnabled = true
     }
     if (selectedType == "Доходы") {
-        spendFieldEnabled = true
+        financeFieldEnabled = true
         revenueFieldEnabled = false
     }
 
@@ -165,11 +164,11 @@ fun RewriteCategory(
             )
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedButton(
-                    enabled = spendFieldEnabled,
+                    enabled = financeFieldEnabled,
                     onClick = {
                         selectedType = "Расходы"
                         revenueFieldEnabled = true
-                        spendFieldEnabled = false
+                        financeFieldEnabled = false
                     }
                 ) {
                     Text(text = "Расходы")
@@ -179,7 +178,7 @@ fun RewriteCategory(
                     onClick = {
                         selectedType = "Доходы"
                         revenueFieldEnabled = false
-                        spendFieldEnabled = true
+                        financeFieldEnabled = true
                     }
                 ) {
                     Text(text = "Доходы")

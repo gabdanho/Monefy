@@ -22,7 +22,7 @@ import com.example.monefy.R
 @Composable
 fun BottomMenuBar(
     onPieChartClick: () -> Unit = { },
-    onSpendingListClick: () -> Unit = { },
+    onFinancesListClick: () -> Unit = { },
     onAddButtonClick: () -> Unit = { },
     modifier: Modifier = Modifier
 ) {
@@ -52,7 +52,7 @@ fun BottomMenuBar(
                     .size(40.dp)
             )
         }
-        IconButton(onClick = onSpendingListClick) {
+        IconButton(onClick = onFinancesListClick) {
             Icon(
                 painter = painterResource(R.drawable.list),
                 contentDescription = "Список расходов"

@@ -31,27 +31,27 @@ import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 
 @Composable
-fun SpendingListScreen(
-    spendingViewModel: SpendingViewModel,
-    rewriteSpendClick: () -> Unit,
+fun FinanceListScreen(
+    financesViewModel: FinancesViewModel,
+    rewriteFinanceClick: () -> Unit,
 ) {
-    val uiState by spendingViewModel.uiState.collectAsState()
+    val uiState by financesViewModel.uiState.collectAsState()
 
-    SpendingList(
+    FinancesList(
         currentCategoryId = uiState.currentCategoryIdForFinances,
-        changeSelectedFinanceToChange = spendingViewModel::changeSelectedFinanceToChange,
-        changeSelectedCategory = spendingViewModel::changeSelectedCategory,
-        getFinancesByCategoryId = spendingViewModel::getFinancesByCategoryId,
-        rewriteSpendClick = rewriteSpendClick
+        changeSelectedFinanceToChange = financesViewModel::changeSelectedFinanceToChange,
+        changeSelectedCategory = financesViewModel::changeSelectedCategory,
+        getFinancesByCategoryId = financesViewModel::getFinancesByCategoryId,
+        rewriteFinanceClick = rewriteFinanceClick
     )
 }
 
 @Composable
-fun SpendingList(
+fun FinancesList(
     currentCategoryId: Int,
     getFinancesByCategoryId: (Int) -> Flow<List<Finance>>,
     changeSelectedFinanceToChange: (Finance) -> Unit,
-    rewriteSpendClick: () -> Unit,
+    rewriteFinanceClick: () -> Unit,
     changeSelectedCategory: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -61,10 +61,10 @@ fun SpendingList(
     if (finances.isNotEmpty()) {
         LazyColumn(modifier = modifier) {
             items(finances) { finance ->
-                SpendingCard(
+                FinanceCard(
                     finance = finance,
-                    rewriteSpendClick = rewriteSpendClick,
-                    changeSelectedSpendToChange = changeSelectedFinanceToChange,
+                    rewriteFinanceClick = rewriteFinanceClick,
+                    changeSelectedFinanceToChange = changeSelectedFinanceToChange,
                     changeSelectedCategory = changeSelectedCategory,
                     modifier = Modifier.padding(16.dp)
                 )
@@ -77,10 +77,10 @@ fun SpendingList(
 }
 
 @Composable
-fun SpendingCard(
+fun FinanceCard(
     finance: Finance,
-    rewriteSpendClick: () -> Unit,
-    changeSelectedSpendToChange: (Finance) -> Unit,
+    rewriteFinanceClick: () -> Unit,
+    changeSelectedFinanceToChange: (Finance) -> Unit,
     changeSelectedCategory: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -95,8 +95,8 @@ fun SpendingCard(
             )
             .clickable {
                 changeSelectedCategory(finance.categoryId)
-                changeSelectedSpendToChange(finance)
-                rewriteSpendClick()
+                changeSelectedFinanceToChange(finance)
+                rewriteFinanceClick()
             }
     ) {
         Row(
@@ -144,8 +144,8 @@ fun SpendingCard(
 
 @Preview
 @Composable
-fun SpendingCardPreview() {
-    SpendingCard(
+fun FinanceCardPreview() {
+    FinanceCard(
         finance = Finance(
             name = "Обед",
             date = LocalDate.now(),
@@ -153,8 +153,8 @@ fun SpendingCardPreview() {
             count = 1,
             price = 350.0
         ),
-        rewriteSpendClick = { /*TODO*/ },
-        changeSelectedSpendToChange = { },
+        rewriteFinanceClick = { /*TODO*/ },
+        changeSelectedFinanceToChange = { },
         changeSelectedCategory = { }
     )
 }

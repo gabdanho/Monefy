@@ -1,6 +1,5 @@
 package com.example.monefy.ui.screens
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
@@ -62,7 +61,6 @@ fun MainScreen(
         isAllNotTapped = spendingViewModel::isAllNotTapped,
         showEmptyFinancesText = spendingUiState.showEmptyFinancesText,
         selectedTabIndex = spendingUiState.selectedTabIndex,
-        getAllCategories = spendingViewModel::getAllCategories,
         getCategoriesByType = spendingViewModel::getCategoriesByType,
         updateIsTapped = spendingViewModel::updateIsTapped,
         getFinancesByCategoryId = spendingViewModel::getFinancesByCategoryId,
@@ -80,7 +78,6 @@ fun Main(
     showEmptyFinancesText: Boolean,
     selectedTabIndex: Int,
     changeSelectedTabIndex: (Int) -> Unit,
-    getAllCategories: () -> Flow<List<Category>>,
     getCategoriesByType: (String) -> Flow<List<Category>>,
     isHasSpends: suspend () -> Boolean,
     updateIsTapped: suspend (Category) -> Unit,
@@ -99,7 +96,6 @@ fun Main(
                 showEmptyFinancesText = showEmptyFinancesText,
                 selectedTabIndex = selectedTabIndex,
                 isHasSpends = isHasSpends,
-                getAllCategories = getAllCategories,
                 getCategoriesByType = getCategoriesByType,
                 updateIsTapped = updateIsTapped,
                 getFinancesByCategoryId = getFinancesByCategoryId,
@@ -109,7 +105,6 @@ fun Main(
             )
             SpendingTable(
                 selectedTabIndex = selectedTabIndex,
-                getAllCategories = getAllCategories,
                 getCategoriesByType = getCategoriesByType,
                 isHasSpends = isHasSpends,
                 getFinancesByCategoryId = getFinancesByCategoryId,
@@ -128,21 +123,17 @@ fun SpendingPieChart(
     changeSelectedTabIndex: (Int) -> Unit,
     isHasSpends: suspend () -> Boolean,
     getCategoriesByType: (String) -> Flow<List<Category>>,
-    getAllCategories: () -> Flow<List<Category>>,
     updateIsTapped: suspend (Category) -> Unit,
     getFinancesByCategoryId: (Int) -> Flow<List<Finance>>,
     updateScreen: () -> Unit,
     radius: Float = 300f,
     modifier: Modifier = Modifier
 ) {
-    val tabItems = listOf(
-        "Расходы", "Общий оборот", "Доходы"
-    )
+    val tabItems = listOf("Расходы", "Доходы")
 
     val categories = when(selectedTabIndex) {
         0 -> getCategoriesByType("Расходы").collectAsState(emptyList()).value
-        1 -> getAllCategories().collectAsState(emptyList()).value
-        2 -> getCategoriesByType("Доходы").collectAsState(emptyList()).value
+        1 -> getCategoriesByType("Доходы").collectAsState(emptyList()).value
         else -> emptyList()
     }.filter { it.totalCategoryPrice != 0.0 }
     val totalPriceFromAllCategories = categories.sumOf { it.totalCategoryPrice }
@@ -290,7 +281,6 @@ fun SpendingPieChart(
 fun SpendingTable(
     selectedTabIndex: Int,
     isHasSpends: suspend () -> Boolean,
-    getAllCategories: () -> Flow<List<Category>>,
     getCategoriesByType: (String) -> Flow<List<Category>>,
     getFinancesByCategoryId: (Int) -> Flow<List<Finance>>,
     goToFinance: (Finance) -> Unit,
@@ -298,8 +288,7 @@ fun SpendingTable(
 ) {
     val categories = when(selectedTabIndex) {
         0 -> getCategoriesByType("Расходы").collectAsState(emptyList()).value
-        1 -> getAllCategories().collectAsState(emptyList()).value
-        2 -> getCategoriesByType("Доходы").collectAsState(emptyList()).value
+        1 -> getCategoriesByType("Доходы").collectAsState(emptyList()).value
         else -> emptyList()
     }
     val totalPriceFromAllCategories = categories.sumOf { it.totalCategoryPrice }
@@ -383,8 +372,8 @@ fun ExpenseBlock(
                 )
             }
             Text(
-                text = "$percentage %",
-                style = MaterialTheme.typography.titleMedium,
+                text = "${category.totalCategoryPrice} ($percentage %)",
+                style = MaterialTheme.typography.titleSmall,
             )
         }
         if (showAllExpensesWithoutClick) {
@@ -400,7 +389,10 @@ fun ExpenseBlock(
                             .fillMaxWidth()
                     ) {
                         Text(text = it.name)
-                        Text(text = String.format("%.2f", it.count.toDouble() * it.price))
+                        Text(
+                            text = String.format("%.2f", it.count.toDouble() * it.price),
+                            style = MaterialTheme.typography.titleSmall
+                        )
                     }
                 }
             }

@@ -17,6 +17,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
@@ -81,10 +82,8 @@ fun AddCategory(
     val scope = rememberCoroutineScope()
 
     var categoryName by rememberSaveable { mutableStateOf("") }
-    var selectedType by rememberSaveable { mutableStateOf("") }
-
-    var revenueFieldEnabled by rememberSaveable { mutableStateOf(true) }
-    var financeFieldEnabled by rememberSaveable { mutableStateOf(true) }
+    var selectedType by rememberSaveable { mutableStateOf("Расходы") }
+    var selectType by rememberSaveable { mutableStateOf(true) }
 
     val colorTextCategoryName = remember { mutableStateOf(Color.Black) }
     var isCategoryNameNotSelected by rememberSaveable { mutableStateOf(false) }
@@ -170,26 +169,38 @@ fun AddCategory(
                 color = if (!isTypeCategoryNotSelected) Color.Black else colorTextCategoryType.value,
                 modifier = Modifier.padding(4.dp)
             )
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedButton(
-                    enabled = financeFieldEnabled,
-                    onClick = {
-                        selectedType = "Расходы"
-                        revenueFieldEnabled = true
-                        financeFieldEnabled = false
-                    }
-                ) {
-                    Text(text = "Расходы")
+            Row {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    RadioButton(
+                        selected = selectType,
+                        onClick = {
+                            selectedType = "Расходы"
+                            selectType = true
+                        },
+                    )
+                    Text(
+                        text = "Расходы",
+                        modifier = Modifier.clickable {
+                            selectedType = "Расходы"
+                            selectType = true
+                        }
+                    )
                 }
-                OutlinedButton(
-                    enabled = revenueFieldEnabled,
-                    onClick = {
-                        selectedType = "Доходы"
-                        revenueFieldEnabled = false
-                        financeFieldEnabled = true
-                    }
-                ) {
-                    Text(text = "Доходы")
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    RadioButton(
+                        selected = !selectType,
+                        onClick = {
+                            selectedType = "Доходы"
+                            selectType = false
+                        },
+                    )
+                    Text(
+                        text = "Доходы",
+                        modifier = Modifier.clickable {
+                            selectedType = "Доходы"
+                            selectType = false
+                        }
+                    )
                 }
             }
             Text(

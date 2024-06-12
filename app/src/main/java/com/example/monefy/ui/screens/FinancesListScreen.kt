@@ -27,7 +27,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.monefy.data.Finance
+import com.example.monefy.model.FakeData
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import java.time.LocalDate
 
 @Composable
@@ -37,27 +39,25 @@ fun FinanceListScreen(
 ) {
     val uiState by financesViewModel.uiState.collectAsState()
 
+    var finances by rememberSaveable { mutableStateOf(listOf<Finance>()) }
+    finances = financesViewModel.getFinancesByCategoryId(uiState.currentCategoryIdForFinances).collectAsState(initial = emptyList()).value
+
     FinancesList(
-        currentCategoryId = uiState.currentCategoryIdForFinances,
+        finances = finances,
         changeSelectedFinanceToChange = financesViewModel::changeSelectedFinanceToChange,
         changeSelectedCategory = financesViewModel::changeSelectedCategory,
-        getFinancesByCategoryId = financesViewModel::getFinancesByCategoryId,
         rewriteFinanceClick = rewriteFinanceClick
     )
 }
 
 @Composable
 fun FinancesList(
-    currentCategoryId: Int,
-    getFinancesByCategoryId: (Int) -> Flow<List<Finance>>,
+    finances: List<Finance>,
     changeSelectedFinanceToChange: (Finance) -> Unit,
     rewriteFinanceClick: () -> Unit,
     changeSelectedCategory: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var finances by rememberSaveable { mutableStateOf(listOf<Finance>()) }
-    finances = getFinancesByCategoryId(currentCategoryId).collectAsState(initial = emptyList()).value
-
     if (finances.isNotEmpty()) {
         LazyColumn(modifier = modifier) {
             items(finances) { finance ->
@@ -142,19 +142,13 @@ fun FinanceCard(
     }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
-fun FinanceCardPreview() {
-    FinanceCard(
-        finance = Finance(
-            name = "Обед",
-            date = LocalDate.now(),
-            description = "Вкусненько поел",
-            count = 1,
-            price = 350.0
-        ),
-        rewriteFinanceClick = { /*TODO*/ },
+fun FinancesListPreview() {
+    FinancesList(
+        finances = FakeData.fakeFinances,
         changeSelectedFinanceToChange = { },
+        rewriteFinanceClick = { },
         changeSelectedCategory = { }
     )
 }

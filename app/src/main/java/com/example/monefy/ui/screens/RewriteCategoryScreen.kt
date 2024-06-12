@@ -40,10 +40,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.monefy.data.Category
+import com.example.monefy.model.FakeData
 import com.example.monefy.utils.ColorPicker
 import kotlinx.coroutines.android.awaitFrame
 import kotlinx.coroutines.delay
@@ -275,19 +277,22 @@ fun RewriteCategory(
     }
 }
 
-//@Preview(showBackground = true)
-//@Composable
-//fun RewriteCategoryPreview() {
-//    RewriteCategory(
-//        initialName = FakeData.fakeCategories.first().name,
-//        initialColor = FakeData.fakeCategories.first().color,
-//        changeColorDialogShow = { _ -> },
-//        changeColorCategory = { _ -> },
-//        rewriteCategory = { _, _, _ -> true },
-//        removeSelectedCategoryColor = { },
-//        endOfScreen = { },
-//        deleteCategory = { },
-//        categoryColor = Color.Transparent,
-//        isColorDialogShow = false
-//    )
-//}
+@Preview
+@Composable
+fun RewriteCategoryPreview() {
+    fun fakeRewriteCategory(category1: Category, category2: Category): Boolean {
+        return false
+    }
+
+    RewriteCategory(
+        isColorDialogShow = false,
+        colorToChange = Color.Transparent,
+        initialCategory = FakeData.fakeCategoriesList.first(),
+        endOfScreen = { },
+        removeColorToChange = { },
+        changeColorDialogShow = { },
+        changeColorToChange = { },
+        rewriteCategory = ::fakeRewriteCategory,
+        deleteCategory = { }
+    )
+}

@@ -36,11 +36,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.monefy.data.Category
 import com.example.monefy.data.Finance
+import com.example.monefy.model.FakeData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.lang.Math.pow
@@ -86,21 +89,38 @@ fun Main(
     goToFinance: (Finance) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val categories = when(selectedTabIndex) {
+        0 -> getCategoriesByType("Расходы").collectAsState(emptyList()).value
+        1 -> getCategoriesByType("Доходы").collectAsState(emptyList()).value
+        else -> emptyList()
+    }.filter { it.totalCategoryPrice != 0.0 }
+
+    val tabItems = listOf("Расходы", "Доходы")
+
     Scaffold(modifier = modifier) { innerPadding ->
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = modifier.padding(innerPadding)
         ) {
+            TabRow(selectedTabIndex = selectedTabIndex) {
+                tabItems.forEachIndexed { index, item ->
+                    Tab(
+                        selected = index == selectedTabIndex,
+                        onClick = {
+                            changeSelectedTabIndex(index)
+                            updateScreen()
+                        },
+                        text = { Text(item) }
+                    )
+                }
+            }
             FinancesPieChart(
+                categories = categories,
                 isAllNotTapped = isAllNotTapped,
                 showEmptyFinancesText = showEmptyFinancesText,
-                selectedTabIndex = selectedTabIndex,
                 isHasFinances = isHasFinances,
-                getCategoriesByType = getCategoriesByType,
                 updateIsTapped = updateIsTapped,
                 getFinancesByCategoryId = getFinancesByCategoryId,
-                changeSelectedTabIndex = changeSelectedTabIndex,
-                updateScreen = updateScreen,
                 modifier = modifier.weight(1.2f)
             )
             FinancesTable(
@@ -117,31 +137,15 @@ fun Main(
 
 @Composable
 fun FinancesPieChart(
+    categories: List<Category>,
     isAllNotTapped: suspend () -> Boolean,
     showEmptyFinancesText: Boolean,
-    selectedTabIndex: Int,
-    changeSelectedTabIndex: (Int) -> Unit,
     isHasFinances: suspend () -> Boolean,
-    getCategoriesByType: (String) -> Flow<List<Category>>,
     updateIsTapped: suspend (Category) -> Unit,
     getFinancesByCategoryId: (Int) -> Flow<List<Finance>>,
-    updateScreen: () -> Unit,
     radius: Float = 300f,
     modifier: Modifier = Modifier
 ) {
-    val tabItems = listOf("Расходы", "Доходы")
-
-    val categories = when(selectedTabIndex) {
-        0 -> getCategoriesByType("Расходы").collectAsState(emptyList()).value
-        1 -> getCategoriesByType("Доходы").collectAsState(emptyList()).value
-        else -> emptyList()
-    }.filter { it.totalCategoryPrice != 0.0 }
-    val totalPriceFromAllCategories = categories.sumOf { it.totalCategoryPrice }
-    val financesMap = categories.associate { category ->
-        category.id to getFinancesByCategoryId(category.id).collectAsState(emptyList()).value
-    }.filterValues { it.isNotEmpty() }
-    val scope = rememberCoroutineScope()
-
     var hasFinances by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
         withContext(Dispatchers.IO) {
@@ -152,29 +156,26 @@ fun FinancesPieChart(
         Text("Расходов/доходов не найдено. Добавьте их!")
     }
     if (hasFinances) {
+        val scope = rememberCoroutineScope()
+
+        val totalPriceFromAllCategories = categories.sumOf { it.totalCategoryPrice }
+
+        val financesMap = categories.associate { category ->
+            category.id to getFinancesByCategoryId(category.id).collectAsState(emptyList()).value
+        }.filterValues { it.isNotEmpty() }
+
         val anglePerValue = (360 / totalPriceFromAllCategories)
         val sweepAnglePercentage = categories.map {
             (it.totalCategoryPrice * anglePerValue).toFloat()
         }
         var circleCenter by remember { mutableStateOf(Offset.Zero) }
+
         var currentCategorySumPrice by remember { mutableStateOf(totalPriceFromAllCategories) }
 
         Column(
             modifier = modifier,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            TabRow(selectedTabIndex = selectedTabIndex) {
-                tabItems.forEachIndexed { index, item ->
-                    Tab(
-                        selected = index == selectedTabIndex,
-                        onClick = {
-                            changeSelectedTabIndex(index)
-                            updateScreen()
-                        },
-                        text = { Text(item) }
-                    )
-                }
-            }
             Box(
                 contentAlignment = Alignment.Center
             ) {
@@ -216,9 +217,11 @@ fun FinancesPieChart(
                                                 scope.launch {
                                                     updateIsTapped(category)
                                                     if (!category.isTapped)
-                                                        currentCategorySumPrice = category.totalCategoryPrice
+                                                        currentCategorySumPrice =
+                                                            category.totalCategoryPrice
                                                     if (isAllNotTapped())
-                                                        currentCategorySumPrice = totalPriceFromAllCategories
+                                                        currentCategorySumPrice =
+                                                            totalPriceFromAllCategories
                                                 }
                                                 return@detectTapGestures
                                             }
@@ -422,13 +425,19 @@ fun ExpenseBlock(
     }
 }
 
-//@Preview
-//@Composable
-//fun MainPreview() {
-//    val spendingViewModel = viewModel(factory = SpendingViewModel.factory)
-//    Main(
-//        categories = FakeData.fakeCategories,
-//        totalPriceFromAllCategories = 15000.0,
-//        spendingViewModel = spendingViewModel
-//    )
-//}
+@Preview
+@Composable
+fun FinancesPieChartPreview() {
+    fun fakeIsAllNotTapped(): Boolean = false
+    fun fakeIsHasFinances(): Boolean = true
+    fun fakeUpdateIsTapped(category: Category): Boolean = false
+
+    FinancesPieChart(
+        categories = FakeData.fakeCategoriesList,
+        isAllNotTapped = ::fakeIsAllNotTapped,
+        showEmptyFinancesText = true,
+        isHasFinances = ::fakeIsHasFinances,
+        updateIsTapped = ::fakeUpdateIsTapped,
+        getFinancesByCategoryId = { _ -> flowOf() }
+    )
+}

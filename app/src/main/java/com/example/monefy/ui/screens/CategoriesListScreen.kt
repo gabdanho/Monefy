@@ -32,6 +32,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.monefy.R
 import com.example.monefy.data.Category
+import com.example.monefy.model.FakeData.fakeCategoriesList
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 
@@ -167,11 +168,11 @@ fun CategoryCard(
     }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 fun CategoriesListPreview() {
     CategoriesList(
-        getAllCategories = { flowOf(listOf()) },
+        getAllCategories = { flowOf(fakeCategoriesList) },
         changeCurrentCategoryIdForFinances = { },
         changeCategoryToRewrite = { },
         onCategoryClick = { /*TODO*/ },

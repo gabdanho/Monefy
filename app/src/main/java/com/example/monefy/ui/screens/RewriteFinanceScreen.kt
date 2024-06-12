@@ -58,20 +58,24 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.text.isDigitsOnly
 import com.example.monefy.data.Category
 import com.example.monefy.data.Finance
+import com.example.monefy.model.FakeData
 import com.example.monefy.utils.Constants
 import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
@@ -84,11 +88,13 @@ fun RewriteFinanceScreen(
 ) {
     val uiState by financesViewModel.uiState.collectAsState()
 
+    val categories by financesViewModel.getAllCategories().collectAsState(emptyList())
+
     RewriteFinance(
+        categories = categories,
         selectedCategoryId = uiState.selectedCategoryId,
         initialFinance = uiState.selectedFinanceToChange,
         endOfScreen = endOfScreen,
-        getAllCategories = financesViewModel::getAllCategories,
         changeSelectedCategory = financesViewModel::changeSelectedCategory,
         rewriteFinance = financesViewModel::rewriteFinance,
         removeSelectedCategoryId = financesViewModel::removeSelectedCategoryId,
@@ -101,10 +107,10 @@ fun RewriteFinanceScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RewriteFinance(
+    categories: List<Category>,
     selectedCategoryId: Int,
     initialFinance: Finance,
     endOfScreen: () -> Unit,
-    getAllCategories: () -> Flow<List<Category>>,
     changeSelectedCategory: (Int) -> Unit,
     rewriteFinance: (Finance, Finance) -> Unit,
     removeSelectedCategoryId: () -> Unit,
@@ -113,8 +119,6 @@ fun RewriteFinance(
     modifier: Modifier = Modifier
 ) {
     val scrollState = rememberScrollState()
-
-    val categories by getAllCategories().collectAsState(emptyList())
 
     var financeName by rememberSaveable { mutableStateOf(initialFinance.name) }
     var financePrice by rememberSaveable { mutableStateOf(initialFinance.price) }
@@ -495,21 +499,22 @@ fun ChangeCategoryCard(
     }
 }
 
-//@Preview(showBackground = true)
-//@Composable
-//fun RewriteSpendPreview() {
-//    val _category = Category()
-//    val _expense = Expense()
-//    val _expense2 = Expense()
-//    RewriteSpend(
-//        initialSpend = Expense(),
-//        rewriteExpense = { _expense, _expense2 -> },
-//        categories = FakeData.fakeCategories,
-//        changeSelectedCategory = { _ -> },
-//        removeCategory = { },
-//        deleteSpend = { _expense -> },
-//        endOfScreen = { },
-//        context = LocalContext.current,
-//        selectedCategoryName = "",
-//    )
-//}
+@Preview
+@Composable
+fun RewriteFinancePreview() {
+    fun fakeRewriteFinance(finance1: Finance, finance2: Finance): Boolean {
+        return false
+    }
+
+    RewriteFinance(
+        selectedCategoryId = 1,
+        initialFinance = FakeData.fakeFinances.first(),
+        endOfScreen = { },
+        categories = FakeData.fakeCategoriesList,
+        changeSelectedCategory = { },
+        rewriteFinance = ::fakeRewriteFinance,
+        removeSelectedCategoryId = { },
+        deleteFinance = { },
+        context = LocalContext.current
+    )
+}

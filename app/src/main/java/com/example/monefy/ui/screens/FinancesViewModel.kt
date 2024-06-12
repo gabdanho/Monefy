@@ -1,5 +1,6 @@
 package com.example.monefy.ui.screens
 
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider

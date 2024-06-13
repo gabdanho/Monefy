@@ -70,10 +70,12 @@ import com.example.monefy.utils.Constants
 import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.time.LocalDate
 
 @Composable
@@ -424,27 +426,29 @@ fun AddFinance(
                     }
                     else {
                         scope.launch {
-                            val newFinance = Finance(
-                                categoryId = selectedCategoryId,
-                                name = financeName,
-                                description = financeDescription,
-                                count = count,
-                                price = financePrice,
-                                date = pickedDate
-                            )
-                            addFinance(newFinance)
+                            withContext(Dispatchers.IO) {
+                                val newFinance = Finance(
+                                    categoryId = selectedCategoryId,
+                                    name = financeName,
+                                    description = financeDescription,
+                                    count = count,
+                                    price = financePrice,
+                                    date = pickedDate
+                                )
+                                addFinance(newFinance)
 
-                            financeName = ""
-                            financePrice = 0.0
-                            financePriceForTextFieldValue = "0"
-                            count = 1
-                            countForTextFieldValue = "1"
-                            pickedDate = LocalDate.now()
-                            financeDescription = ""
-                            removeSelectedCategoryId()
+                                financeName = ""
+                                financePrice = 0.0
+                                financePriceForTextFieldValue = "0"
+                                count = 1
+                                countForTextFieldValue = "1"
+                                pickedDate = LocalDate.now()
+                                financeDescription = ""
+                                removeSelectedCategoryId()
 
-                            snackbarHostState.currentSnackbarData?.dismiss()
-                            snackbarHostState.showSnackbar("Запись добавлена")
+                                snackbarHostState.currentSnackbarData?.dismiss()
+                                snackbarHostState.showSnackbar("Запись добавлена")
+                            }
                         }
                     }
                 },

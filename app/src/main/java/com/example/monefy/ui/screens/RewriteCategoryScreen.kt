@@ -47,9 +47,11 @@ import androidx.compose.ui.window.Dialog
 import com.example.monefy.data.Category
 import com.example.monefy.model.FakeData
 import com.example.monefy.utils.ColorPicker
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.android.awaitFrame
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun RewriteCategoryScreen(
@@ -82,7 +84,7 @@ fun RewriteCategory(
     changeColorDialogShow: (Boolean) -> Unit,
     changeColorToChange: (Color) -> Unit,
     rewriteCategory: suspend (Category, Category) -> Boolean,
-    deleteCategory: (Category) -> Unit,
+    deleteCategory: suspend (Category) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val backPressHandled = remember { mutableStateOf(false) }
@@ -102,22 +104,9 @@ fun RewriteCategory(
     val snackbarHostState = remember { SnackbarHostState() }
 
     var categoryName by rememberSaveable { mutableStateOf(initialCategory.name) }
-    var selectedType by rememberSaveable { mutableStateOf(initialCategory.type) }
-    var selectType by rememberSaveable { mutableStateOf(initialCategory.type == "Расходы") }
 
     val colorTextCategoryName = remember { mutableStateOf(Color.Black) }
     var isCategoryNameWrong by rememberSaveable { mutableStateOf(false) }
-
-    var financeFieldEnabled by rememberSaveable { mutableStateOf(false) }
-    var revenueFieldEnabled by rememberSaveable { mutableStateOf(false) }
-    if (selectedType == "Расходы") {
-        financeFieldEnabled = false
-        revenueFieldEnabled = true
-    }
-    if (selectedType == "Доходы") {
-        financeFieldEnabled = true
-        revenueFieldEnabled = false
-    }
 
     LaunchedEffect(isCategoryNameWrong) {
         for (i in 1..3) {
@@ -163,44 +152,6 @@ fun RewriteCategory(
                 )
             }
             Text(
-                text = "Тип категории",
-                modifier = Modifier.padding(4.dp)
-            )
-            Row {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    RadioButton(
-                        selected = selectType,
-                        onClick = {
-                            selectedType = "Расходы"
-                            selectType = true
-                        },
-                    )
-                    Text(
-                        text = "Расходы",
-                        modifier = Modifier.clickable {
-                            selectedType = "Расходы"
-                            selectType = true
-                        }
-                    )
-                }
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    RadioButton(
-                        selected = !selectType,
-                        onClick = {
-                            selectedType = "Доходы"
-                            selectType = false
-                        },
-                    )
-                    Text(
-                        text = "Доходы",
-                        modifier = Modifier.clickable {
-                            selectedType = "Доходы"
-                            selectType = false
-                        }
-                    )
-                }
-            }
-            Text(
                 text = "Цвет категории",
                 color = Color.Black,
                 modifier = Modifier.padding(4.dp)
@@ -234,8 +185,7 @@ fun RewriteCategory(
                         scope.launch {
                             val newCategory = initialCategory.copy(
                                 name = if (categoryName.isEmpty()) initialCategory.name else categoryName,
-                                color = if (colorToChange.toArgb() == 0) initialCategory.color else colorToChange.toArgb(),
-                                type = selectedType
+                                color = if (colorToChange.toArgb() == 0) initialCategory.color else colorToChange.toArgb()
                             )
                             val rewriteCategoryResult = rewriteCategory(initialCategory, newCategory)
 
@@ -264,8 +214,14 @@ fun RewriteCategory(
                 }
                 Button(
                     onClick = {
-                        deleteCategory(initialCategory)
-                        endOfScreen()
+                        scope.launch {
+                            withContext(Dispatchers.IO) {
+                                deleteCategory(initialCategory)
+                            }
+                            withContext(Dispatchers.Main) {
+                                endOfScreen()
+                            }
+                        }
                     },
                     colors = ButtonDefaults.buttonColors(Color.Red),
                     modifier = Modifier.width(150.dp)

@@ -44,9 +44,6 @@ interface CategoryDao {
 
     @Update
     suspend fun updateFinance(finance: Finance)
-
-    @Query("SELECT COUNT(*) FROM finances")
-    fun getCountFinances(): Int
 }
 
 data class CategoryWithFinances(

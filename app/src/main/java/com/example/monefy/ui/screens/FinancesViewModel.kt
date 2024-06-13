@@ -1,6 +1,6 @@
 package com.example.monefy.ui.screens
 
-import androidx.compose.runtime.collectAsState
+import android.util.Log
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -33,7 +33,8 @@ data class FinancesUiState(
     val selectedTabIndex: Int = 1,
     val currentCategoryIdForFinances: Int = 0,
     val selectedFinanceToChange: Finance = Finance(),
-    val showEmptyFinancesText: Boolean = false
+    val isRevenuesEmpty: Boolean = true,
+    val isSpendsEmpty: Boolean = true
 )
 
 class FinancesViewModel(private val categoryDao: CategoryDao) : ViewModel() {
@@ -42,23 +43,34 @@ class FinancesViewModel(private val categoryDao: CategoryDao) : ViewModel() {
 
     init {
         viewModelScope.launch {
-            updateShowEmptyFinancesText()
-            updateTotalCategoryPrice()
-        }
-    }
-
-    suspend fun updateShowEmptyFinancesText() {
-        withContext(Dispatchers.IO) {
-            _uiState.update { currentState ->
-                currentState.copy(showEmptyFinancesText = categoryDao.getCountFinances() > 0)
+            withContext(Dispatchers.IO) {
+                updateTotalCategoryPrice()
+                checkRevenues()
+                checkSpends()
             }
         }
     }
 
-    suspend fun isHasFinances(): Boolean {
-        return withContext(Dispatchers.IO) {
-            categoryDao.getCountFinances() > 0
+    private suspend fun checkRevenues() {
+        withContext(Dispatchers.IO) {
+            _uiState.update { currentState ->
+                currentState.copy(
+                    isRevenuesEmpty = categoryDao.getCategoriesByType("Доходы").first().all { it.totalCategoryPrice == 0.0 }
+                )
+            }
         }
+        Log.i("FinancesViewModel", uiState.value.isRevenuesEmpty.toString())
+    }
+
+    private suspend fun checkSpends() {
+        withContext(Dispatchers.IO) {
+            _uiState.update { currentState ->
+                currentState.copy(
+                    isSpendsEmpty = categoryDao.getCategoriesByType("Расходы").first().all { it.totalCategoryPrice == 0.0 }
+                )
+            }
+        }
+        Log.i("FinancesViewModel", uiState.value.isSpendsEmpty.toString())
     }
 
     fun changeSelectedTabIndex(index: Int) {
@@ -120,14 +132,16 @@ class FinancesViewModel(private val categoryDao: CategoryDao) : ViewModel() {
     }
 
     suspend fun addFinance(newFinance: Finance) {
-        if (categoryDao.getCategoryById(newFinance.categoryId).first().type == "Расходы")
+        if (categoryDao.getCategoryById(newFinance.categoryId).first().type == "Расходы") {
             categoryDao.addFinance(newFinance.copy(type = "Трата"))
-        else
+        }
+        else {
             categoryDao.addFinance(newFinance.copy(type = "Доход"))
-
-        if (uiState.value.showEmptyFinancesText == false ) updateShowEmptyFinancesText()
+        }
 
         updateTotalCategoryPrice()
+        checkRevenues()
+        checkSpends()
     }
 
     suspend fun updateIsTapped(tappedCategory: Category) {
@@ -230,12 +244,9 @@ class FinancesViewModel(private val categoryDao: CategoryDao) : ViewModel() {
         }
     }
 
-    fun deleteCategory(
-        category: Category
-    ) {
-        viewModelScope.launch {
+    suspend fun deleteCategory(category: Category) {
+        withContext(Dispatchers.IO) {
             categoryDao.deleteCategory(category)
-
             updateTotalCategoryPrice()
         }
     }
@@ -244,26 +255,30 @@ class FinancesViewModel(private val categoryDao: CategoryDao) : ViewModel() {
         viewModelScope.launch {
             categoryDao.deleteFinance(finance)
             updateTotalCategoryPrice()
+            checkRevenues()
+            checkSpends()
         }
     }
 
     fun rewriteFinance(initialFinance: Finance, newFinance: Finance) {
+        Log.i("FinancesViewModel", "init = ${initialFinance.categoryId} new = ${newFinance.categoryId}")
         viewModelScope.launch {
             if (initialFinance.categoryId != newFinance.categoryId) {
                 categoryDao.deleteFinance(initialFinance)
 
                 if (categoryDao.getCategoryById(newFinance.categoryId).first().type == "Расходы") {
-                    categoryDao.addFinance(newFinance.copy(type = "Трата"))
+                    addFinance(newFinance.copy(type = "Трата"))
                 }
                 else {
-                    categoryDao.addFinance(newFinance.copy(type = "Доход"))
+                    addFinance(newFinance.copy(type = "Доход"))
                 }
             }
             else {
                 categoryDao.updateFinance(newFinance)
             }
-
             updateTotalCategoryPrice()
+            checkSpends()
+            checkRevenues()
         }
     }
 

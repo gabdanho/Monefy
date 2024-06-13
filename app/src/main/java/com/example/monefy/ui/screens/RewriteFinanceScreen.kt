@@ -73,10 +73,12 @@ import com.example.monefy.utils.Constants
 import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.time.LocalDate
 
 @Composable
@@ -112,9 +114,9 @@ fun RewriteFinance(
     initialFinance: Finance,
     endOfScreen: () -> Unit,
     changeSelectedCategory: (Int) -> Unit,
-    rewriteFinance: (Finance, Finance) -> Unit,
+    rewriteFinance: suspend (Finance, Finance) -> Unit,
     removeSelectedCategoryId: () -> Unit,
-    deleteFinance: (Finance) -> Unit,
+    deleteFinance: suspend (Finance) -> Unit,
     context: Context,
     modifier: Modifier = Modifier
 ) {
@@ -400,7 +402,11 @@ fun RewriteFinance(
                                 date = pickedDate,
                                 count = count
                             )
-                            rewriteFinance(initialFinance, newFinance)
+                            scope.launch {
+                                withContext(Dispatchers.IO) {
+                                    rewriteFinance(initialFinance, newFinance)
+                                }
+                            }
                             scope.launch {
                                 snackbarHostState.currentSnackbarData?.dismiss()
                                 snackbarHostState.showSnackbar("Запись изменена")
@@ -417,8 +423,10 @@ fun RewriteFinance(
                 }
                 Button(
                     onClick = {
-                        deleteFinance(initialFinance)
-                        endOfScreen()
+                        scope.launch {
+                            deleteFinance(initialFinance)
+                            endOfScreen()
+                        }
                     },
                     colors = ButtonDefaults.buttonColors(Color.Red),
                     modifier = Modifier.width(150.dp)

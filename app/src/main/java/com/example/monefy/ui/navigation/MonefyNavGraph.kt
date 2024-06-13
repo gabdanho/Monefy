@@ -3,6 +3,7 @@ package com.example.monefy.ui.navigation
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -17,6 +18,9 @@ import com.example.monefy.ui.screens.RewriteCategoryScreen
 import com.example.monefy.ui.screens.FinanceListScreen
 import com.example.monefy.ui.screens.RewriteFinanceScreen
 import com.example.monefy.ui.screens.FinancesViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun MonefyNavGraph(
@@ -38,11 +42,11 @@ fun MonefyNavGraph(
                 financesViewModel = financesViewModel,
                 updateScreen = { navController.navigate(route = "MainScreen") },
                 goToFinance = { finance ->
+                    financesViewModel.changeSelectedCategory(finance.categoryId)
                     financesViewModel.changeSelectedFinanceToChange(finance)
                     navController.navigate(route = "RewriteFinanceScreen")
                 }
             )
-            financesViewModel.resetAllTapedCategories()
         }
         composable(route = "AddFinanceScreen") {
             AddFinanceScreen(

@@ -45,8 +45,10 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.monefy.data.Category
 import com.example.monefy.utils.ColorPicker
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun AddCategoryScreen(
@@ -314,6 +316,6 @@ fun AddCategoryPreview() {
         changeColorDialogShow = { _boolean ->  },
         changeColorCategory = { _color ->  },
         addCategory = { _category -> false },
-        removeSelectedCategoryColor = { /*TODO*/ },
-        endOfScreen = { /*TODO*/ })
+        removeSelectedCategoryColor = { },
+        endOfScreen = { })
 }

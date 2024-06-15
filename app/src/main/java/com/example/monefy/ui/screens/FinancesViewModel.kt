@@ -30,7 +30,8 @@ data class FinancesUiState(
     val selectedCategoryIdFinances: Int = 0,
     val categoryToRewrite: Category = Category(),
     val colorToChange: Color = Color.Transparent,
-    val selectedTabIndex: Int = 1,
+    val selectedTabIndex: Int = 0,
+    val selectedDateRangeIndex: Int = 1,
     val currentCategoryIdForFinances: Int = 0,
     val selectedFinanceToChange: Finance = Finance(),
     val isRevenuesEmpty: Boolean = true,
@@ -76,6 +77,12 @@ class FinancesViewModel(private val categoryDao: CategoryDao) : ViewModel() {
     fun changeSelectedTabIndex(index: Int) {
         _uiState.update { currentState ->
             currentState.copy(selectedTabIndex = index)
+        }
+    }
+
+    fun changeSelectedDateRangeIndex(index: Int) {
+        _uiState.update { currentState ->
+            currentState.copy(selectedDateRangeIndex = index)
         }
     }
 

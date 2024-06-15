@@ -38,18 +38,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.monefy.data.Category
 import com.example.monefy.data.Finance
-import com.example.monefy.model.FakeData
-import kotlinx.coroutines.Dispatchers
+import com.example.monefy.utils.isDateInRange
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.lang.Math.pow
+import java.time.LocalDate
 import kotlin.math.PI
 import kotlin.math.atan2
 
@@ -64,14 +63,14 @@ fun MainScreen(
     financesViewModel.resetAllTapedCategories()
 
     Main(
-        isRevenuesEmpty = financesUiState.isRevenuesEmpty,
-        isSpendsEmpty = financesUiState.isSpendsEmpty,
         isAllNotTapped = financesViewModel::isAllNotTapped,
         selectedTabIndex = financesUiState.selectedTabIndex,
+        selectedDateRangeIndex = financesUiState.selectedDateRangeIndex,
         getCategoriesByType = financesViewModel::getCategoriesByType,
         updateIsTapped = financesViewModel::updateIsTapped,
         getFinancesByCategoryId = financesViewModel::getFinancesByCategoryId,
         changeSelectedTabIndex = financesViewModel::changeSelectedTabIndex,
+        changeSelectedDateRangeIndex = financesViewModel::changeSelectedDateRangeIndex,
         updateScreen = updateScreen,
         goToFinance = goToFinance,
         modifier = modifier
@@ -80,11 +79,11 @@ fun MainScreen(
 
 @Composable
 fun Main(
-    isRevenuesEmpty: Boolean,
-    isSpendsEmpty: Boolean,
     isAllNotTapped: suspend () -> Boolean,
     selectedTabIndex: Int,
+    selectedDateRangeIndex: Int,
     changeSelectedTabIndex: (Int) -> Unit,
+    changeSelectedDateRangeIndex: (Int) -> Unit,
     getCategoriesByType: (String) -> Flow<List<Category>>,
     updateIsTapped: suspend (Category) -> Unit,
     getFinancesByCategoryId: (Int) -> Flow<List<Finance>>,
@@ -92,13 +91,8 @@ fun Main(
     goToFinance: (Finance) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val categories = when (selectedTabIndex) {
-        0 -> getCategoriesByType("Расходы").collectAsState(emptyList()).value
-        1 -> getCategoriesByType("Доходы").collectAsState(emptyList()).value
-        else -> emptyList()
-    }.filter { it.totalCategoryPrice != 0.0 }
-
     val tabItems = listOf("Расходы", "Доходы")
+    val tabDateRangeItems = listOf("Год", "Месяц", "Сегодня")
 
     Scaffold(modifier = modifier) { innerPadding ->
         Column(
@@ -117,28 +111,120 @@ fun Main(
                     )
                 }
             }
-            if (categories.isNotEmpty()) {
-                FinancesPieChart(
-                    categories = categories,
-                    isAllNotTapped = isAllNotTapped,
-                    updateIsTapped = updateIsTapped,
-                    getFinancesByCategoryId = getFinancesByCategoryId,
-                    modifier = modifier.weight(1.2f)
-                )
-                FinancesTable(
-                    selectedTabIndex = selectedTabIndex,
-                    getCategoriesByType = getCategoriesByType,
-                    getFinancesByCategoryId = getFinancesByCategoryId,
-                    goToFinance = goToFinance,
-                    modifier = modifier.weight(1f)
-                )
+            TabRow(
+                selectedTabIndex = selectedDateRangeIndex,
+                modifier = Modifier.padding(bottom = 16.dp)
+            ) {
+                tabDateRangeItems.forEachIndexed { index, item ->
+                    Tab(
+                        selected = index == selectedDateRangeIndex,
+                        onClick = {
+                            changeSelectedDateRangeIndex(index)
+                            updateScreen()
+                        },
+                        text = { Text(item) }
+                    )
+                }
+            }
+
+            var categories by remember { mutableStateOf<List<Category>?>(null) }
+            var financesMap by remember { mutableStateOf<Map<Int, List<Finance>>?>(null) }
+            var isLoadingCategories by remember { mutableStateOf(true) }
+            var isLoadingFinances by remember { mutableStateOf(true) }
+
+            LaunchedEffect(selectedTabIndex) {
+                isLoadingCategories = true
+                val flow = if (selectedTabIndex == 0)
+                    getCategoriesByType("Расходы")
+                else
+                    getCategoriesByType("Доходы")
+
+                flow.collect { fetchedCategories ->
+                    categories = fetchedCategories.filter { it.totalCategoryPrice != 0.0 }
+                    isLoadingCategories = false
+                }
+            }
+
+            if (isLoadingCategories) { }
+            else if (categories.isNullOrEmpty()) {
+                if (selectedTabIndex == 0) {
+                    Text("Расходов не найдено. Добавьте их!")
+                } else if (selectedTabIndex == 1) {
+                    Text("Доходов не найдено. Добавьте их!")
+                }
             }
             else {
-                if (selectedTabIndex == 0 && isSpendsEmpty) {
-                    Text("Расходов не найдено. Добавьте их!")
+                val dateRange = when(selectedDateRangeIndex) {
+                    0 -> {
+                        val now = LocalDate.now()
+                        val startOfYear = now.withDayOfYear(1)
+                        val endOfYear = now.withDayOfYear(now.lengthOfYear())
+                        listOf(startOfYear, endOfYear)
+                    }
+                    1 -> {
+                        val now = LocalDate.now()
+                        val startOfMonth = now.withDayOfMonth(1)
+                        val endOfMonth = now.withDayOfMonth(now.lengthOfMonth())
+                        listOf(startOfMonth, endOfMonth)
+                    }
+                    2 -> {
+                        listOf(LocalDate.now(), LocalDate.now())
+                    }
+                    else -> listOf(LocalDate.now(), LocalDate.now())
                 }
-                else if (selectedTabIndex == 1 && isRevenuesEmpty) {
-                    Text("Доходов не найдено. Добавьте их!")
+
+                LaunchedEffect(categories) {
+                    isLoadingFinances = true
+                    val flowMap = categories!!.associate { category ->
+                        category.id to getFinancesByCategoryId(category.id)
+                    }
+
+                    val combinedFlow = combine(flowMap.values.toList()) { financeLists ->
+                        flowMap.keys.zip(financeLists).toMap()
+                    }
+
+                    combinedFlow.collect { newFinancesMap ->
+                        financesMap = newFinancesMap.mapValues { (_, finances) ->
+                            finances.filter { isDateInRange(it.date, dateRange[0], dateRange[1]) }
+                        }.filterValues { it.isNotEmpty() }
+                        isLoadingFinances = false
+                    }
+                }
+                Log.i("MainScreen", financesMap.toString())
+                if (isLoadingFinances) { }
+                else if (financesMap.isNullOrEmpty()) {
+                    Text(text = "Нет данных для отображения")
+                }
+                else {
+                    val finances = financesMap!!.values.flatten()
+                    val categoriesToSumFinance = categories!!.filter { it.id in financesMap!!.keys }.associate { category ->
+                        category to finances.filter { it.categoryId == category.id }.sumOf { it.price * it.count.toDouble() }
+                    }
+
+                    var totalPriceFromAllCategories = 0.0
+                    financesMap!!.values.forEach { category ->
+                        category.forEach { finance ->
+                            totalPriceFromAllCategories += finance.price * finance.count.toDouble()
+                        }
+                    }
+                    if (categoriesToSumFinance.isNotEmpty() && totalPriceFromAllCategories != 0.0) {
+                        FinancesPieChart(
+                            categoriesToSumFinance = categoriesToSumFinance,
+                            financesMap = financesMap!!,
+                            totalPriceFromAllCategories = totalPriceFromAllCategories,
+                            isAllNotTapped = isAllNotTapped,
+                            updateIsTapped = updateIsTapped,
+                            modifier = modifier.weight(1.2f)
+                        )
+                        FinancesTable(
+                            totalPriceFromAllCategories = totalPriceFromAllCategories,
+                            categoriesToSumFinance = categoriesToSumFinance,
+                            dateRange = dateRange,
+                            getFinancesByCategoryId = getFinancesByCategoryId,
+                            goToFinance = goToFinance,
+                            modifier = modifier.weight(1f)
+                        )
+                    }
                 }
             }
         }
@@ -147,29 +233,17 @@ fun Main(
 
 @Composable
 fun FinancesPieChart(
-    categories: List<Category>,
+    totalPriceFromAllCategories: Double,
+    categoriesToSumFinance: Map<Category, Double>,
+    financesMap: Map<Int, List<Finance>>,
     isAllNotTapped: suspend () -> Boolean,
     updateIsTapped: suspend (Category) -> Unit,
-    getFinancesByCategoryId: (Int) -> Flow<List<Finance>>,
     radius: Float = 300f,
     modifier: Modifier = Modifier
 ) {
     val scope = rememberCoroutineScope()
 
-    val totalPriceFromAllCategories = categories.sumOf { it.totalCategoryPrice }
-
-    val financesMap = categories.associate { category ->
-        category.id to getFinancesByCategoryId(category.id).collectAsState(emptyList()).value
-    }.filterValues { it.isNotEmpty() }
-
-    val anglePerValue = (360 / totalPriceFromAllCategories)
-    val sweepAnglePercentage = categories.map {
-        (it.totalCategoryPrice * anglePerValue).toFloat()
-    }
-    var circleCenter by remember { mutableStateOf(Offset.Zero) }
-
     var currentCategorySumPrice by remember { mutableStateOf(totalPriceFromAllCategories) }
-
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
@@ -177,6 +251,13 @@ fun FinancesPieChart(
         Box(
             contentAlignment = Alignment.Center
         ) {
+            val anglePerValue = (360 / totalPriceFromAllCategories)
+
+            val sweepAnglePercentage = categoriesToSumFinance.values.toList().map {
+                (it * anglePerValue).toFloat()
+            }
+            var circleCenter by remember { mutableStateOf(Offset.Zero) }
+
             Canvas(
                 modifier = Modifier
                     .fillMaxSize()
@@ -209,14 +290,15 @@ fun FinancesPieChart(
                                     // по углу смотрим в какую категорию попадаем
                                     var currentAngle = 0f
 
-                                    categories.forEach { category ->
-                                        currentAngle += category.totalCategoryPrice.toFloat() * anglePerValue.toFloat()
+                                    categoriesToSumFinance.forEach { category ->
+                                        currentAngle += category.value.toFloat() * anglePerValue.toFloat()
                                         if (tapAngleInDegrees < currentAngle) {
                                             scope.launch {
-                                                updateIsTapped(category)
-                                                if (!category.isTapped)
+                                                updateIsTapped(category.key)
+                                                if (!category.key.isTapped)
                                                     currentCategorySumPrice =
-                                                        category.totalCategoryPrice
+                                                        financesMap[category.key.id]?.sumOf { it.price * it.count.toDouble() }
+                                                            ?: 0.0
                                                 if (isAllNotTapped())
                                                     currentCategorySumPrice =
                                                         totalPriceFromAllCategories
@@ -245,13 +327,13 @@ fun FinancesPieChart(
                     )
                 )
 
-                for (i in categories.indices) {
-                    val finances = financesMap[categories[i].id] ?: emptyList()
+                for (i in categoriesToSumFinance.keys.indices) {
+                    val finances = financesMap[categoriesToSumFinance.keys.toList()[i].id] ?: emptyList()
                     if (finances.isNotEmpty()) {
-                        val scale = if (categories[i].isTapped) 1.1f else 1.0f
+                        val scale = if (categoriesToSumFinance.keys.toList()[i].isTapped) 1.1f else 1.0f
                         scale(scale) {
                             drawArc(
-                                color = Color(categories[i].color),
+                                color = Color(categoriesToSumFinance.keys.toList()[i].color),
                                 startAngle = startAngle,
                                 sweepAngle = sweepAnglePercentage[i],
                                 useCenter = false,
@@ -279,41 +361,40 @@ fun FinancesPieChart(
 
 @Composable
 fun FinancesTable(
-    selectedTabIndex: Int,
-    getCategoriesByType: (String) -> Flow<List<Category>>,
+    totalPriceFromAllCategories: Double,
+    categoriesToSumFinance: Map<Category, Double>,
+    dateRange: List<LocalDate>,
     getFinancesByCategoryId: (Int) -> Flow<List<Finance>>,
     goToFinance: (Finance) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val categories = when(selectedTabIndex) {
-        0 -> getCategoriesByType("Расходы").collectAsState(emptyList()).value
-        1 -> getCategoriesByType("Доходы").collectAsState(emptyList()).value
-        else -> emptyList()
-    }
-    val totalPriceFromAllCategories = categories.sumOf { it.totalCategoryPrice }
     Column(modifier = modifier.padding(8.dp)) {
         LazyColumn {
-            items(categories) { category ->
+            items(categoriesToSumFinance.keys.toList()) { category ->
                 val finances by getFinancesByCategoryId(category.id).collectAsState(emptyList())
+                val filteredByDateFinances = finances.filter { isDateInRange(it.date, dateRange[0], dateRange[1]) }
+
                 var totalCategoriesPrice by rememberSaveable { mutableStateOf(0.0) }
                 LaunchedEffect(Unit) {
                     totalCategoriesPrice = totalPriceFromAllCategories
                 }
 
-                if (finances.isNotEmpty() && categories.all { !it.isTapped }) {
+                if (filteredByDateFinances.isNotEmpty() && categoriesToSumFinance.keys.toList().all { !it.isTapped }) {
                     ExpenseBlock(
+                        finances = filteredByDateFinances,
                         category = category,
+                        categorySum = categoriesToSumFinance[category] ?: 0.0,
                         totalPrice = totalCategoriesPrice,
-                        getFinancesByCategoryId = getFinancesByCategoryId,
                         goToFinance = goToFinance,
                         showAllExpensesWithoutClick = false
                     )
                 }
                 else if (category.isTapped) {
                     ExpenseBlock(
+                        finances = filteredByDateFinances,
                         category = category,
+                        categorySum = categoriesToSumFinance[category] ?: 0.0,
                         totalPrice = totalCategoriesPrice,
-                        getFinancesByCategoryId = getFinancesByCategoryId,
                         goToFinance = goToFinance,
                         showAllExpensesWithoutClick = true
                     )
@@ -325,17 +406,16 @@ fun FinancesTable(
 
 @Composable
 fun ExpenseBlock(
+    finances: List<Finance>,
     category: Category,
+    categorySum: Double,
     totalPrice: Double,
     showAllExpensesWithoutClick: Boolean,
-    getFinancesByCategoryId: (Int) -> Flow<List<Finance>>,
     goToFinance: (Finance) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val finances by getFinancesByCategoryId(category.id).collectAsState(emptyList())
-
     var expanded by rememberSaveable { mutableStateOf(false) }
-    val percentage = String.format("%.2f", (category.totalCategoryPrice / totalPrice) * 100)
+    val percentage = String.format("%.2f", (categorySum / totalPrice) * 100)
 
     Column {
         Row(
@@ -361,7 +441,7 @@ fun ExpenseBlock(
                 )
             }
             Text(
-                text = "${category.totalCategoryPrice} ($percentage %)",
+                text = "${categorySum} ($percentage %)",
                 style = MaterialTheme.typography.titleSmall,
             )
         }
@@ -410,15 +490,3 @@ fun ExpenseBlock(
         }
     }
 }
-
-//@Preview
-//@Composable
-//fun FinancesTablePreview() {
-//    FinancesTable(
-//        selectedTabIndex = -1,
-//        isHasFinances =,
-//        getCategoriesByType = ,
-//        getFinancesByCategoryId = ,
-//        goToFinance =
-//    )
-//}

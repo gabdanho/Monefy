@@ -106,6 +106,7 @@ fun Main(
 ) {
     val tabItems = listOf("Расходы", "Доходы")
     val tabDateRangeItems = listOf("...", "Год", "Месяц", "Сегодня")
+    var isHasFinances by remember { mutableStateOf(false) }
 
     Scaffold(modifier = modifier) { innerPadding ->
         if (showDateRangeDialog) {
@@ -133,40 +134,42 @@ fun Main(
                     )
                 }
             }
-            TabRow(
-                selectedTabIndex = selectedDateRangeIndex,
-                modifier = Modifier.padding(bottom = 16.dp)
-            ) {
-                tabDateRangeItems.forEachIndexed { index, item ->
-                    Tab(
-                        selected = index == selectedDateRangeIndex,
-                        onClick = {
-                            if (index == 0) {
-                                changeShowDateRangeDialog(true)
+            if (isHasFinances) {
+                TabRow(
+                    selectedTabIndex = selectedDateRangeIndex,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                ) {
+                    tabDateRangeItems.forEachIndexed { index, item ->
+                        Tab(
+                            selected = index == selectedDateRangeIndex,
+                            onClick = {
+                                if (index == 0) {
+                                    changeShowDateRangeDialog(true)
+                                }
+                                changeSelectedDateRangeIndex(index)
+                                updateScreen()
                             }
-                            changeSelectedDateRangeIndex(index)
-                            updateScreen()
-                        }
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(30.dp)
                         ) {
-                            if (item == "...") {
-                                Icon(
-                                    imageVector = Icons.Filled.DateRange,
-                                    contentDescription = "Выбрать собственный промежуток времени",
-                                    modifier = Modifier
-                                )
-                            }
-                            else {
-                                Text(
-                                    text = item,
-                                    modifier = Modifier
-                                )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(30.dp)
+                            ) {
+                                if (item == "...") {
+                                    Icon(
+                                        imageVector = Icons.Filled.DateRange,
+                                        contentDescription = "Выбрать собственный промежуток времени",
+                                        modifier = Modifier
+                                    )
+                                }
+                                else {
+                                    Text(
+                                        text = item,
+                                        modifier = Modifier
+                                    )
+                                }
                             }
                         }
                     }
@@ -193,6 +196,7 @@ fun Main(
 
             if (isLoadingCategories) { }
             else if (categories.isNullOrEmpty()) {
+                isHasFinances = false
                 if (selectedTabIndex == 0) {
                     Text("Расходов не найдено. Добавьте их!")
                 } else if (selectedTabIndex == 1) {
@@ -200,6 +204,7 @@ fun Main(
                 }
             }
             else {
+                isHasFinances = true
                 val dateRange = when(selectedDateRangeIndex) {
                     0 -> {
                         customDateRange

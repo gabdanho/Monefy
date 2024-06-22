@@ -11,12 +11,17 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
@@ -41,11 +46,10 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import com.example.monefy.data.Category
 import com.example.monefy.data.Finance
+import com.example.monefy.utils.CustomDateRangePicker
 import com.example.monefy.utils.isDateInRange
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import java.lang.Math.pow
 import java.time.LocalDate
@@ -63,6 +67,8 @@ fun MainScreen(
     financesViewModel.resetAllTapedCategories()
 
     Main(
+        customDateRange = financesUiState.customDateRange,
+        showDateRangeDialog = financesUiState.showDateRangeDialog,
         isAllNotTapped = financesViewModel::isAllNotTapped,
         selectedTabIndex = financesUiState.selectedTabIndex,
         selectedDateRangeIndex = financesUiState.selectedDateRangeIndex,
@@ -71,15 +77,21 @@ fun MainScreen(
         getFinancesByCategoryId = financesViewModel::getFinancesByCategoryId,
         changeSelectedTabIndex = financesViewModel::changeSelectedTabIndex,
         changeSelectedDateRangeIndex = financesViewModel::changeSelectedDateRangeIndex,
+        changeShowDateRangeDialog = financesViewModel::changeShowDateRangeDialog,
+        updateCustomDateRange = financesViewModel::updateCustomDateRange,
         updateScreen = updateScreen,
         goToFinance = goToFinance,
         modifier = modifier
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Main(
+    customDateRange: List<LocalDate>,
     isAllNotTapped: suspend () -> Boolean,
+    showDateRangeDialog: Boolean,
+    changeShowDateRangeDialog: (Boolean) -> Unit,
     selectedTabIndex: Int,
     selectedDateRangeIndex: Int,
     changeSelectedTabIndex: (Int) -> Unit,
@@ -87,14 +99,24 @@ fun Main(
     getCategoriesByType: (String) -> Flow<List<Category>>,
     updateIsTapped: suspend (Category) -> Unit,
     getFinancesByCategoryId: (Int) -> Flow<List<Finance>>,
+    updateCustomDateRange: (List<LocalDate>) -> Unit,
     updateScreen: () -> Unit,
     goToFinance: (Finance) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val tabItems = listOf("Расходы", "Доходы")
-    val tabDateRangeItems = listOf("Год", "Месяц", "Сегодня")
+    val tabDateRangeItems = listOf("...", "Год", "Месяц", "Сегодня")
 
     Scaffold(modifier = modifier) { innerPadding ->
+        if (showDateRangeDialog) {
+            ModalBottomSheet(onDismissRequest = { changeShowDateRangeDialog(false) }) {
+                CustomDateRangePicker(
+                    changeShowDateRangeDialog = changeShowDateRangeDialog,
+                    updateDateRange = updateCustomDateRange,
+                    updateScreen = updateScreen
+                )
+            }
+        }
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = modifier.padding(innerPadding)
@@ -119,11 +141,35 @@ fun Main(
                     Tab(
                         selected = index == selectedDateRangeIndex,
                         onClick = {
+                            if (index == 0) {
+                                changeShowDateRangeDialog(true)
+                            }
                             changeSelectedDateRangeIndex(index)
                             updateScreen()
-                        },
-                        text = { Text(item) }
-                    )
+                        }
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(30.dp)
+                        ) {
+                            if (item == "...") {
+                                Icon(
+                                    imageVector = Icons.Filled.DateRange,
+                                    contentDescription = "Выбрать собственный промежуток времени",
+                                    modifier = Modifier
+                                )
+                            }
+                            else {
+                                Text(
+                                    text = item,
+                                    modifier = Modifier
+                                )
+                            }
+                        }
+                    }
                 }
             }
 
@@ -156,24 +202,28 @@ fun Main(
             else {
                 val dateRange = when(selectedDateRangeIndex) {
                     0 -> {
+                        customDateRange
+                    }
+                    1 -> {
                         val now = LocalDate.now()
                         val startOfYear = now.withDayOfYear(1)
                         val endOfYear = now.withDayOfYear(now.lengthOfYear())
                         listOf(startOfYear, endOfYear)
                     }
-                    1 -> {
+                    2 -> {
                         val now = LocalDate.now()
                         val startOfMonth = now.withDayOfMonth(1)
                         val endOfMonth = now.withDayOfMonth(now.lengthOfMonth())
                         listOf(startOfMonth, endOfMonth)
                     }
-                    2 -> {
+                    3 -> {
                         listOf(LocalDate.now(), LocalDate.now())
                     }
                     else -> listOf(LocalDate.now(), LocalDate.now())
                 }
+                Log.i("MainScreen", dateRange.toString())
 
-                LaunchedEffect(categories) {
+                LaunchedEffect(Unit) {
                     isLoadingFinances = true
                     val flowMap = categories!!.associate { category ->
                         category.id to getFinancesByCategoryId(category.id)
@@ -190,7 +240,6 @@ fun Main(
                         isLoadingFinances = false
                     }
                 }
-                Log.i("MainScreen", financesMap.toString())
                 if (isLoadingFinances) { }
                 else if (financesMap.isNullOrEmpty()) {
                     Text(text = "Нет данных для отображения")

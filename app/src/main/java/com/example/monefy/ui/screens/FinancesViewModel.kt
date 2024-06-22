@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.time.LocalDate
 
 data class FinancesUiState(
     val selectedCategoryColor: Color = Color.Transparent,
@@ -31,11 +32,13 @@ data class FinancesUiState(
     val categoryToRewrite: Category = Category(),
     val colorToChange: Color = Color.Transparent,
     val selectedTabIndex: Int = 0,
-    val selectedDateRangeIndex: Int = 1,
+    val selectedDateRangeIndex: Int = 2,
     val currentCategoryIdForFinances: Int = 0,
     val selectedFinanceToChange: Finance = Finance(),
     val isRevenuesEmpty: Boolean = true,
-    val isSpendsEmpty: Boolean = true
+    val isSpendsEmpty: Boolean = true,
+    val showDateRangeDialog: Boolean = false,
+    val customDateRange: List<LocalDate> = listOf(LocalDate.now(), LocalDate.now())
 )
 
 class FinancesViewModel(private val categoryDao: CategoryDao) : ViewModel() {
@@ -77,6 +80,18 @@ class FinancesViewModel(private val categoryDao: CategoryDao) : ViewModel() {
     fun changeSelectedTabIndex(index: Int) {
         _uiState.update { currentState ->
             currentState.copy(selectedTabIndex = index)
+        }
+    }
+
+    fun updateCustomDateRange(dateRange: List<LocalDate>) {
+        _uiState.update { currentState ->
+            currentState.copy(customDateRange = dateRange)
+        }
+    }
+
+    fun changeShowDateRangeDialog(isShow: Boolean) {
+        _uiState.update { currentState ->
+            currentState.copy(showDateRangeDialog = isShow)
         }
     }
 

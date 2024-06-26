@@ -106,6 +106,7 @@ fun RewriteFinanceScreen(
     )
 }
 
+// Переписать финанс
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RewriteFinance(
@@ -134,6 +135,7 @@ fun RewriteFinance(
     val colorTextFinanceName = remember { mutableStateOf(Color.Black) }
     val colorTextSelectedCategory = remember { mutableStateOf(Color.Black) }
 
+    // Если категория не выбрана, уведомляем пользователю миганием
     LaunchedEffect(isSelectedCategoryNotSelected) {
         for (i in 1..3) {
             colorTextSelectedCategory.value = Color.Red
@@ -144,6 +146,7 @@ fun RewriteFinance(
         isSelectedCategoryNotSelected = false
     }
 
+    // Если название финанса не выбрано, уведомляем пользователю миганием
     LaunchedEffect(isFinanceNameNotSelected) {
         for (i in 1..3) {
             colorTextFinanceName.value = Color.Red
@@ -161,6 +164,7 @@ fun RewriteFinance(
     val snackbarHostState = remember { SnackbarHostState() }
 
     Scaffold(
+        // Настройка снэкбара
         snackbarHost = { SnackbarHost(snackbarHostState) { data ->
             Snackbar(
                 snackbarData = data,
@@ -176,8 +180,9 @@ fun RewriteFinance(
                 .padding(innerPadding)
                 .verticalScroll(state = scrollState)
         ) {
+            // Название финанса
             Text(
-                text = "Название траты",
+                text = "Название",
                 color = if (!isFinanceNameNotSelected) Color.Black else colorTextFinanceName.value,
                 modifier = Modifier.padding(4.dp)
             )
@@ -185,6 +190,7 @@ fun RewriteFinance(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(bottom = 8.dp)
             ) {
+                // Поле ввода названия
                 TextField(
                     value = financeName,
                     onValueChange = { financeName = it },
@@ -194,6 +200,7 @@ fun RewriteFinance(
                     modifier = Modifier.weight(4f)
                 )
             }
+            // Цена финанса
             Text(
                 text = "Цена",
                 modifier = Modifier.padding(4.dp)
@@ -202,15 +209,19 @@ fun RewriteFinance(
                 TextField(
                     value = financePriceForTextFieldValue,
                     onValueChange = {
+                        // Если значение пусто или нажимается первой точка, то значение 0.0
                         if (it == "" || it == ".") {
                             financePriceForTextFieldValue = ""
                             financePrice = 0.0
                         }
+                        // Если пользователь удаляет символ
                         else if (it.length < financePriceForTextFieldValue.length) {
                             financePriceForTextFieldValue = it
                             financePrice = it.toDouble()
                         }
+                        // Если пользователь пытается ввести после введённого нуля еще один - запрещаем
                         else if (it == "00") { }
+                        // Проверяем, что вводится цифра или точка && Точка одна или нет && Проверяем чтобы число не было больше константы
                         else if (it.all { it.isDigit() || it == '.' } && it.count { it == '.' } <= 1 && it.toDouble() < Constants.maxPrice) {
                             financePriceForTextFieldValue = it
                             financePrice = it.toDouble()
@@ -237,6 +248,7 @@ fun RewriteFinance(
                         }
                 )
             }
+            // Количество
             Text(
                 text = "Количество",
                 modifier = Modifier.padding(4.dp)
@@ -245,6 +257,7 @@ fun RewriteFinance(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(bottom = 8.dp)
             ) {
+                // Уменьшить количество на 1 кнопкой
                 IconButton(
                     onClick = {
                         if (count > 1) {
@@ -258,18 +271,23 @@ fun RewriteFinance(
                         contentDescription = "Уменьшить количество"
                     )
                 }
+                // Поле ввода количества
                 BasicTextField(
                     value = countForTextFieldValue,
                     onValueChange = {
+                        // Если пусто, то количество = 1
                         if (it == "") {
                             countForTextFieldValue = ""
                             count = 1
                         }
+                        // Если пользователь удаляет символ
                         else if (it.length < countForTextFieldValue.length) {
                             countForTextFieldValue = it
                             count = it.toInt()
                         }
+                        // Если 0 - ничего не делаем, т.к. 0 быть не может
                         else if (it == "0") { }
+                        // Проверяем, что только цифры && Количество меньше константы
                         else if (it.isDigitsOnly() && it.toInt() < Constants.maxCount) {
                             countForTextFieldValue = it
                             count = it.toInt()
@@ -283,10 +301,13 @@ fun RewriteFinance(
                     modifier = Modifier
                         .width(70.dp)
                         .onFocusChanged { focusState ->
+                            // Если пользователь нажимает на поле ввода количества, то очищаем поле (при этом минималка будет = 1)
                             if (focusState.isFocused) {
                                 count = 1
                                 countForTextFieldValue = ""
+                            // Если пользователь убирает фокус с поля ввода
                             } else {
+                                // Поле пустое, то обязательно количество будет = 1
                                 if (countForTextFieldValue.isEmpty()) {
                                     count = 1
                                     countForTextFieldValue = "1"
@@ -294,6 +315,7 @@ fun RewriteFinance(
                             }
                         }
                 )
+                // Увеличить количество на 1 кнопкой
                 IconButton(
                     onClick = {
                         count++
@@ -306,11 +328,13 @@ fun RewriteFinance(
                     )
                 }
             }
+            // Категория
             Text(
                 text = "Категория",
                 color = if (!isSelectedCategoryNotSelected) Color.Black else colorTextSelectedCategory.value,
                 modifier = Modifier.padding(4.dp)
             )
+            // Выводим все существующие категории
             LazyHorizontalGrid(
                 rows = GridCells.Fixed(2),
                 modifier = Modifier
@@ -325,6 +349,7 @@ fun RewriteFinance(
                     )
                 }
             }
+            // Дата
             Text(
                 text = "Дата",
                 modifier = Modifier.padding(4.dp)
@@ -343,6 +368,7 @@ fun RewriteFinance(
                 readOnly = true,
                 trailingIcon = {
                     IconButton(
+                        // Нажимаем на иконку и вызываем диалоговое окно с выбором даты
                         onClick = {
                             dateDialogState.show()
                         },
@@ -356,6 +382,7 @@ fun RewriteFinance(
                 modifier = Modifier
                     .padding(bottom = 8.dp)
             )
+            // Описание
             Text(
                 text = "Описание",
                 modifier = Modifier.padding(4.dp)
@@ -371,6 +398,7 @@ fun RewriteFinance(
                     colors = TextFieldDefaults.textFieldColors(containerColor = Color.Transparent),
                     modifier = Modifier.weight(4f)
                 )
+                // Очистить описание
                 IconButton(
                     onClick = { financeDescription = "" },
                     modifier = Modifier.weight(1f)
@@ -385,14 +413,17 @@ fun RewriteFinance(
                 horizontalArrangement = Arrangement.Center,
                 modifier = Modifier.fillMaxWidth()
             ) {
+                // Добавляем финанс, при этом проверяем необходимые условия (необходимо: название, категория)
                 Button(
                     onClick = {
+                        // Нет названия
                         if (financeName.isEmpty()) {
                             scope.launch {
                                 isFinanceNameNotSelected = true
                                 snackbarHostState.showSnackbar("Укажите название траты")
                             }
                         }
+                        // Изменяем финанс
                         else {
                             val newFinance = initialFinance.copy(
                                 name = financeName,
@@ -421,6 +452,7 @@ fun RewriteFinance(
                 ) {
                     Text("Изменить")
                 }
+                // Удалить финанс
                 Button(
                     onClick = {
                         scope.launch {
@@ -437,6 +469,7 @@ fun RewriteFinance(
         }
     }
 
+    // Диалоговое окно с выбором даты
     MaterialDialog(
         dialogState = dateDialogState,
         buttons = {
@@ -459,6 +492,7 @@ fun RewriteFinance(
     }
 }
 
+// Карточки с категориями (для изменения категории финанса)
 @Composable
 fun ChangeCategoryCard(
     category: Category,
@@ -487,6 +521,7 @@ fun ChangeCategoryCard(
                 .fillMaxSize()
                 .padding(8.dp)
         ) {
+            // Рисуем кружочек с цветом категории
             Canvas(
                 modifier = Modifier.fillMaxSize()
             ) {

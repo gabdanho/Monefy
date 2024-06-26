@@ -33,6 +33,7 @@ fun MonefyNavGraph(
         startDestination = "MainScreen",
         modifier = modifier
     ) {
+        // Основной экран с донатом и таблицей категорий с расходами
         composable(
             route = "MainScreen",
             enterTransition = { EnterTransition.None },
@@ -48,6 +49,7 @@ fun MonefyNavGraph(
                 }
             )
         }
+        // Экран добавления финансов
         composable(route = "AddFinanceScreen") {
             AddFinanceScreen(
                 financesViewModel = financesViewModel,
@@ -57,6 +59,7 @@ fun MonefyNavGraph(
                 }
             )
         }
+        // Экран добавления категории
         composable(route = "AddCategoryScreen") {
             financesViewModel.removeSelectedCategoryColor()
             AddCategoryScreen(
@@ -66,6 +69,7 @@ fun MonefyNavGraph(
                 }
             )
         }
+        // Экран со списком категории
         composable(route = "CategoriesListScreen") {
             CategoriesListScreen(
                 financesViewModel = financesViewModel,
@@ -80,6 +84,7 @@ fun MonefyNavGraph(
                 }
             )
         }
+        // Экран с финансами
         composable(route = "FinanceListScreen") {
             FinanceListScreen(
                 financesViewModel = financesViewModel,
@@ -88,6 +93,7 @@ fun MonefyNavGraph(
                 }
             )
         }
+        // Экран для изменения категории
         composable(route = "RewriteCategoryScreen") {
             RewriteCategoryScreen(
                 financesViewModel = financesViewModel,
@@ -96,6 +102,7 @@ fun MonefyNavGraph(
                 }
             )
         }
+        // Экран для изменении финанса
         composable(route = "RewriteFinanceScreen") {
             RewriteFinanceScreen(
                 financesViewModel = financesViewModel,

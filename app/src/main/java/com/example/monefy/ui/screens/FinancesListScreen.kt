@@ -28,9 +28,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.monefy.data.Finance
 import com.example.monefy.model.FakeData
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
-import java.time.LocalDate
 
 @Composable
 fun FinanceListScreen(
@@ -50,6 +47,7 @@ fun FinanceListScreen(
     )
 }
 
+// Список финансов
 @Composable
 fun FinancesList(
     finances: List<Finance>,
@@ -58,6 +56,7 @@ fun FinancesList(
     changeSelectedCategory: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    // Если есть финансы, то отображаем их
     if (finances.isNotEmpty()) {
         LazyColumn(modifier = modifier) {
             items(finances) { finance ->
@@ -71,11 +70,13 @@ fun FinancesList(
             }
         }
     }
+    // Расходов нет, то говорим об этом пользователю
     else {
         Text(text = "Расходов нет. Добавь их!")
     }
 }
 
+// Карточка финанса
 @Composable
 fun FinanceCard(
     finance: Finance,
@@ -105,6 +106,7 @@ fun FinanceCard(
                 .fillMaxWidth()
                 .padding(end = 16.dp)
         ) {
+            // Дата сделки
             Text(
                 text = finance.date.toString(),
                 style = MaterialTheme.typography.labelSmall,
@@ -119,10 +121,12 @@ fun FinanceCard(
                 .fillMaxWidth()
         ) {
             Column {
+                // Название финанса
                 Text(
                     text = finance.name,
                     style = MaterialTheme.typography.bodyLarge
                 )
+                // Если есть описание, то выводим
                 if (finance.description.isNotEmpty()) {
                     Text(
                         text = finance.description,
@@ -134,6 +138,7 @@ fun FinanceCard(
                     )
                 }
             }
+            // Выводим прайс
             Text(
                 text = String.format("%.2f", finance.count.toDouble() * finance.price),
                 style = MaterialTheme.typography.bodyLarge

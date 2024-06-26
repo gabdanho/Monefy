@@ -99,6 +99,7 @@ fun AddFinanceScreen(
     )
 }
 
+// Создать финанс
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddFinance(
@@ -112,6 +113,8 @@ fun AddFinance(
     modifier: Modifier = Modifier
 ) {
     val categories by getAllCategories().collectAsState(emptyList())
+    // Категория, которая добавляется в конец категорий (если их вовсе нет, то выводится первой и единственной) -
+    // является кнопкой создания категории
     val addCategory = Category(
         id = -1,
         name = "Добавить категорию (+)",
@@ -132,6 +135,7 @@ fun AddFinance(
     val colorTextFinanceName = remember { mutableStateOf(Color.Black) }
     val colorTextSelectedCategory = remember { mutableStateOf(Color.Black) }
 
+    // Показываем пользователю миганием, что не выбрана категория
     LaunchedEffect(isSelectedCategoryNotSelected) {
         for (i in 1..3) {
             colorTextSelectedCategory.value = Color.Red
@@ -142,6 +146,7 @@ fun AddFinance(
         isSelectedCategoryNotSelected = false
     }
 
+    // Показываем пользователю миганием, что не выбрано название
     LaunchedEffect(isFinanceNameNotSelected) {
         for (i in 1..3) {
             colorTextFinanceName.value = Color.Red
@@ -159,6 +164,7 @@ fun AddFinance(
     val snackbarHostState = remember { SnackbarHostState() }
 
     Scaffold(
+        // Настройка снэкбара
         snackbarHost = { SnackbarHost(snackbarHostState) { data ->
                 Snackbar(
                     snackbarData = data,
@@ -174,6 +180,7 @@ fun AddFinance(
                 .padding(innerPadding)
                 .verticalScroll(state = scrollState)
         ) {
+            // Название
             Text(
                 text = "Название",
                 color = if (!isFinanceNameNotSelected) Color.Black else colorTextFinanceName.value,
@@ -191,6 +198,7 @@ fun AddFinance(
                     textStyle = TextStyle(fontSize = 20.sp),
                     modifier = Modifier.weight(4f)
                 )
+                // Кнопка удаления названия
                 IconButton(
                     onClick = { financeName = "" },
                     modifier = Modifier.weight(1f)
@@ -201,6 +209,7 @@ fun AddFinance(
                     )
                 }
             }
+            // Стоимость/доход
             Text(
                 text = "Стоимость / доход",
                 modifier = Modifier.padding(4.dp)
@@ -209,15 +218,19 @@ fun AddFinance(
                 TextField(
                     value = financePriceForTextFieldValue,
                     onValueChange = {
+                        // Если значение пусто или нажимается первой точка, то значение 0.0
                         if (it == "" || it == ".") {
                             financePriceForTextFieldValue = ""
                             financePrice = 0.0
                         }
+                        // Если пользователь удаляет символ
                         else if (it.length < financePriceForTextFieldValue.length) {
                             financePriceForTextFieldValue = it
                             financePrice = it.toDouble()
                         }
+                        // Если пользователь пытается ввести после введённого нуля еще один - запрещаем
                         else if (it == "00") { }
+                        // Проверяем что вводится цифра или точка && Точка одна или нет && Проверяем чтобы число не было больше константы
                         else if (it.all { it.isDigit() || it == '.' } && it.count { it == '.' } <= 1 && it.toDouble() < Constants.maxPrice) {
                             financePriceForTextFieldValue = it
                             financePrice = it.toDouble()
@@ -243,6 +256,7 @@ fun AddFinance(
                             }
                         }
                 )
+                // Кнопка очистки стоимости/дохода
                 IconButton(
                     onClick = {
                         financePrice = 0.0
@@ -250,12 +264,14 @@ fun AddFinance(
                     },
                     modifier = Modifier.weight(1f)
                 ) {
+                    // Очистить цену
                     Icon(
                         imageVector = Icons.Filled.Close,
                         contentDescription = "Удалить цену",
                     )
                 }
             }
+            // Количество
             Text(
                 text = "Количество",
                 modifier = Modifier.padding(4.dp)
@@ -264,6 +280,7 @@ fun AddFinance(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(bottom = 8.dp)
             ) {
+                // Уменьшить количество на 1 кнопкой
                 IconButton(
                     onClick = {
                         if (count > 1) {
@@ -277,18 +294,23 @@ fun AddFinance(
                         contentDescription = "Уменьшить количество"
                     )
                 }
+                // Поле ввода количества
                 BasicTextField(
                     value = countForTextFieldValue,
                     onValueChange = {
+                        // Если пусто, то количество = 1
                         if (it == "") {
                             countForTextFieldValue = ""
                             count = 1
                         }
+                        // Если пользователь удаляет символ
                         else if (it.length < countForTextFieldValue.length) {
                             countForTextFieldValue = it
                             count = it.toInt()
                         }
+                        // Если 0 - ничего не делаем, т.к. 0 быть не может
                         else if (it == "0") { }
+                        // Проверяем, что только цифры && Количество меньше константы
                         else if (it.isDigitsOnly() && it.toInt() < Constants.maxCount) {
                             countForTextFieldValue = it
                             count = it.toInt()
@@ -302,10 +324,13 @@ fun AddFinance(
                     modifier = Modifier
                         .width(70.dp)
                         .onFocusChanged { focusState ->
+                            // Если пользователь нажимает на поле ввода количества, то очищаем поле (при этом минималка будет = 1)
                             if (focusState.isFocused) {
                                 count = 1
                                 countForTextFieldValue = ""
+                            // Если пользователь убирает фокус с поля ввода
                             } else {
+                                // Поле пустое, то обязательно количество будет = 1
                                 if (countForTextFieldValue.isEmpty()) {
                                     count = 1
                                     countForTextFieldValue = "1"
@@ -313,6 +338,7 @@ fun AddFinance(
                             }
                         }
                 )
+                // Увеличить количество на 1 кнопкой
                 IconButton(
                     onClick = {
                         count++
@@ -325,11 +351,13 @@ fun AddFinance(
                     )
                 }
             }
+            // Категория
             Text(
                 text = "Категория",
                 color = if (!isSelectedCategoryNotSelected) Color.Black else colorTextSelectedCategory.value,
                 modifier = Modifier.padding(4.dp)
             )
+            // Выводим все существующие категории
             LazyHorizontalGrid(
                 rows = GridCells.Fixed(2),
                 modifier = Modifier
@@ -347,6 +375,7 @@ fun AddFinance(
                     )
                 }
             }
+            // Дата
             Text(
                 text = "Дата",
                 modifier = Modifier.padding(4.dp)
@@ -365,6 +394,7 @@ fun AddFinance(
                 readOnly = true,
                 trailingIcon = {
                     IconButton(
+                        // Нажимаем на иконку и вызываем диалоговое окно с выбором даты
                         onClick = {
                             dateDialogState.show()
                         },
@@ -378,6 +408,7 @@ fun AddFinance(
                 modifier = Modifier
                     .padding(bottom = 8.dp)
             )
+            // Описание
             Text(
                 text = "Описание",
                 modifier = Modifier.padding(4.dp)
@@ -393,6 +424,7 @@ fun AddFinance(
                     colors = TextFieldDefaults.textFieldColors(containerColor = Color.Transparent),
                     modifier = Modifier.weight(4f)
                 )
+                // Очистить описание
                 IconButton(
                     onClick = { financeDescription = "" },
                     modifier = Modifier.weight(1f)
@@ -403,8 +435,10 @@ fun AddFinance(
                     )
                 }
             }
+            // Добавляем финанс, при этом проверяем необходимые условия (необходимо: название, категория)
             Button(
                 onClick = {
+                    // Нет названия и категории
                     if (financeName.isEmpty() && selectedCategoryId == 0) {
                     scope.launch {
                         isFinanceNameNotSelected = true
@@ -412,18 +446,21 @@ fun AddFinance(
                         snackbarHostState.showSnackbar("Укажите название и категорию траты")
                         }
                     }
+                    // Нет названия
                     else if (financeName.isEmpty()) {
                         scope.launch {
                             isFinanceNameNotSelected = true
                             snackbarHostState.showSnackbar("Укажите название траты")
                         }
                     }
+                    // Нет категории
                     else if (selectedCategoryId == 0) {
                         scope.launch {
                             isSelectedCategoryNotSelected = true
                             snackbarHostState.showSnackbar("Укажите категорию")
                         }
                     }
+                    // Если всё хорошо - добавляем, при этом очищаем введённые параметры
                     else {
                         scope.launch {
                             withContext(Dispatchers.IO) {
@@ -459,6 +496,7 @@ fun AddFinance(
         }
     }
 
+    // Диалоговое окно с выбором даты
     MaterialDialog(
         dialogState = dateDialogState,
         buttons = {
@@ -481,6 +519,7 @@ fun AddFinance(
     }
 }
 
+// Карточка категории
 @Composable
 fun CategoryCard(
     categoryName: String,
@@ -498,12 +537,14 @@ fun CategoryCard(
             .size(150.dp)
             .padding(4.dp)
             .clickable {
+                // Если id = -1, то это карточка создания категории, иначе просто выбираем категорию
                 if (categoryId == -1) onAddCategoryScreenClick()
                 else changeSelectedCategory(categoryId)
             }
             .border(
                 width = 1.dp,
                 shape = RoundedCornerShape(10.dp),
+                // Зеленая категория - выбранная категория
                 color = if (currentCategoryId == categoryId) Color.Green else Color.Transparent,
             )
     ) {
@@ -513,6 +554,7 @@ fun CategoryCard(
                 .fillMaxSize()
                 .padding(8.dp)
         ) {
+            // Рисуем категорию создания
             if (categoryId != -1) {
                 Canvas(
                     modifier = Modifier.fillMaxSize()

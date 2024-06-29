@@ -98,8 +98,8 @@ fun Main(
     selectedDateRangeIndex: Int,
     changeSelectedTabIndex: (Int) -> Unit,
     changeSelectedDateRangeIndex: (Int) -> Unit,
-    getCategoriesByType: (String) -> Flow<List<Category>>,
     updateIsTapped: suspend (Category) -> Unit,
+    getCategoriesByType: (String) -> Flow<List<Category>>,
     getFinancesByCategoryId: (Int) -> Flow<List<Finance>>,
     updateCustomDateRange: (List<LocalDate>) -> Unit,
     updateScreen: () -> Unit,
@@ -258,6 +258,7 @@ fun Main(
                         isLoadingFinances = false
                     }
                 }
+
                 if (isLoadingFinances) { /* Ничего не делаем */ }
                 // Если финансов доходов/расходов нет - то выводим сообщение
                 else if (financesMap.isNullOrEmpty()) {

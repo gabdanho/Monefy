@@ -26,6 +26,7 @@ fun BottomMenuBar(
     onPieChartClick: () -> Unit = { },
     onFinancesListClick: () -> Unit = { },
     onAddButtonClick: () -> Unit = { },
+    onDiagramClick: () -> Unit = { },
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -33,10 +34,11 @@ fun BottomMenuBar(
         horizontalArrangement = Arrangement.SpaceAround,
         modifier = modifier.fillMaxWidth()
     ) {
-        IconButton(onClick = { /*TODO*/ }) {
+        // Диаграммы
+        IconButton(onClick = onDiagramClick) {
             Icon(
                 imageVector = Icons.Filled.Menu,
-                contentDescription = "Menu"
+                contentDescription = "Диаграммы"
             )
         }
         // Добавить финанс

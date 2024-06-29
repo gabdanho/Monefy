@@ -14,6 +14,7 @@ import com.example.monefy.ui.screens.AddCategoryScreen
 import com.example.monefy.ui.screens.AddFinanceScreen
 import com.example.monefy.ui.screens.MainScreen
 import com.example.monefy.ui.screens.CategoriesListScreen
+import com.example.monefy.ui.screens.DiagramScreen
 import com.example.monefy.ui.screens.RewriteCategoryScreen
 import com.example.monefy.ui.screens.FinanceListScreen
 import com.example.monefy.ui.screens.RewriteFinanceScreen
@@ -110,6 +111,13 @@ fun MonefyNavGraph(
                 endOfScreen = {
                     navController.popBackStack()
                 }
+            )
+        }
+        // Экран для диаграм
+        composable(route = "DiagramsScreen") {
+            DiagramScreen(
+                financesViewModel = financesViewModel,
+                updateScreen = { navController.navigate(route = "DiagramsScreen") }
             )
         }
     }

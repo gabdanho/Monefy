@@ -173,7 +173,7 @@ fun Main(
                     else -> listOf(LocalDate.now(), LocalDate.now())
                 }
 
-                LaunchedEffect(categories) {
+                LaunchedEffect(Unit) {
                     isLoadingFinances = true
                     val flowMap = categories!!.associate { category ->
                         category.id to getFinancesByCategoryId(category.id)

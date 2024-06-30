@@ -56,6 +56,7 @@ fun CategoriesListScreen(
     }
 }
 
+// Список категорий
 @Composable
 fun CategoriesList(
     getAllCategories: () -> Flow<List<Category>>,
@@ -67,6 +68,7 @@ fun CategoriesList(
     modifier: Modifier = Modifier
 ) {
     val categories by getAllCategories().collectAsState(emptyList())
+    // Карточка создания категории
     val addCategory = Category(id = -1, name = "Добавить категорию (+)", color = Color.Transparent.toArgb())
 
     LazyColumn(modifier = modifier) {
@@ -84,6 +86,7 @@ fun CategoriesList(
     }
 }
 
+// Карточка категории
 @Composable
 fun CategoryCard(
     category: Category,
@@ -105,12 +108,14 @@ fun CategoryCard(
                     shape = RoundedCornerShape(20.dp)
                 )
                 .clickable {
+                    // Если -1 - то это, создать категорию
                     if (category.id != -1) {
                         changeCurrentCategoryIdForFinances(category.id)
                         onCategoryClick()
                     } else onAddCategoryClick()
                 }
         ) {
+            // Кружочек с цветом категории
             if (category.id != -1) {
                 Canvas(
                     modifier = Modifier
@@ -135,10 +140,12 @@ fun CategoryCard(
                     .padding(32.dp)
                     .fillMaxWidth()
             ) {
+                // Название категории
                 Text(
                     text = category.name,
                     style = MaterialTheme.typography.bodyLarge
                 )
+                // Выводим тотал прайс категории
                 if (category.id != -1) {
                     Text(
                         text = String.format("%.2f", category.totalCategoryPrice),
@@ -147,6 +154,7 @@ fun CategoryCard(
                 }
             }
         }
+        // Если это не карточка создания категории, то значит её можно отредактировать (справа вверху карандашик)
         if (category.id != -1) {
             Row(
                 horizontalArrangement = Arrangement.Absolute.Right,

@@ -68,6 +68,7 @@ fun AddCategoryScreen(
     )
 }
 
+// Создать категорию
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddCategory(
@@ -94,6 +95,7 @@ fun AddCategory(
     val colorTextCategoryType = remember { mutableStateOf(Color.Black) }
     var isTypeCategoryNotSelected by rememberSaveable { mutableStateOf(false) }
 
+    // Показываем пользователю миганием, что не выбрана категория
     LaunchedEffect(isCategoryNameNotSelected) {
         for (i in 1..3) {
             colorTextCategoryName.value = Color.Red
@@ -104,6 +106,7 @@ fun AddCategory(
         isCategoryNameNotSelected = false
     }
 
+    // Показываем пользователю миганием, что не выбран цвет категории
     LaunchedEffect(isColorCategoryNotSelected) {
         for (i in 1..3) {
             colorTextCategoryColor.value = Color.Red
@@ -114,6 +117,7 @@ fun AddCategory(
         isColorCategoryNotSelected = false
     }
 
+    // Показываем пользователю миганием, что не выбран тип категории
     LaunchedEffect(isTypeCategoryNotSelected) {
         for (i in 1..3) {
             colorTextCategoryType.value = Color.Red
@@ -125,6 +129,7 @@ fun AddCategory(
     }
 
     Scaffold(
+        // Настройка снэкбара
         snackbarHost = { SnackbarHost(snackbarHostState) { data ->
             Snackbar(
                 snackbarData = data,
@@ -139,6 +144,7 @@ fun AddCategory(
                 .padding(8.dp)
                 .padding(innerPadding)
         ) {
+            // Название категории
             Text(
                 text = "Название категории",
                 color = if (!isCategoryNameNotSelected) Color.Black else colorTextCategoryName.value,
@@ -156,6 +162,7 @@ fun AddCategory(
                     textStyle = TextStyle(fontSize = 20.sp),
                     modifier = Modifier.weight(4f)
                 )
+                // Кнопка очистки названия
                 IconButton(
                     onClick = { categoryName = "" },
                     modifier = Modifier.weight(1f)
@@ -166,6 +173,7 @@ fun AddCategory(
                     )
                 }
             }
+            // Тип категории
             Text(
                 text = "Тип категории",
                 color = if (!isTypeCategoryNotSelected) Color.Black else colorTextCategoryType.value,
@@ -205,6 +213,7 @@ fun AddCategory(
                     )
                 }
             }
+            // Цвет категории
             Text(
                 text = "Цвет категории",
                 color = if (!isColorCategoryNotSelected) Color.Black else colorTextCategoryColor.value,
@@ -219,6 +228,7 @@ fun AddCategory(
                     .clickable { changeColorDialogShow(true) }
             )
 
+            // Если пользователь хочет выбрать цвет категории, вызываем ColorPicker
             if (isColorDialogShow) {
                 Dialog(onDismissRequest = { changeColorDialogShow(false) }) {
                     ColorPicker(
@@ -227,9 +237,11 @@ fun AddCategory(
                     )
                 }
             }
+            // Создаём категорию, проверяя при этом необходимые условия для этого (обязательные параметры: название, цвет, тип)
             Button(
                 onClick = {
                     scope.launch {
+                        // Нет названия, цвета, типа
                         if (categoryName.isEmpty() && currentCategoryColor == Color.Transparent && selectedType == "") {
                             scope.launch {
                                 isCategoryNameNotSelected = true
@@ -238,6 +250,7 @@ fun AddCategory(
                                 snackbarHostState.showSnackbar("Укажите название, цвет категории и тип категории")
                             }
                         }
+                        // Нет названия и цвета
                         else if (categoryName.isEmpty() && currentCategoryColor == Color.Transparent) {
                             scope.launch {
                                 isCategoryNameNotSelected = true
@@ -245,6 +258,7 @@ fun AddCategory(
                                 snackbarHostState.showSnackbar("Укажите название и цвет категории")
                             }
                         }
+                        // Нет типа и цвета
                         else if (selectedType == "" && currentCategoryColor == Color.Transparent) {
                             scope.launch {
                                 isColorCategoryNotSelected = true
@@ -252,6 +266,7 @@ fun AddCategory(
                                 snackbarHostState.showSnackbar("Укажите тип и цвет категории")
                             }
                         }
+                        // Нет типа и названия
                         else if (selectedType == "" && categoryName.isEmpty()) {
                             scope.launch {
                                 isCategoryNameNotSelected = true
@@ -259,27 +274,32 @@ fun AddCategory(
                                 snackbarHostState.showSnackbar("Укажите тип и название категории")
                             }
                         }
+                        // Нет названия
                         else if (categoryName.isEmpty()) {
                             scope.launch {
                                 isCategoryNameNotSelected = true
                                 snackbarHostState.showSnackbar("Укажите название категории")
                             }
                         }
+                        // Нет цвета
                         else if (currentCategoryColor == Color.Transparent) {
                             scope.launch {
                                 isColorCategoryNotSelected = true
                                 snackbarHostState.showSnackbar("Укажите цвет категории")
                             }
                         }
+                        // Нет типа
                         else if (selectedType == "") {
                             scope.launch {
                                 isTypeCategoryNotSelected = true
                                 snackbarHostState.showSnackbar("Укажите тип категории")
                             }
                         }
+                        // Если условия соблюдены, добавляем категорию в БД. При этом проверив еще одни условия
                         else {
                             val newCategory = Category(name = categoryName, color = currentCategoryColor.toArgb(), type = selectedType)
                             val addCategoryResult = addCategory(newCategory)
+                            // Если категории с таким названием не существует - добавляем. Возвращаем пользователя к предыдущему экрану
                             if (addCategoryResult) {
                                 scope.launch {
                                     snackbarHostState.currentSnackbarData?.dismiss()
@@ -289,11 +309,12 @@ fun AddCategory(
                                 categoryName = ""
                                 endOfScreen()
                             }
+                            // Показываем через снэкбар, что категорию невозможно создать, т.к. категория с таким названием существует
                             else {
                                 scope.launch {
                                     isCategoryNameNotSelected = true
                                     snackbarHostState.currentSnackbarData?.dismiss()
-                                    snackbarHostState.showSnackbar("Категория с таким именем уже существует")
+                                    snackbarHostState.showSnackbar("Категория с таким названием уже существует")
                                 }
                             }
                         }

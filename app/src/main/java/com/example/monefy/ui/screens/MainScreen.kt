@@ -1,6 +1,5 @@
 package com.example.monefy.ui.screens
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
@@ -11,12 +10,17 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
@@ -41,11 +45,12 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import com.example.monefy.data.Category
 import com.example.monefy.data.Finance
+import com.example.monefy.utils.Constants.tabDateRangeItems
+import com.example.monefy.utils.Constants.tabItems
+import com.example.monefy.utils.CustomDateRangePicker
 import com.example.monefy.utils.isDateInRange
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import java.lang.Math.pow
 import java.time.LocalDate
@@ -63,6 +68,8 @@ fun MainScreen(
     financesViewModel.resetAllTapedCategories()
 
     Main(
+        customDateRange = financesUiState.customDateRange,
+        showDateRangeDialog = financesUiState.showDateRangeDialog,
         isAllNotTapped = financesViewModel::isAllNotTapped,
         selectedTabIndex = financesUiState.selectedTabIndex,
         selectedDateRangeIndex = financesUiState.selectedDateRangeIndex,
@@ -71,34 +78,52 @@ fun MainScreen(
         getFinancesByCategoryId = financesViewModel::getFinancesByCategoryId,
         changeSelectedTabIndex = financesViewModel::changeSelectedTabIndex,
         changeSelectedDateRangeIndex = financesViewModel::changeSelectedDateRangeIndex,
+        changeShowDateRangeDialog = financesViewModel::changeShowDateRangeDialog,
+        updateCustomDateRange = financesViewModel::updateCustomDateRange,
         updateScreen = updateScreen,
         goToFinance = goToFinance,
         modifier = modifier
     )
 }
 
+// Формируем экран со всем содержимым (донат, таблица с категориями и финансами)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Main(
+    customDateRange: List<LocalDate>,
     isAllNotTapped: suspend () -> Boolean,
+    showDateRangeDialog: Boolean,
+    changeShowDateRangeDialog: (Boolean) -> Unit,
     selectedTabIndex: Int,
     selectedDateRangeIndex: Int,
     changeSelectedTabIndex: (Int) -> Unit,
     changeSelectedDateRangeIndex: (Int) -> Unit,
-    getCategoriesByType: (String) -> Flow<List<Category>>,
     updateIsTapped: suspend (Category) -> Unit,
+    getCategoriesByType: (String) -> Flow<List<Category>>,
     getFinancesByCategoryId: (Int) -> Flow<List<Finance>>,
+    updateCustomDateRange: (List<LocalDate>) -> Unit,
     updateScreen: () -> Unit,
     goToFinance: (Finance) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val tabItems = listOf("Расходы", "Доходы")
-    val tabDateRangeItems = listOf("Год", "Месяц", "Сегодня")
+    var isHasFinances by remember { mutableStateOf(false) }
 
     Scaffold(modifier = modifier) { innerPadding ->
+        // Выскакивающая нижняя страница с выбором промежутка даты
+        if (showDateRangeDialog) {
+            ModalBottomSheet(onDismissRequest = { changeShowDateRangeDialog(false) }) {
+                CustomDateRangePicker(
+                    changeShowDateRangeDialog = changeShowDateRangeDialog,
+                    updateDateRange = updateCustomDateRange,
+                    updateScreen = updateScreen
+                )
+            }
+        }
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = modifier.padding(innerPadding)
         ) {
+            // Выбор типа финансов: доходы или расходы
             TabRow(selectedTabIndex = selectedTabIndex) {
                 tabItems.forEachIndexed { index, item ->
                     Tab(
@@ -111,27 +136,58 @@ fun Main(
                     )
                 }
             }
-            TabRow(
-                selectedTabIndex = selectedDateRangeIndex,
-                modifier = Modifier.padding(bottom = 16.dp)
-            ) {
-                tabDateRangeItems.forEachIndexed { index, item ->
-                    Tab(
-                        selected = index == selectedDateRangeIndex,
-                        onClick = {
-                            changeSelectedDateRangeIndex(index)
-                            updateScreen()
-                        },
-                        text = { Text(item) }
-                    )
+            // Если финансы есть, позволяем пользователю выбрать нужный промежуток даты
+            if (isHasFinances) {
+                TabRow(
+                    selectedTabIndex = selectedDateRangeIndex,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                ) {
+                    tabDateRangeItems.forEachIndexed { index, item ->
+                        Tab(
+                            selected = index == selectedDateRangeIndex,
+                            onClick = {
+                                // Если выбран таб кастомной даты, то выскакивает выбор даты
+                                if (index == 0) {
+                                    changeShowDateRangeDialog(true)
+                                }
+                                changeSelectedDateRangeIndex(index)
+                                updateScreen()
+                            }
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(30.dp)
+                            ) {
+                                // "..." - свой промежуток даты
+                                if (item == "...") {
+                                    Icon(
+                                        imageVector = Icons.Filled.DateRange,
+                                        contentDescription = "Выбрать собственный промежуток времени",
+                                        modifier = Modifier
+                                    )
+                                }
+                                else {
+                                    Text(
+                                        text = item,
+                                        modifier = Modifier
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
             var categories by remember { mutableStateOf<List<Category>?>(null) }
             var financesMap by remember { mutableStateOf<Map<Int, List<Finance>>?>(null) }
+            // Следующие две булевые переменные нужны для определения, что все данные загрузились, прежде чем их выводить
             var isLoadingCategories by remember { mutableStateOf(true) }
             var isLoadingFinances by remember { mutableStateOf(true) }
 
+            // Получаем список категорий
             LaunchedEffect(selectedTabIndex) {
                 isLoadingCategories = true
                 val flow = if (selectedTabIndex == 0)
@@ -145,34 +201,46 @@ fun Main(
                 }
             }
 
-            if (isLoadingCategories) { }
+            if (isLoadingCategories) { /* ничего не делаем */  }
+            // Проверка, если доходов/расходов нет
             else if (categories.isNullOrEmpty()) {
+                isHasFinances = false
                 if (selectedTabIndex == 0) {
                     Text("Расходов не найдено. Добавьте их!")
                 } else if (selectedTabIndex == 1) {
                     Text("Доходов не найдено. Добавьте их!")
                 }
             }
+            // Если доходы/расходы есть работаем с выбором промежутка даты
             else {
+                isHasFinances = true
                 val dateRange = when(selectedDateRangeIndex) {
+                    // Кастомный промежуток даты
                     0 -> {
+                        customDateRange
+                    }
+                    // Финансы за год
+                    1 -> {
                         val now = LocalDate.now()
                         val startOfYear = now.withDayOfYear(1)
                         val endOfYear = now.withDayOfYear(now.lengthOfYear())
                         listOf(startOfYear, endOfYear)
                     }
-                    1 -> {
+                    // Финансы за месяц
+                    2 -> {
                         val now = LocalDate.now()
                         val startOfMonth = now.withDayOfMonth(1)
                         val endOfMonth = now.withDayOfMonth(now.lengthOfMonth())
                         listOf(startOfMonth, endOfMonth)
                     }
-                    2 -> {
+                    // Финансы за сегодняшний день
+                    3 -> {
                         listOf(LocalDate.now(), LocalDate.now())
                     }
                     else -> listOf(LocalDate.now(), LocalDate.now())
                 }
 
+                // Получаем мапу с финансами доходов или расходов (крч, что выбрал пользователь)
                 LaunchedEffect(Unit) {
                     isLoadingFinances = true
                     val flowMap = categories!!.associate { category ->
@@ -190,23 +258,29 @@ fun Main(
                         isLoadingFinances = false
                     }
                 }
-                Log.i("MainScreen", financesMap.toString())
-                if (isLoadingFinances) { }
+
+                if (isLoadingFinances) { /* Ничего не делаем */ }
+                // Если финансов доходов/расходов нет - то выводим сообщение
                 else if (financesMap.isNullOrEmpty()) {
                     Text(text = "Нет данных для отображения")
                 }
+                // Если всё есть, готовим данные для основных функций (pie chart и список финансов)
                 else {
                     val finances = financesMap!!.values.flatten()
+                    // Мапа с категориями и тотал суммой их
                     val categoriesToSumFinance = categories!!.filter { it.id in financesMap!!.keys }.associate { category ->
                         category to finances.filter { it.categoryId == category.id }.sumOf { it.price * it.count.toDouble() }
                     }
 
+                    // Тотал сумма со всех категорий
                     var totalPriceFromAllCategories = 0.0
                     financesMap!!.values.forEach { category ->
                         category.forEach { finance ->
                             totalPriceFromAllCategories += finance.price * finance.count.toDouble()
                         }
                     }
+
+                    // Передаём данные
                     if (categoriesToSumFinance.isNotEmpty() && totalPriceFromAllCategories != 0.0) {
                         FinancesPieChart(
                             categoriesToSumFinance = categoriesToSumFinance,
@@ -231,6 +305,7 @@ fun Main(
     }
 }
 
+// Донат с категориями
 @Composable
 fun FinancesPieChart(
     totalPriceFromAllCategories: Double,
@@ -243,6 +318,7 @@ fun FinancesPieChart(
 ) {
     val scope = rememberCoroutineScope()
 
+    // Переменная для отображения суммы текущей категории (если никакая не выбрана, то тотал сумма)
     var currentCategorySumPrice by remember { mutableStateOf(totalPriceFromAllCategories) }
     Column(
         modifier = modifier,
@@ -327,6 +403,7 @@ fun FinancesPieChart(
                     )
                 )
 
+                // Обработка категорий для отрисовки секций доната
                 for (i in categoriesToSumFinance.keys.indices) {
                     val finances = financesMap[categoriesToSumFinance.keys.toList()[i].id] ?: emptyList()
                     if (finances.isNotEmpty()) {
@@ -359,6 +436,7 @@ fun FinancesPieChart(
     }
 }
 
+// Таблица категорий и финансов
 @Composable
 fun FinancesTable(
     totalPriceFromAllCategories: Double,
@@ -368,44 +446,39 @@ fun FinancesTable(
     goToFinance: (Finance) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(modifier = modifier.padding(8.dp)) {
-        LazyColumn {
-            items(categoriesToSumFinance.keys.toList()) { category ->
-                val finances by getFinancesByCategoryId(category.id).collectAsState(emptyList())
-                val filteredByDateFinances = finances.filter { isDateInRange(it.date, dateRange[0], dateRange[1]) }
+    // Выводим категории и их блоки с финансами
+    LazyColumn(modifier = modifier.padding(8.dp)) {
+        items(categoriesToSumFinance.keys.toList()) { category ->
+            val finances by getFinancesByCategoryId(category.id).collectAsState(emptyList())
+            val filteredByDateFinances = finances.filter { isDateInRange(it.date, dateRange[0], dateRange[1]) }
 
-                var totalCategoriesPrice by rememberSaveable { mutableStateOf(0.0) }
-                LaunchedEffect(Unit) {
-                    totalCategoriesPrice = totalPriceFromAllCategories
-                }
-
-                if (filteredByDateFinances.isNotEmpty() && categoriesToSumFinance.keys.toList().all { !it.isTapped }) {
-                    ExpenseBlock(
-                        finances = filteredByDateFinances,
-                        category = category,
-                        categorySum = categoriesToSumFinance[category] ?: 0.0,
-                        totalPrice = totalCategoriesPrice,
-                        goToFinance = goToFinance,
-                        showAllExpensesWithoutClick = false
-                    )
-                }
-                else if (category.isTapped) {
-                    ExpenseBlock(
-                        finances = filteredByDateFinances,
-                        category = category,
-                        categorySum = categoriesToSumFinance[category] ?: 0.0,
-                        totalPrice = totalCategoriesPrice,
-                        goToFinance = goToFinance,
-                        showAllExpensesWithoutClick = true
-                    )
-                }
+            if (filteredByDateFinances.isNotEmpty() && categoriesToSumFinance.keys.toList().all { !it.isTapped }) {
+                CategoryBlock(
+                    finances = filteredByDateFinances,
+                    category = category,
+                    categorySum = categoriesToSumFinance[category] ?: 0.0,
+                    totalPrice = totalPriceFromAllCategories,
+                    goToFinance = goToFinance,
+                    showAllExpensesWithoutClick = false
+                )
+            }
+            else if (category.isTapped) {
+                CategoryBlock(
+                    finances = filteredByDateFinances,
+                    category = category,
+                    categorySum = categoriesToSumFinance[category] ?: 0.0,
+                    totalPrice = totalPriceFromAllCategories,
+                    goToFinance = goToFinance,
+                    showAllExpensesWithoutClick = true
+                )
             }
         }
     }
 }
 
+// Блок категории
 @Composable
-fun ExpenseBlock(
+fun CategoryBlock(
     finances: List<Finance>,
     category: Category,
     categorySum: Double,
@@ -429,6 +502,7 @@ fun ExpenseBlock(
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // Кружочек с цветом категории
                 Canvas(Modifier.size(10.dp)) {
                     drawCircle(
                         color = Color(category.color)
@@ -441,51 +515,54 @@ fun ExpenseBlock(
                 )
             }
             Text(
-                text = "${categorySum} ($percentage %)",
+                text = "$categorySum ($percentage %)",
                 style = MaterialTheme.typography.titleSmall,
             )
         }
+        // Если пользователь нажал на секцию с категорией, то выводим в таблице категорию и соответствующие ей финансы
         if (showAllExpensesWithoutClick) {
-            Column(
-                modifier = Modifier.padding(8.dp)
-            ) {
-                finances.forEach {
-                    Row(
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        modifier = Modifier
-                            .padding(bottom = 8.dp)
-                            .clickable { goToFinance(it) }
-                            .fillMaxWidth()
-                    ) {
-                        Text(text = it.name)
-                        Text(
-                            text = String.format("%.2f", it.count.toDouble() * it.price),
-                            style = MaterialTheme.typography.titleSmall
-                        )
-                    }
+            FinancesBlock(
+                finances = finances,
+                goToFinance = goToFinance
+            )
+        }
+        // Если секция категории не нажата, то выведутся все категории
+        else {
+            AnimatedVisibility(visible = expanded) {
+                // Кликнув по категории, анимированно показываются финансы текущей категории
+                if (expanded) {
+                    FinancesBlock(
+                        finances = finances,
+                        goToFinance = goToFinance
+                    )
                 }
             }
         }
-        else {
-            AnimatedVisibility(visible = expanded) {
-                if (expanded) {
-                    Column(
-                        modifier = Modifier.padding(8.dp)
-                    ) {
-                        finances.forEach {
-                            Row(
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                modifier = Modifier
-                                    .padding(bottom = 8.dp)
-                                    .clickable { goToFinance(it) }
-                                    .fillMaxWidth()
-                            ) {
-                                Text(text = it.name)
-                                Text(text = String.format("%.2f", it.count.toDouble() * it.price))
-                            }
-                        }
-                    }
-                }
+    }
+}
+
+// Блок финансов
+@Composable
+fun FinancesBlock(
+    finances: List<Finance>,
+    goToFinance: (Finance) -> Unit
+) {
+    Column(
+        modifier = Modifier.padding(8.dp)
+    ) {
+        finances.forEach {
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier
+                    .padding(bottom = 8.dp)
+                    .clickable { goToFinance(it) }
+                    .fillMaxWidth()
+            ) {
+                Text(text = it.name)
+                Text(
+                    text = String.format("%.2f", it.count.toDouble() * it.price),
+                    style = MaterialTheme.typography.titleSmall
+                )
             }
         }
     }

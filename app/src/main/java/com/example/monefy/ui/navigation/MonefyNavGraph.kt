@@ -14,6 +14,7 @@ import com.example.monefy.ui.screens.AddCategoryScreen
 import com.example.monefy.ui.screens.AddFinanceScreen
 import com.example.monefy.ui.screens.MainScreen
 import com.example.monefy.ui.screens.CategoriesListScreen
+import com.example.monefy.ui.screens.DiagramScreen
 import com.example.monefy.ui.screens.RewriteCategoryScreen
 import com.example.monefy.ui.screens.FinanceListScreen
 import com.example.monefy.ui.screens.RewriteFinanceScreen
@@ -33,6 +34,7 @@ fun MonefyNavGraph(
         startDestination = "MainScreen",
         modifier = modifier
     ) {
+        // Основной экран с донатом и таблицей категорий с расходами
         composable(
             route = "MainScreen",
             enterTransition = { EnterTransition.None },
@@ -48,6 +50,7 @@ fun MonefyNavGraph(
                 }
             )
         }
+        // Экран добавления финансов
         composable(route = "AddFinanceScreen") {
             AddFinanceScreen(
                 financesViewModel = financesViewModel,
@@ -57,6 +60,7 @@ fun MonefyNavGraph(
                 }
             )
         }
+        // Экран добавления категории
         composable(route = "AddCategoryScreen") {
             financesViewModel.removeSelectedCategoryColor()
             AddCategoryScreen(
@@ -66,6 +70,7 @@ fun MonefyNavGraph(
                 }
             )
         }
+        // Экран со списком категории
         composable(route = "CategoriesListScreen") {
             CategoriesListScreen(
                 financesViewModel = financesViewModel,
@@ -80,6 +85,7 @@ fun MonefyNavGraph(
                 }
             )
         }
+        // Экран с финансами
         composable(route = "FinanceListScreen") {
             FinanceListScreen(
                 financesViewModel = financesViewModel,
@@ -88,6 +94,7 @@ fun MonefyNavGraph(
                 }
             )
         }
+        // Экран для изменения категории
         composable(route = "RewriteCategoryScreen") {
             RewriteCategoryScreen(
                 financesViewModel = financesViewModel,
@@ -96,6 +103,7 @@ fun MonefyNavGraph(
                 }
             )
         }
+        // Экран для изменении финанса
         composable(route = "RewriteFinanceScreen") {
             RewriteFinanceScreen(
                 financesViewModel = financesViewModel,
@@ -103,6 +111,13 @@ fun MonefyNavGraph(
                 endOfScreen = {
                     navController.popBackStack()
                 }
+            )
+        }
+        // Экран для диаграм
+        composable(route = "DiagramsScreen") {
+            DiagramScreen(
+                financesViewModel = financesViewModel,
+                updateScreen = { navController.navigate(route = "DiagramsScreen") }
             )
         }
     }

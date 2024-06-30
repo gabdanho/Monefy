@@ -17,8 +17,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
@@ -73,6 +71,7 @@ fun RewriteCategoryScreen(
     )
 }
 
+// Переписать категорию
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RewriteCategory(
@@ -91,6 +90,7 @@ fun RewriteCategory(
     val scope = rememberCoroutineScope()
     val onBackPressedDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
 
+    // При нажатии назад, обнуляем параметры
     BackHandler(enabled = !backPressHandled.value) {
         backPressHandled.value = true
         scope.launch {
@@ -108,6 +108,7 @@ fun RewriteCategory(
     val colorTextCategoryName = remember { mutableStateOf(Color.Black) }
     var isCategoryNameWrong by rememberSaveable { mutableStateOf(false) }
 
+    // Если не выбрано название категория, то уведомляем пользователя миганием цветом
     LaunchedEffect(isCategoryNameWrong) {
         for (i in 1..3) {
             colorTextCategoryName.value = Color.Red
@@ -119,6 +120,7 @@ fun RewriteCategory(
     }
 
     Scaffold(
+        // Создаём снэкбар
         snackbarHost = { SnackbarHost(snackbarHostState) { data ->
             Snackbar(
                 snackbarData = data,
@@ -133,6 +135,7 @@ fun RewriteCategory(
                 .padding(8.dp)
                 .padding(innerPadding)
         ) {
+            // Название категории
             Text(
                 text = "Название категории",
                 color = if (!isCategoryNameWrong) Color.Black else colorTextCategoryName.value,
@@ -142,6 +145,7 @@ fun RewriteCategory(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(bottom = 8.dp)
             ) {
+                // Поле ввода названия
                 TextField(
                     value = categoryName,
                     onValueChange = { categoryName = it },
@@ -151,6 +155,7 @@ fun RewriteCategory(
                     modifier = Modifier.weight(4f)
                 )
             }
+            // Цвет категории
             Text(
                 text = "Цвет категории",
                 color = Color.Black,
@@ -168,6 +173,7 @@ fun RewriteCategory(
                     .clickable { changeColorDialogShow(true) }
             )
 
+            // Вызываем, если пользователю нужно выбрать цвет
             if (isColorDialogShow) {
                 Dialog(onDismissRequest = { changeColorDialogShow(false) }) {
                     ColorPicker(
@@ -180,6 +186,7 @@ fun RewriteCategory(
                 horizontalArrangement = Arrangement.Center,
                 modifier = Modifier.fillMaxWidth()
             ) {
+                // Принимаем изменения
                 Button(
                     onClick = {
                         scope.launch {
@@ -189,6 +196,7 @@ fun RewriteCategory(
                             )
                             val rewriteCategoryResult = rewriteCategory(initialCategory, newCategory)
 
+                            // Проверяем, можно создать категорию (не существует ли категория с таким названием)
                             if (rewriteCategoryResult) {
                                 scope.launch {
                                     snackbarHostState.currentSnackbarData?.dismiss()
@@ -197,6 +205,7 @@ fun RewriteCategory(
                                 removeColorToChange()
                                 endOfScreen()
                             }
+                            // Если существует категория с таким названием, говорим пользователю об этом
                             else {
                                 scope.launch {
                                     isCategoryNameWrong = true
@@ -212,6 +221,7 @@ fun RewriteCategory(
                 ) {
                     Text("Изменить")
                 }
+                // Кнопка удаления категории
                 Button(
                     onClick = {
                         scope.launch {

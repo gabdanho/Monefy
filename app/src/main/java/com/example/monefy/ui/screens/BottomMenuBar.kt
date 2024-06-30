@@ -20,11 +20,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.monefy.R
 
+// Нижнее меню
 @Composable
 fun BottomMenuBar(
     onPieChartClick: () -> Unit = { },
     onFinancesListClick: () -> Unit = { },
     onAddButtonClick: () -> Unit = { },
+    onDiagramClick: () -> Unit = { },
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -32,18 +34,21 @@ fun BottomMenuBar(
         horizontalArrangement = Arrangement.SpaceAround,
         modifier = modifier.fillMaxWidth()
     ) {
-        IconButton(onClick = { /*TODO*/ }) {
+        // Диаграммы
+        IconButton(onClick = onDiagramClick) {
             Icon(
                 imageVector = Icons.Filled.Menu,
-                contentDescription = "Menu"
+                contentDescription = "Диаграммы"
             )
         }
+        // Добавить финанс
         IconButton(onClick = onAddButtonClick) {
             Icon(
                 imageVector = Icons.Filled.Add,
-                contentDescription = "Menu"
+                contentDescription = "Добавить финанс"
             )
         }
+        // Донат с расходами
         IconButton(onClick = onPieChartClick) {
             Icon(
                 painter = painterResource(R.drawable.chart),
@@ -53,10 +58,11 @@ fun BottomMenuBar(
                     .size(40.dp)
             )
         }
+        // Список финансов
         IconButton(onClick = onFinancesListClick) {
             Icon(
                 painter = painterResource(R.drawable.list),
-                contentDescription = "Список расходов"
+                contentDescription = "Список финансов"
             )
         }
         IconButton(onClick = { /*TODO*/ }) {

@@ -138,6 +138,7 @@ fun Diagrams(
     }
 }
 
+// Рисуем легенду о цветах диаграмм
 @Composable
 fun DrawLegend() {
     val textMeasurer = rememberTextMeasurer()
@@ -156,7 +157,7 @@ fun DrawLegend() {
 
         drawText(
             textMeasurer = textMeasurer,
-            text = "Доходы",
+            text = "Расходы",
             topLeft = Offset(60f, size.height - 60f)
         )
 
@@ -169,7 +170,7 @@ fun DrawLegend() {
 
         drawText(
             textMeasurer = textMeasurer,
-            text = "Расходы",
+            text = "Доходы",
             topLeft = Offset(270f, size.height - 60f)
         )
 

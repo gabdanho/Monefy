@@ -1,50 +1,42 @@
 package com.example.monefy.ui.screens
 
-import android.util.Log
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
-import com.example.monefy.data.Category
-import com.example.monefy.data.Finance
-import com.example.monefy.model.FakeData
+import androidx.compose.ui.unit.sp
 import com.example.monefy.utils.Constants
-import com.example.monefy.utils.CustomDateRangePicker
-import com.example.monefy.utils.isDateInRange
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.combine
-import java.time.LocalDate
+import kotlinx.coroutines.launch
+import kotlin.math.abs
 
 /*
 * Сделать диаграммы по месяцам, по годам и т.д.
@@ -62,259 +54,291 @@ fun DiagramScreen(
 ) {
     val uiState by financesViewModel.uiState.collectAsState()
 
-    DiagramsTest(
-        customDateRange = uiState.customDateRange,
-        showDateRangeDialog = uiState.showDateRangeDialog,
-        selectedTabIndex = uiState.selectedTabIndex,
-        selectedDateRangeIndex = uiState.selectedDateRangeIndex,
-        changeShowDateRangeDialog = financesViewModel::changeShowDateRangeDialog,
-        updateCustomDateRange = financesViewModel::updateCustomDateRange,
-        changeSelectedTabIndex = financesViewModel::changeSelectedTabIndex,
-        changeSelectedDateRangeIndex = financesViewModel::changeSelectedDateRangeIndex,
-        getCategoriesByType = financesViewModel::getCategoriesByType,
-        getFinancesByCategoryId = financesViewModel::getFinancesByCategoryId,
+    MainDiagramScreen(
+        selectedTabIndex = uiState.selectedDiagramTabIndex,
+        getFinancesInDateRange = financesViewModel::getFinancesInDateRange,
+        changeSelectedDiagramTabIndex = financesViewModel::changeSelectedDiagramTabIndex,
         updateScreen = updateScreen
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DiagramsTest(
-    customDateRange: List<LocalDate>,
-    showDateRangeDialog: Boolean,
+fun MainDiagramScreen(
     selectedTabIndex: Int,
-    selectedDateRangeIndex: Int,
-    modifier: Modifier = Modifier,
-    changeShowDateRangeDialog: (Boolean) -> Unit,
-    updateCustomDateRange: (List<LocalDate>) -> Unit,
-    changeSelectedTabIndex: (Int) -> Unit,
-    changeSelectedDateRangeIndex: (Int) -> Unit,
-    getCategoriesByType: (String) -> Flow<List<Category>>,
-    getFinancesByCategoryId: (Int) -> Flow<List<Finance>>,
-    updateScreen: () -> Unit
+    getFinancesInDateRange: suspend (Int) -> Map<String, List<Double>>,
+    changeSelectedDiagramTabIndex: (Int) -> Unit,
+    updateScreen: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    var isHasFinances by remember { mutableStateOf(false) }
-
     Scaffold(modifier = modifier) { innerPadding ->
-        if (showDateRangeDialog) {
-            ModalBottomSheet(onDismissRequest = { changeShowDateRangeDialog(false) }) {
-                CustomDateRangePicker(
-                    changeShowDateRangeDialog = changeShowDateRangeDialog,
-                    updateDateRange = updateCustomDateRange,
-                    updateScreen = updateScreen
-                )
-            }
-        }
         Column(
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxSize()
         ) {
-            // Выбор типа финансов: доходы или расходы
             TabRow(selectedTabIndex = selectedTabIndex) {
-                Constants.tabItems.forEachIndexed { index, item ->
+                Constants.diagramsItems.forEachIndexed { index, item ->
                     Tab(
                         selected = index == selectedTabIndex,
                         onClick = {
-                            changeSelectedTabIndex(index)
+                            changeSelectedDiagramTabIndex(index)
                             updateScreen()
                         },
                         text = { Text(item) }
                     )
                 }
             }
-            // Если финансы есть, позволяем пользователю выбрать нужный промежуток даты
-            if (isHasFinances) {
-                TabRow(
-                    selectedTabIndex = selectedDateRangeIndex,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                ) {
-                    Constants.tabDateRangeItems.forEachIndexed { index, item ->
-                        Tab(
-                            selected = index == selectedDateRangeIndex,
-                            onClick = {
-                                // Если выбран таб кастомной даты, то выскакивает выбор даты
-                                if (index == 0) {
-                                    changeShowDateRangeDialog(true)
-                                }
-                                changeSelectedDateRangeIndex(index)
-                                updateScreen()
-                            }
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(30.dp)
-                            ) {
-                                // "..." - свой промежуток даты
-                                if (item == "...") {
-                                    Icon(
-                                        imageVector = Icons.Filled.DateRange,
-                                        contentDescription = "Выбрать собственный промежуток времени",
-                                        modifier = Modifier
-                                    )
-                                }
-                                else {
-                                    Text(
-                                        text = item,
-                                        modifier = Modifier
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-            }
 
-            var categories by remember { mutableStateOf<List<Category>?>(null) }
-            var financesMap by remember { mutableStateOf<Map<Int, List<Finance>>?>(null) }
-            // Следующие две булевые переменные нужны для определения, что все данные загрузились, прежде чем их выводить
-            var isLoadingCategories by remember { mutableStateOf(true) }
-            var isLoadingFinances by remember { mutableStateOf(true) }
+            // Мапа, где первый аргумент это период даты, а второй список сумм, где первый доходы, а второй расходы
+            var diagramsInfo by remember { mutableStateOf<Map<String, List<Double>>>(emptyMap()) }
 
-            // Получаем список категорий
             LaunchedEffect(selectedTabIndex) {
-                isLoadingCategories = true
-                val flow = if (selectedTabIndex == 0)
-                    getCategoriesByType("Расходы")
-                else
-                    getCategoriesByType("Доходы")
-
-                flow.collect { fetchedCategories ->
-                    categories = fetchedCategories.filter { it.totalCategoryPrice != 0.0 }
-                    isLoadingCategories = false
-                }
+                diagramsInfo = getFinancesInDateRange(selectedTabIndex)
             }
 
-            if (isLoadingCategories) { /* ничего не делаем */  }
-            // Проверка, если доходов/расходов нет
-            else if (categories.isNullOrEmpty()) {
-                isHasFinances = false
-                if (selectedTabIndex == 0) {
-                    Text("Расходов не найдено. Добавьте их!")
-                } else if (selectedTabIndex == 1) {
-                    Text("Доходов не найдено. Добавьте их!")
-                }
-            }
-            // Если доходы/расходы есть работаем с выбором промежутка даты
-            else {
-                isHasFinances = true
-                val dateRange = when(selectedDateRangeIndex) {
-                    // Кастомный промежуток даты
-                    0 -> {
-                        customDateRange
-                    }
-                    // Финансы за год
-                    1 -> {
-                        val now = LocalDate.now()
-                        val startOfYear = now.withDayOfYear(1)
-                        val endOfYear = now.withDayOfYear(now.lengthOfYear())
-                        listOf(startOfYear, endOfYear)
-                    }
-                    // Финансы за месяц
-                    2 -> {
-                        val now = LocalDate.now()
-                        val startOfMonth = now.withDayOfMonth(1)
-                        val endOfMonth = now.withDayOfMonth(now.lengthOfMonth())
-                        listOf(startOfMonth, endOfMonth)
-                    }
-                    // Финансы за сегодняшний день
-                    3 -> {
-                        listOf(LocalDate.now(), LocalDate.now())
-                    }
-                    else -> listOf(LocalDate.now(), LocalDate.now())
-                }
-
-                // Получаем мапу с финансами доходов или расходов (крч, что выбрал пользователь)
-                LaunchedEffect(Unit) {
-                    isLoadingFinances = true
-                    val flowMap = categories!!.associate { category ->
-                        category.id to getFinancesByCategoryId(category.id)
-                    }
-
-                    val combinedFlow = combine(flowMap.values.toList()) { financeLists ->
-                        flowMap.keys.zip(financeLists).toMap()
-                    }
-
-                    combinedFlow.collect { newFinancesMap ->
-                        financesMap = newFinancesMap.mapValues { (_, finances) ->
-                            finances.filter { isDateInRange(it.date, dateRange[0], dateRange[1]) }
-                        }.filterValues { it.isNotEmpty() }
-                        isLoadingFinances = false
-                    }
-                }
-                
-                if (isLoadingFinances) { /* Ничего не делаем */ }
-                // Если финансов доходов/расходов нет - то выводим сообщение
-                else if (financesMap.isNullOrEmpty()) {
-                    Text(text = "Нет данных для отображения")
-                }
-                // Если всё есть, готовим данные для основных функций (pie chart и список финансов)
-                else {
-                    val finances = financesMap!!.values.flatten()
-                    // Мапа с категориями и тотал суммой их
-                    val categoriesToSumFinance = categories!!.filter { it.id in financesMap!!.keys }.associate { category ->
-                        category to finances.filter { it.categoryId == category.id }.sumOf { it.price * it.count.toDouble() }
-                    }
-
-                    // Тотал сумма со всех категорий
-                    var totalPriceFromAllCategories = 0.0
-                    financesMap!!.values.forEach { category ->
-                        category.forEach { finance ->
-                            totalPriceFromAllCategories += finance.price * finance.count.toDouble()
-                        }
-                    }
-
-                    // Передаём данные
-                    if (categoriesToSumFinance.isNotEmpty() && totalPriceFromAllCategories != 0.0) {
-                        Diagram(categoriesToSumFinance)
-                    }
-                }
+            Box(
+                contentAlignment = Alignment.BottomCenter,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                if (diagramsInfo.isNotEmpty()) Diagrams(diagramsInfo)
+                else Text(text = "Доходов и расходов не найдено")
             }
         }
     }
 }
 
 @Composable
-fun Diagram(
-    categoriesToSumFinance: Map<Category, Double>,
+fun Diagrams(
+    diagramsInfo: Map<String, List<Double>>
 ) {
-    var startLine: Float
-    val maxSum = categoriesToSumFinance.values.max()
-    var maxHeightLine: Float
-    val strokeWidth = 80f
-    val padding = strokeWidth / 3
-    val canvasSizeWidth = ((strokeWidth + padding) * categoriesToSumFinance.values.size - padding).dp
-    val canvasSizeHeight = 300.dp
+    val listState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
 
-    Column(
-        verticalArrangement = Arrangement.Bottom,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .fillMaxSize()
-            .horizontalScroll(rememberScrollState())
+    // Скроллим к последнему элементу
+    DisposableEffect(Unit) {
+        coroutineScope.launch {
+            listState.scrollToItem(diagramsInfo.size - 1)
+        }
+        onDispose {  }
+    }
+
+    DrawLegend()
+
+    LazyRow(
+        state = listState,
+        modifier = Modifier.padding(start = 8.dp)
     ) {
-        Canvas(
-            modifier = Modifier
-                .size(canvasSizeWidth, canvasSizeHeight)
-                .padding(2.dp)
-        ) {
-            maxHeightLine = size.height
-            startLine = strokeWidth / 2
-
-            // Обрабатываем суммы категорий
-            categoriesToSumFinance.forEach { category ->
-                val sumPercent = category.value / maxSum
-
-                drawLine(
-                    start = Offset(x = startLine, y = size.height),
-                    end = Offset(x = startLine, y = (size.height - (sumPercent * maxHeightLine)).toFloat()),
-                    color = Color(category.key.color),
-                    strokeWidth = strokeWidth
-                )
-
-                startLine += strokeWidth + padding
-            }
+        items(diagramsInfo.keys.toList()) {
+            DrawDiagramBlock(
+                revenuesSum = diagramsInfo[it]?.first() ?: 0.0,
+                spendsSum = diagramsInfo[it]?.last() ?: 0.0,
+                date = it
+            )
         }
     }
 }
+
+@Composable
+fun DrawLegend() {
+    val textMeasurer = rememberTextMeasurer()
+
+    Canvas(
+        modifier = Modifier
+            .height(300.dp)
+            .width(320.dp)
+    ) {
+        // Доходы
+        drawCircle(
+            color = Color.Magenta,
+            radius = 10f,
+            center = Offset(40f, size.height - 30f)
+        )
+
+        drawText(
+            textMeasurer = textMeasurer,
+            text = "Доходы",
+            topLeft = Offset(60f, size.height - 60f)
+        )
+
+        // Расходы
+        drawCircle(
+            color = Color.Blue,
+            radius = 10f,
+            center = Offset(250f, size.height - 30f)
+        )
+
+        drawText(
+            textMeasurer = textMeasurer,
+            text = "Расходы",
+            topLeft = Offset(270f, size.height - 60f)
+        )
+
+        // Прибыль
+        drawCircle(
+            color = Color.Green,
+            radius = 10f,
+            center = Offset(470f, size.height - 30f)
+        )
+
+        drawText(
+            textMeasurer = textMeasurer,
+            text = "Прибыль",
+            topLeft = Offset(490f, size.height - 60f)
+        )
+
+        // Убыток
+        drawCircle(
+            color = Color.Red,
+            radius = 10f,
+            center = Offset(690f, size.height - 30f)
+        )
+
+        drawText(
+            textMeasurer = textMeasurer,
+            text = "Убыток",
+            topLeft = Offset(710f, size.height - 60f)
+        )
+    }
+}
+
+@Composable
+fun DrawDiagramBlock(
+    revenuesSum: Double,
+    spendsSum: Double,
+    date: String,
+    paddingX: Float = 5f,
+    paddingY: Float = 200f,
+) {
+    val textMeasurer = rememberTextMeasurer()
+
+    val totalSum = revenuesSum + spendsSum
+    val revenuesPercent = (revenuesSum / totalSum).toFloat()
+    val spendsPercent = (spendsSum / totalSum).toFloat()
+
+    Canvas(
+        modifier = Modifier
+            .height(300.dp)
+            .width(90.dp)
+    ) {
+        val maxHeight = size.height - 400f
+        val paddingSumText = 740f
+
+        // Дата
+        drawText(
+            textMeasurer = textMeasurer,
+            text = date,
+            topLeft = Offset(paddingX + 35f, size.height - paddingY),
+            style = TextStyle(fontSize = 15.sp)
+        )
+
+        // Рисуем блок диаграммы
+        drawLine(
+            start = Offset(x = (paddingX + 5f), y = size.height - paddingY),
+            end = Offset(x = (paddingX + 5f), y = size.height - (paddingY + 20f)),
+            color = Color.Black,
+            strokeWidth = 2f
+        )
+
+        drawLine(
+            start = Offset(x = (paddingX + 5f), y = size.height - paddingY),
+            end = Offset(x = (paddingX + 180f), y = size.height - paddingY),
+            color = Color.Black,
+            strokeWidth = 2f
+        )
+
+        drawLine(
+            start = Offset(x = (paddingX + 180f), y = size.height - paddingY),
+            end = Offset(x = (paddingX + 180f), y = size.height - (paddingY + 20f)),
+            color = Color.Black,
+            strokeWidth = 2f
+        )
+
+        // Диаграммы
+        drawLine(
+            start = Offset(x = (paddingX + 35f), y = size.height - paddingY),
+            end = Offset(x = (paddingX + 35f), y = size.height - (paddingY + (revenuesPercent * maxHeight))),
+            color = Color.Blue,
+            strokeWidth = 40f
+        )
+
+        // Пишем сумму для доходов
+        drawIntoCanvas { canvas ->
+            canvas.save()
+            canvas.rotate(270f)
+            drawContext.canvas.nativeCanvas.drawText(
+                if (revenuesSum != 0.0) revenuesSum.toString() else "",
+                size.height - (paddingY + (spendsPercent * maxHeight)) - paddingSumText,
+                paddingX + 45f,
+                android.graphics.Paint().apply {
+                    textSize = 15.sp.toPx()
+                    color = android.graphics.Color.BLACK
+                    textAlign = android.graphics.Paint.Align.CENTER
+                }
+            )
+            canvas.restore()
+        }
+
+        drawLine(
+            start = Offset(x = (paddingX + 93f), y = size.height - paddingY),
+            end = Offset(x = (paddingX + 93f), y = size.height - (paddingY + (spendsPercent * maxHeight))),
+            color = Color.Magenta,
+            strokeWidth = 40f
+        )
+
+        // Пишем сумму для расходов
+        drawIntoCanvas { canvas ->
+            canvas.save()
+            canvas.rotate(270f)
+            drawContext.canvas.nativeCanvas.drawText(
+                if (spendsSum != 0.0) spendsSum.toString() else "",
+                size.height - (paddingY + (revenuesPercent * maxHeight)) - paddingSumText,
+                paddingX + 105f,
+                android.graphics.Paint().apply {
+                    textSize = 15.sp.toPx()
+                    color = android.graphics.Color.BLACK
+                    textAlign = android.graphics.Paint.Align.CENTER
+                }
+            )
+            canvas.restore()
+        }
+
+        // Диаграмма убытка или дохода
+        val differenceSum = revenuesSum - spendsSum
+        val differencePercent = (abs(differenceSum) / totalSum).toFloat()
+
+        // Выбираем цвет в зависимости чего больше доходов или расходов (difference > 0 - прибыль, иначе убыль)
+        val differenceColor = if (differenceSum > 0) Color.Green else Color.Red
+
+        drawLine(
+            start = Offset(x = (paddingX + 150f), y = size.height - paddingY),
+            end = Offset(x = (paddingX + 150f), y = size.height - (paddingY + (differencePercent * maxHeight))),
+            color = differenceColor,
+            strokeWidth = 40f
+        )
+
+        // Пишем сумму для разницы
+        drawIntoCanvas { canvas ->
+            canvas.save()
+            canvas.rotate(270f)
+            drawContext.canvas.nativeCanvas.drawText(
+                if (differenceSum != 0.0) abs(differenceSum).toString() else "",
+                size.height - (paddingY + ((1f - differencePercent) * maxHeight)) - paddingSumText,
+                paddingX + 165f,
+                android.graphics.Paint().apply {
+                    textSize = 15.sp.toPx()
+                    color = android.graphics.Color.BLACK
+                    textAlign = android.graphics.Paint.Align.CENTER
+                }
+            )
+            canvas.restore()
+        }
+    }
+}
+
+//@Preview
+//@Composable
+//fun DiagramsTestPreview() {
+//    DiagramsTest(
+//        getFinancesInDateRange = suspend { }
+//    )
+//}

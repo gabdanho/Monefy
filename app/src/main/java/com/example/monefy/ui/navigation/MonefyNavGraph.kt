@@ -114,10 +114,12 @@ fun MonefyNavGraph(
             )
         }
         // Экран для диаграм
-        composable(route = "DiagramsScreen") {
+        composable(route = "DiagramScreen") {
             DiagramScreen(
                 financesViewModel = financesViewModel,
-                updateScreen = { navController.navigate(route = "DiagramsScreen") }
+                updateScreen = {
+                    navController.navigate("DiagramScreen")
+                }
             )
         }
     }

@@ -22,7 +22,10 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.temporal.TemporalAdjusters
 
 data class FinancesUiState(
     val selectedCategoryColor: Color = Color.Transparent,
@@ -33,6 +36,7 @@ data class FinancesUiState(
     val colorToChange: Color = Color.Transparent,
     val selectedTabIndex: Int = 0,
     val selectedDateRangeIndex: Int = 2,
+    val selectedDiagramTabIndex: Int = 0,
     val currentCategoryIdForFinances: Int = 0,
     val selectedFinanceToChange: Finance = Finance(),
     val isRevenuesEmpty: Boolean = true,
@@ -81,6 +85,12 @@ class FinancesViewModel(private val categoryDao: CategoryDao) : ViewModel() {
     fun changeSelectedTabIndex(index: Int) {
         _uiState.update { currentState ->
             currentState.copy(selectedTabIndex = index)
+        }
+    }
+
+    fun changeSelectedDiagramTabIndex(index: Int) {
+        _uiState.update { currentState ->
+            currentState.copy(selectedDiagramTabIndex = index)
         }
     }
 
@@ -337,6 +347,127 @@ class FinancesViewModel(private val categoryDao: CategoryDao) : ViewModel() {
             updateTotalCategoryPrice()
             checkSpends()
             checkRevenues()
+        }
+    }
+
+    // Вернуть доходы/расходы, которые соответствуют рэнжу дат
+    suspend fun getFinancesInDateRange(tabIndex: Int): Map<String, List<Double>> {
+        val revenues = categoryDao.getFinancesByType("Доход").first()
+        val spends = categoryDao.getFinancesByType("Трата").first()
+
+        if (revenues.isEmpty() && spends.isEmpty()) {
+            return emptyMap()
+        }
+        else {
+            // Списки дат и сумм, которые будут позже объеденены в мапу
+            val listSums = mutableListOf<List<Double>>()
+            val listDates = mutableListOf<String>()
+
+            // Готовим промежуток времени в соответствии с выбранным tabIndex
+            val dateRanges = mutableListOf<LongRange>()
+
+            val allFinances = revenues + spends
+            val minDate = allFinances.minOf { it.date }.toEpochDay()
+            val maxDate = allFinances.maxOf { it.date }.toEpochDay()
+            val totalDateRange = (minDate..maxDate)
+
+            when(tabIndex) {
+                // По дням
+                0 -> {
+                    dateRanges.add(minDate..maxDate)
+                }
+                // По неделям
+                1 -> {
+                    var currentDate = minDate
+
+                    while(true) {
+                        // Находим первый и последний день недели
+                        val startOfWeek = LocalDate.ofEpochDay(currentDate).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+                        val endOfWeek = startOfWeek.plusDays(6)
+
+                        // Добавляем рэнжу в список
+                        dateRanges.add(startOfWeek.toEpochDay()..endOfWeek.toEpochDay())
+
+                        // Делаем на +1 день, чтобы начать следующую неделю
+                        currentDate = endOfWeek.plusDays(1).toEpochDay()
+
+                        // Если текущая дата не входит в промежуток списка дат, то выходим из цикла
+                        if (!totalDateRange.contains(currentDate)) break
+                    }
+                }
+                // По месяцам
+                2 -> {
+                    var currentDate = minDate
+
+                    while (true) {
+                        // Находим первый и последний день месяца
+                        val startOfMonth = LocalDate.ofEpochDay(currentDate).with(TemporalAdjusters.firstDayOfMonth())
+                        val endOfMonth = LocalDate.ofEpochDay(currentDate).with(TemporalAdjusters.lastDayOfMonth())
+
+                        // Добавляем рэнжу в список
+                        dateRanges.add(startOfMonth.toEpochDay()..endOfMonth.toEpochDay())
+
+                        // Делаем на +1 день, чтобы начать следующий месяц
+                        currentDate = endOfMonth.plusDays(1).toEpochDay()
+
+                        // Если текущая дата не входит в промежуток списка дат, то выходим из цикла
+                        Log.i("FinancesViewModel", currentDate.toString())
+                        if (!totalDateRange.contains(currentDate)) break
+                    }
+                }
+                // По годам
+                3 -> {
+                    var currentDate = minDate
+
+                    while (true) {
+                        // Находим первый и последний день года
+                        val startOfYear = LocalDate.ofEpochDay(currentDate).with(TemporalAdjusters.firstDayOfYear())
+                        val endOfYear = LocalDate.ofEpochDay(currentDate).with(TemporalAdjusters.lastDayOfYear())
+
+                        // Добавляем рэнжу в список
+                        dateRanges.add(startOfYear.toEpochDay()..endOfYear.toEpochDay())
+
+                        // Делаем на +1 день, чтобы начать следующий год
+                        currentDate = endOfYear.plusDays(1).toEpochDay()
+
+                        // Если текущая дата не входит в промежуток списка дат, то выходим из цикла
+                        if (!totalDateRange.contains(currentDate)) break
+                    }
+                }
+            }
+
+            dateRanges.forEach {  range ->
+                // С днями работаем немного иным способом, с остальными одинаково
+                if (tabIndex == 0) {
+                    range.forEach { day ->
+                        // Находим суммы доходов и расходов
+                        val revenuesSum = revenues.sumOf { if (it.date.toEpochDay() == day) it.count * it.price else 0.0 }
+                        val spendsSum = spends.sumOf { if (it.date.toEpochDay() == day) it.count * it.price else 0.0 }
+
+                        listSums.add(listOf(revenuesSum, spendsSum))
+                        listDates.add(LocalDate.ofEpochDay(day).format(DateTimeFormatter.ofPattern("dd/MM")))
+                    }
+                }
+                // Для недель, месяцев, лет
+                else {
+                    // Находим суммы доходов и расходов
+                    val revenuesSum = revenues.sumOf { if (it.date.toEpochDay() in range) it.count * it.price else 0.0 }
+                    val spendsSum = spends.sumOf { if (it.date.toEpochDay() in range) it.count * it.price else 0.0 }
+
+                    listSums.add(listOf(revenuesSum, spendsSum))
+                    // В соответствии с типом рэнжы, будет разный вывод даты
+                    listDates.add(
+                        when(tabIndex) {
+                            1 -> LocalDate.ofEpochDay(range.last).format(DateTimeFormatter.ofPattern("dd/MM/yy"))
+                            2 -> LocalDate.ofEpochDay(range.first).format(DateTimeFormatter.ofPattern("MM/yy"))
+                            3 -> "${LocalDate.ofEpochDay(range.first).year}"
+                            else -> ""
+                        }
+                    )
+                }
+            }
+
+            return listDates.zip(listSums).toMap()
         }
     }
 

@@ -45,6 +45,10 @@ interface CategoryDao {
     @Query("SELECT * FROM categories WHERE type = :categoryType")
     fun getCategoriesByType(categoryType: String): Flow<List<Category>>
 
+    // Получить доходы/расходы
+    @Query("SELECT * FROM finances WHERE type = :financeType")
+    fun getFinancesByType(financeType: String): Flow<List<Finance>>
+
     // Добавить финанс
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun addFinance(finance: Finance)

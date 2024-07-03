@@ -17,7 +17,7 @@ fun MonefyApp(navController: NavHostController = rememberNavController()) {
                 onAddButtonClick = { navController.navigate(route = "AddFinanceScreen") },
                 onFinancesListClick = { navController.navigate(route = "CategoriesListScreen") },
                 onPieChartClick = { navController.navigate(route = "MainScreen") },
-                onDiagramClick = { navController.navigate(route = "DiagramsScreen") }
+                onDiagramClick = { navController.navigate(route = "DiagramScreen") }
             )
         }
     ) { innerPadding ->

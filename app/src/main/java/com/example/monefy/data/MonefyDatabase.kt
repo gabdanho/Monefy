@@ -8,7 +8,7 @@ import androidx.room.TypeConverters
 import kotlinx.coroutines.InternalCoroutinesApi
 
 @TypeConverters(DateConverter::class)
-@Database(entities = [Category::class, Finance::class], version = 5, exportSchema = false)
+@Database(entities = [Category::class, Finance::class], version = 6, exportSchema = false)
 abstract class MonefyDatabase : RoomDatabase() {
     abstract fun categoryDao() : CategoryDao
     companion object {

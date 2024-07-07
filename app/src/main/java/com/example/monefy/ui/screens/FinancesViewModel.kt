@@ -24,6 +24,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.Month
 import java.time.format.DateTimeFormatter
 import java.time.temporal.TemporalAdjusters
 
@@ -52,6 +53,8 @@ class FinancesViewModel(private val categoryDao: CategoryDao) : ViewModel() {
     init {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
+                addRegularFinances()
+
                 updateTotalCategoryPrice()
                 checkRevenues()
                 checkSpends()
@@ -66,6 +69,27 @@ class FinancesViewModel(private val categoryDao: CategoryDao) : ViewModel() {
                 currentState.copy(
                     isRevenuesEmpty = categoryDao.getCategoriesByType("Доходы").first().all { it.totalCategoryPrice == 0.0 }
                 )
+            }
+        }
+    }
+
+    // Добавляем регулярный платеж
+    private suspend fun addRegularFinances() {
+        val currentDayOfMonth = LocalDate.now().dayOfMonth
+        val finances = categoryDao.getAllFinances().first()
+
+        finances.forEach { finance ->
+            if (finance.isRegular) {
+                val regularDayOfMonth = finance.date.dayOfMonth
+
+                if (regularDayOfMonth <= currentDayOfMonth) {
+                    // Создаём регулярный финанс
+                    val newFinance = finance.copy(date = LocalDate.of(LocalDate.now().year, LocalDate.now().month, regularDayOfMonth))
+                    // Проверяем, чтобы не было дубликатов
+                    if (!finances.contains(newFinance)) {
+                        addFinance(newFinance.copy(id = newFinance.id + 1, isRegular = false))
+                    }
+                }
             }
         }
     }

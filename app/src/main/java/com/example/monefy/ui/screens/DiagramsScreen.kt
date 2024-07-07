@@ -62,6 +62,7 @@ fun DiagramScreen(
     )
 }
 
+// В этой функции описывается сам экран, а также обрабатываются данные для работы с ними
 @Composable
 fun MainDiagramScreen(
     selectedTabIndex: Int,
@@ -107,6 +108,7 @@ fun MainDiagramScreen(
     }
 }
 
+// Вызываем функцию для рисования диаграмм, легенд, дат
 @Composable
 fun Diagrams(
     diagramsInfo: Map<String, List<Double>>
@@ -202,6 +204,7 @@ fun DrawLegend() {
     }
 }
 
+// Рисуем диаграммы
 @Composable
 fun DrawDiagramBlock(
     revenuesSum: Double,

@@ -14,5 +14,6 @@ data class Finance(
     val date: LocalDate = LocalDate.now(),
     val price: Double = 0.0,
     val count: Int = 0,
-    val type: String = ""
+    val type: String = "",
+    val isRegular: Boolean = false
 )

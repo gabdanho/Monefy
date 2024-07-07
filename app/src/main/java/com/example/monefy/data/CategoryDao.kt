@@ -60,6 +60,10 @@ interface CategoryDao {
     // Обновить финанс
     @Update
     suspend fun updateFinance(finance: Finance)
+
+    // Получить все финансы
+    @Query("SELECT * FROM finances")
+    fun getAllFinances(): Flow<List<Finance>>
 }
 
 // Дата класс категории с финансами

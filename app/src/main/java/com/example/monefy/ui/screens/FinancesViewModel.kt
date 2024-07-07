@@ -84,10 +84,19 @@ class FinancesViewModel(private val categoryDao: CategoryDao) : ViewModel() {
 
                 if (regularDayOfMonth <= currentDayOfMonth) {
                     // Создаём регулярный финанс
-                    val newFinance = finance.copy(date = LocalDate.of(LocalDate.now().year, LocalDate.now().month, regularDayOfMonth))
+                    val newFinance = Finance(
+                        date = LocalDate.of(LocalDate.now().year, LocalDate.now().month, regularDayOfMonth),
+                        name = finance.name,
+                        categoryId = finance.categoryId,
+                        description = finance.description,
+                        count = finance.count,
+                        price = finance.price,
+                        isRegular = false
+                    )
+
                     // Проверяем, чтобы не было дубликатов
-                    if (!finances.contains(newFinance)) {
-                        addFinance(newFinance.copy(id = newFinance.id + 1, isRegular = false))
+                    if (finances.count { it.date == newFinance.date && it.name == newFinance.name } == 0) {
+                        addFinance(newFinance)
                     }
                 }
             }

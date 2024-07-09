@@ -27,6 +27,7 @@ fun BottomMenuBar(
     onFinancesListClick: () -> Unit = { },
     onAddButtonClick: () -> Unit = { },
     onDiagramClick: () -> Unit = { },
+    onHistoryClick: () -> Unit = { },
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -65,10 +66,10 @@ fun BottomMenuBar(
                 contentDescription = "Список финансов"
             )
         }
-        IconButton(onClick = { /*TODO*/ }) {
+        IconButton(onClick = onHistoryClick) {
             Icon(
                 imageVector = Icons.Filled.ShoppingCart,
-                contentDescription = "Menu"
+                contentDescription = "История транзакций"
             )
         }
     }

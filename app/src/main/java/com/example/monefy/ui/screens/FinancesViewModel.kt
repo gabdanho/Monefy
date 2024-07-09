@@ -73,6 +73,9 @@ class FinancesViewModel(private val categoryDao: CategoryDao) : ViewModel() {
         }
     }
 
+    // Возвращаем мапу с упорядоченной датой to финансы
+    fun getSortedFinancesByDate() = categoryDao.getCategoriesByDateSortDesc()
+
     // Добавляем регулярный платеж
     private suspend fun addRegularFinances() {
         val currentDayOfMonth = LocalDate.now().dayOfMonth

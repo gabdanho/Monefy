@@ -4,6 +4,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import com.example.monefy.data.Category
 import com.example.monefy.data.Finance
+import java.time.LocalDate
+import java.time.Month
 
 object FakeData {
     val fakeCategoriesList = listOf(
@@ -33,23 +35,27 @@ object FakeData {
         Finance(
             name = "Finance 1",
             price = 100.0,
-            count = 1
+            count = 1,
+            date = LocalDate.now().plusDays(25)
         ),
         Finance(
             name = "Finance 2",
             price = 100.0,
-            count = 3
+            count = 3,
+            date = LocalDate.now().plusMonths(3).plusDays(2)
         ),
         Finance(
             name = "Finance 3",
             price = 50.0,
             count = 5,
-            description = "Lorem ipsum"
+            description = "Lorem ipsum",
+            date = LocalDate.of(2004, Month.JUNE, 15)
         ),
         Finance(
             name = "Finance 4",
             price = 100.0,
-            count = 1
+            count = 1,
+            date = LocalDate.now().plusDays(25)
         )
     )
 }

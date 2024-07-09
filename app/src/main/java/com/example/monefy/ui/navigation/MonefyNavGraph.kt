@@ -19,6 +19,7 @@ import com.example.monefy.ui.screens.RewriteCategoryScreen
 import com.example.monefy.ui.screens.FinanceListScreen
 import com.example.monefy.ui.screens.RewriteFinanceScreen
 import com.example.monefy.ui.screens.FinancesViewModel
+import com.example.monefy.ui.screens.HistoryFinancesScreen
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -119,6 +120,17 @@ fun MonefyNavGraph(
                 financesViewModel = financesViewModel,
                 updateScreen = {
                     navController.navigate("DiagramScreen")
+                }
+            )
+        }
+        // Экран истории финансов
+        composable(route = "HistoryFinancesScreen") {
+            HistoryFinancesScreen(
+                financesViewModel = financesViewModel,
+                goToFinance = { finance ->
+                    financesViewModel.changeSelectedCategory(finance.categoryId)
+                    financesViewModel.changeSelectedFinanceToChange(finance)
+                    navController.navigate(route = "RewriteFinanceScreen")
                 }
             )
         }

@@ -225,7 +225,7 @@ fun DrawDiagramBlock(
             .width(90.dp)
     ) {
         val maxHeight = size.height - 400f
-        val paddingSumText = 700f
+        val paddingSumText = 740f
 
         // Дата
         drawText(

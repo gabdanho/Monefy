@@ -125,7 +125,7 @@ fun RewriteFinance(
 
     var financeName by rememberSaveable { mutableStateOf(initialFinance.name) }
     var financePrice by rememberSaveable { mutableStateOf(initialFinance.price) }
-    var financePriceForTextFieldValue by rememberSaveable { mutableStateOf(String.format("%.2f", initialFinance.price).replace(",", ".")) }
+    var financePriceForTextFieldValue by rememberSaveable { mutableStateOf(String.format("%.2f", initialFinance.price)) }
     var financeDescription by rememberSaveable { mutableStateOf(initialFinance.description) }
     var count by rememberSaveable { mutableStateOf(initialFinance.count) }
     var countForTextFieldValue by rememberSaveable { mutableStateOf(initialFinance.count.toString()) }

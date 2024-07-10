@@ -41,10 +41,6 @@ interface CategoryDao {
     @Query("SELECT * FROM categories")
     fun getAllCategories(): Flow<List<Category>>
 
-    // Получить категории, отсортированные по дате
-    @Query("SELECT * FROM finances ORDER BY date DESC")
-    fun getCategoriesByDateSortDesc(): Flow<List<Finance>>
-
     // Получить категории по типу
     @Query("SELECT * FROM categories WHERE type = :categoryType")
     fun getCategoriesByType(categoryType: String): Flow<List<Category>>

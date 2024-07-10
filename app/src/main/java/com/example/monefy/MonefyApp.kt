@@ -13,13 +13,11 @@ import com.example.monefy.ui.screens.BottomMenuBar
 fun MonefyApp(navController: NavHostController = rememberNavController()) {
     Scaffold(
         bottomBar = {
-            // Нижнее меню приложения
             BottomMenuBar(
                 onAddButtonClick = { navController.navigate(route = "AddFinanceScreen") },
                 onFinancesListClick = { navController.navigate(route = "CategoriesListScreen") },
                 onPieChartClick = { navController.navigate(route = "MainScreen") },
-                onDiagramClick = { navController.navigate(route = "DiagramScreen") },
-                onHistoryClick = { navController.navigate(route = "HistoryFinancesScreen") }
+                onDiagramClick = { navController.navigate(route = "DiagramScreen") }
             )
         }
     ) { innerPadding ->

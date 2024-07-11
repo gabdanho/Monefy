@@ -21,6 +21,11 @@ android {
         }
     }
 
+    buildFeatures {
+        dataBinding = true
+        viewBinding = true
+    }
+
     ksp {
         arg("room.schemaLocation", "$projectDir/schemas")
         arg("room.generateKotlin", "true")
@@ -79,6 +84,13 @@ dependencies {
     implementation("androidx.room:room-ktx:${rootProject.extra["room_version"]}")
     // KSP
     ksp("androidx.room:room-compiler:${rootProject.extra["room_version"]}")
+    // Work Manager
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
+//    // Hilt
+//    implementation("androidx.hilt:hilt-work:1.0.0")
+//    implementation("androidx.work:work-runtime-ktx:2.7.1")
+//    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
+//    ksp("androidx.hilt:hilt-compiler:1.0.0")
 
     testImplementation("junit:junit:4.13.2")
 

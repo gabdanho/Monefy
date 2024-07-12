@@ -45,12 +45,10 @@ class NotificationModule(private val context: Context) {
 
     fun createNotificationChannel() {
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        val name = "Notif Channel"
-        val desc = "A Description of the Channel"
+        val name = "Ежедневные уведомления"
         val importance = NotificationManager.IMPORTANCE_DEFAULT
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(channelID, name, importance)
-            channel.description = desc
             notificationManager.createNotificationChannel(channel)
         }
     }

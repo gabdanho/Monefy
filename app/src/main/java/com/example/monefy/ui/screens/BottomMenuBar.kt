@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
@@ -27,6 +25,7 @@ fun BottomMenuBar(
     onFinancesListClick: () -> Unit = { },
     onAddButtonClick: () -> Unit = { },
     onDiagramClick: () -> Unit = { },
+    onHistoryClick: () -> Unit = { },
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -37,8 +36,9 @@ fun BottomMenuBar(
         // Диаграммы
         IconButton(onClick = onDiagramClick) {
             Icon(
-                imageVector = Icons.Filled.Menu,
-                contentDescription = "Диаграммы"
+                painter = painterResource(R.drawable.diagrams),
+                contentDescription = "Диаграммы",
+                modifier = Modifier.size(25.dp)
             )
         }
         // Добавить финанс
@@ -65,10 +65,12 @@ fun BottomMenuBar(
                 contentDescription = "Список финансов"
             )
         }
-        IconButton(onClick = { /*TODO*/ }) {
+        // История транзакций
+        IconButton(onClick = onHistoryClick) {
             Icon(
-                imageVector = Icons.Filled.ShoppingCart,
-                contentDescription = "Menu"
+                painter = painterResource(R.drawable.history),
+                contentDescription = "История транзакций",
+                modifier = Modifier.size(25.dp)
             )
         }
     }

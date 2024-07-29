@@ -62,6 +62,9 @@ class FinancesViewModel(private val categoryDao: CategoryDao) : ViewModel() {
         }
     }
 
+    // Отсортированные по дате транзакции (с раннего до позднего)
+    fun getSortedFinancesByDate() = categoryDao.getCategoriesByDateSortDesc()
+
     // Проверяем есть ли в БД доходы
     private suspend fun checkRevenues() {
         withContext(Dispatchers.IO) {
@@ -345,6 +348,11 @@ class FinancesViewModel(private val categoryDao: CategoryDao) : ViewModel() {
     // Удалить категорию
     suspend fun deleteCategory(category: Category) {
         withContext(Dispatchers.IO) {
+            val finances = getFinancesByCategoryId(category.id).first()
+            finances.forEach { finance ->
+                categoryDao.deleteFinance(finance)
+            }
+
             categoryDao.deleteCategory(category)
             updateTotalCategoryPrice()
         }

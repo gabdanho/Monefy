@@ -4,11 +4,16 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -28,6 +33,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.monefy.R
@@ -71,7 +77,10 @@ fun CategoriesList(
     // Карточка создания категории
     val addCategory = Category(id = -1, name = "Добавить категорию (+)", color = Color.Transparent.toArgb())
 
-    LazyColumn(modifier = modifier) {
+    LazyVerticalGrid(
+        columns = if (categories.isEmpty()) GridCells.Fixed(1) else GridCells.Fixed(2),
+        modifier = Modifier.padding(bottom = 8.dp)
+    ) {
         items(categories + addCategory) { category ->
             CategoryCard(
                 category = category,
@@ -133,16 +142,17 @@ fun CategoryCard(
                     )
                 }
             }
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier
-                    .padding(32.dp)
+                    .padding(vertical = 32.dp, horizontal = 4.dp)
                     .fillMaxWidth()
             ) {
                 // Название категории
                 Text(
                     text = category.name,
+                    textAlign = TextAlign.Center,
                     style = MaterialTheme.typography.bodyLarge
                 )
                 // Выводим тотал прайс категории

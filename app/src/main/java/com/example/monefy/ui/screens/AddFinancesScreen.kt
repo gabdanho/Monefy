@@ -5,6 +5,7 @@ import android.widget.Toast
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -28,6 +29,7 @@ import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
@@ -35,6 +37,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
@@ -43,6 +46,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -120,7 +124,7 @@ fun AddFinance(
     // является кнопкой создания категории
     val addCategory = Category(
         id = -1,
-        name = "Добавить категорию (+)",
+        name = "+",
         color = Color.Transparent.toArgb()
     )
 
@@ -139,12 +143,15 @@ fun AddFinance(
     val colorTextFinanceName = remember { mutableStateOf(Color.Black) }
     val colorTextSelectedCategory = remember { mutableStateOf(Color.Black) }
 
+    val onSurfaceColor = MaterialTheme.colorScheme.onSurface
+    val errorColor = MaterialTheme.colorScheme.onError
+
     // Показываем пользователю миганием, что не выбрана категория
     LaunchedEffect(isSelectedCategoryNotSelected) {
         for (i in 1..3) {
-            colorTextSelectedCategory.value = Color.Red
+            colorTextSelectedCategory.value = errorColor
             delay(500)
-            colorTextSelectedCategory.value = Color.Black
+            colorTextSelectedCategory.value = onSurfaceColor
             delay(500)
         }
         isSelectedCategoryNotSelected = false
@@ -153,9 +160,9 @@ fun AddFinance(
     // Показываем пользователю миганием, что не выбрано название
     LaunchedEffect(isFinanceNameNotSelected) {
         for (i in 1..3) {
-            colorTextFinanceName.value = Color.Red
+            colorTextFinanceName.value = errorColor
             delay(500)
-            colorTextFinanceName.value = Color.Black
+            colorTextFinanceName.value = onSurfaceColor
             delay(500)
         }
         isFinanceNameNotSelected = false
@@ -187,7 +194,7 @@ fun AddFinance(
             // Название
             Text(
                 text = "Название",
-                color = if (!isFinanceNameNotSelected) Color.Black else colorTextFinanceName.value,
+                color = if (!isFinanceNameNotSelected) onSurfaceColor else colorTextFinanceName.value,
                 modifier = Modifier.padding(4.dp)
             )
             Row(
@@ -322,7 +329,8 @@ fun AddFinance(
                     },
                     textStyle = LocalTextStyle.current.copy(
                         textAlign = TextAlign.Center,
-                        fontSize = 20.sp
+                        fontSize = 20.sp,
+                        color = onSurfaceColor
                     ),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier
@@ -358,27 +366,108 @@ fun AddFinance(
             // Категория
             Text(
                 text = "Категория",
-                color = if (!isSelectedCategoryNotSelected) Color.Black else colorTextSelectedCategory.value,
+                color = if (!isSelectedCategoryNotSelected) onSurfaceColor else colorTextSelectedCategory.value,
                 modifier = Modifier.padding(4.dp)
             )
-            // Выводим все существующие категории
-            LazyHorizontalGrid(
-                rows = if (categories.isEmpty()) GridCells.Fixed(1) else GridCells.Fixed(2),
-                modifier = Modifier
-                    .height(maxOf(if (categories.isNotEmpty()) 200.dp else 100.dp))
-                    .padding(bottom = 8.dp)
-            ) {
-                items(categories + addCategory) { category ->
-                    CategoryCard(
-                        categoryName = category.name,
-                        categoryId = category.id,
-                        categoryColor = Color(category.color),
-                        currentCategoryId = selectedCategoryId,
-                        onAddCategoryScreenClick = onAddCategoryScreenClick,
-                        changeSelectedCategory = changeSelectedCategory
+
+            val revenueCategories = categories.filter { it.type == "Доходы" }
+            val spendCategories = categories.filter { it.type == "Расходы" }
+
+            // Если есть хоть какие-то расходы
+            if (categories.isNotEmpty()) {
+                // Выводим категории доходов, если они существуют
+                if (revenueCategories.isNotEmpty()) {
+                    // Категории доходов
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(4.dp),
+                    ) {
+                        Text(
+                            text = "Доходы"
+                        )
+                    }
+
+                    LazyHorizontalGrid(
+                        rows = GridCells.Fixed(2),
+                        modifier = Modifier
+                            .height(maxOf(200.dp))
+                            .padding(bottom = 8.dp)
+                    ) {
+                        items(revenueCategories) { category ->
+                            CategoryCard(
+                                categoryName = category.name,
+                                categoryId = category.id,
+                                categoryColor = Color(category.color),
+                                currentCategoryId = selectedCategoryId,
+                                onAddCategoryScreenClick = onAddCategoryScreenClick,
+                                changeSelectedCategory = changeSelectedCategory
+                            )
+                        }
+                    }
+                }
+
+                // Выводим категории расходов, если они существуют
+                if (spendCategories.isNotEmpty()) {
+                    // Категории расходов
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(4.dp),
+                    ) {
+                        Text(
+                            text = "Расходы"
+                        )
+                    }
+
+                    LazyHorizontalGrid(
+                        rows = GridCells.Fixed(2),
+                        modifier = Modifier
+                            .height(maxOf(200.dp))
+                            .padding(bottom = 8.dp)
+                    ) {
+                        items(spendCategories) { category ->
+                            CategoryCard(
+                                categoryName = category.name,
+                                categoryId = category.id,
+                                categoryColor = Color(category.color),
+                                currentCategoryId = selectedCategoryId,
+                                onAddCategoryScreenClick = onAddCategoryScreenClick,
+                                changeSelectedCategory = changeSelectedCategory
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Выводим категорию добавления
+            if (categories.isNotEmpty()) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(4.dp),
+                ) {
+                    Text(
+                        text = "Добавить категорию"
                     )
                 }
             }
+
+            CategoryCard(
+                categoryName = addCategory.name,
+                categoryId = addCategory.id,
+                categoryColor = Color(addCategory.color),
+                currentCategoryId = selectedCategoryId,
+                onAddCategoryScreenClick = onAddCategoryScreenClick,
+                changeSelectedCategory = changeSelectedCategory,
+                modifier = Modifier.size(70.dp)
+            )
             // Регулярный платёж
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -507,6 +596,7 @@ fun AddFinance(
                         }
                     }
                 },
+                colors = ButtonDefaults.buttonColors(Color.White),
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             ) {
                 Text("Добавить")
@@ -562,8 +652,8 @@ fun CategoryCard(
             .border(
                 width = 1.dp,
                 shape = RoundedCornerShape(10.dp),
-                // Зеленая категория - выбранная категория
-                color = if (currentCategoryId == categoryId) Color.Green else Color.Transparent,
+                // Белая категория - выбранная категория
+                color = if (currentCategoryId == categoryId) MaterialTheme.colorScheme.onSurface else Color.Transparent,
             )
     ) {
         Box(
@@ -590,7 +680,14 @@ fun CategoryCard(
                     )
                 }
             }
-            Text(text = categoryName)
+            Text(
+                text = categoryName,
+                textAlign = TextAlign.Center,
+                style = if (categoryId == -1)
+                    MaterialTheme.typography.displaySmall
+                else
+                    MaterialTheme.typography.titleMedium
+            )
         }
     }
 }

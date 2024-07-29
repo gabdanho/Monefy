@@ -13,10 +13,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
@@ -95,12 +96,15 @@ fun AddCategory(
     val colorTextCategoryType = remember { mutableStateOf(Color.Black) }
     var isTypeCategoryNotSelected by rememberSaveable { mutableStateOf(false) }
 
+    val onSurfaceColor = MaterialTheme.colorScheme.onSurface
+    val errorColor = MaterialTheme.colorScheme.onError
+
     // Показываем пользователю миганием, что не выбрана категория
     LaunchedEffect(isCategoryNameNotSelected) {
         for (i in 1..3) {
-            colorTextCategoryName.value = Color.Red
+            colorTextCategoryName.value = errorColor
             delay(500)
-            colorTextCategoryName.value = Color.Black
+            colorTextCategoryName.value = onSurfaceColor
             delay(500)
         }
         isCategoryNameNotSelected = false
@@ -109,9 +113,9 @@ fun AddCategory(
     // Показываем пользователю миганием, что не выбран цвет категории
     LaunchedEffect(isColorCategoryNotSelected) {
         for (i in 1..3) {
-            colorTextCategoryColor.value = Color.Red
+            colorTextCategoryColor.value = errorColor
             delay(500)
-            colorTextCategoryColor.value = Color.Black
+            colorTextCategoryColor.value = onSurfaceColor
             delay(500)
         }
         isColorCategoryNotSelected = false
@@ -120,9 +124,9 @@ fun AddCategory(
     // Показываем пользователю миганием, что не выбран тип категории
     LaunchedEffect(isTypeCategoryNotSelected) {
         for (i in 1..3) {
-            colorTextCategoryType.value = Color.Red
+            colorTextCategoryType.value = errorColor
             delay(500)
-            colorTextCategoryType.value = Color.Black
+            colorTextCategoryType.value = onSurfaceColor
             delay(500)
         }
         isTypeCategoryNotSelected = false
@@ -147,7 +151,7 @@ fun AddCategory(
             // Название категории
             Text(
                 text = "Название категории",
-                color = if (!isCategoryNameNotSelected) Color.Black else colorTextCategoryName.value,
+                color = if (!isCategoryNameNotSelected) onSurfaceColor else colorTextCategoryName.value,
                 modifier = Modifier.padding(4.dp)
             )
             Row(
@@ -176,7 +180,7 @@ fun AddCategory(
             // Тип категории
             Text(
                 text = "Тип категории",
-                color = if (!isTypeCategoryNotSelected) Color.Black else colorTextCategoryType.value,
+                color = if (!isTypeCategoryNotSelected) onSurfaceColor else colorTextCategoryType.value,
                 modifier = Modifier.padding(4.dp)
             )
             Row {
@@ -216,15 +220,15 @@ fun AddCategory(
             // Цвет категории
             Text(
                 text = "Цвет категории",
-                color = if (!isColorCategoryNotSelected) Color.Black else colorTextCategoryColor.value,
+                color = if (!isColorCategoryNotSelected) onSurfaceColor else colorTextCategoryColor.value,
                 modifier = Modifier.padding(4.dp)
             )
             Box(
                 modifier = Modifier
                     .padding(start = 4.dp)
                     .size(30.dp)
-                    .background(color = currentCategoryColor)
-                    .border(color = Color.Black, width = 1.dp, shape = RoundedCornerShape(2.dp))
+                    .background(color = currentCategoryColor, shape = RoundedCornerShape(2.dp))
+                    .border(color = MaterialTheme.colorScheme.onSurface, width = 1.dp, shape = RoundedCornerShape(2.dp))
                     .clickable { changeColorDialogShow(true) }
             )
 
@@ -320,6 +324,7 @@ fun AddCategory(
                         }
                     }
                 },
+                colors = ButtonDefaults.buttonColors(Color.White),
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             ) {
                 Text("Добавить")

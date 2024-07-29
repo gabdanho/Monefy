@@ -17,6 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
@@ -108,12 +109,15 @@ fun RewriteCategory(
     val colorTextCategoryName = remember { mutableStateOf(Color.Black) }
     var isCategoryNameWrong by rememberSaveable { mutableStateOf(false) }
 
+    val onSurfaceColor = MaterialTheme.colorScheme.onSurface
+    val onErrorColor = MaterialTheme.colorScheme.onError
+
     // Если не выбрано название категория, то уведомляем пользователя миганием цветом
     LaunchedEffect(isCategoryNameWrong) {
         for (i in 1..3) {
-            colorTextCategoryName.value = Color.Red
+            colorTextCategoryName.value = onErrorColor
             delay(500)
-            colorTextCategoryName.value = Color.Black
+            colorTextCategoryName.value = onSurfaceColor
             delay(500)
         }
         isCategoryNameWrong = false
@@ -138,7 +142,7 @@ fun RewriteCategory(
             // Название категории
             Text(
                 text = "Название категории",
-                color = if (!isCategoryNameWrong) Color.Black else colorTextCategoryName.value,
+                color = if (!isCategoryNameWrong) onSurfaceColor else colorTextCategoryName.value,
                 modifier = Modifier.padding(4.dp)
             )
             Row(
@@ -158,7 +162,7 @@ fun RewriteCategory(
             // Цвет категории
             Text(
                 text = "Цвет категории",
-                color = Color.Black,
+                color = onSurfaceColor,
                 modifier = Modifier.padding(4.dp)
             )
             Box(
@@ -167,9 +171,10 @@ fun RewriteCategory(
                     .size(30.dp)
                     .background(
                         color = if (colorToChange == Color.Transparent) Color(initialCategory.color)
-                        else colorToChange
+                        else colorToChange,
+                        shape = RoundedCornerShape(2.dp)
                     )
-                    .border(color = Color.Black, width = 1.dp, shape = RoundedCornerShape(2.dp))
+                    .border(color = onSurfaceColor, width = 1.dp, shape = RoundedCornerShape(2.dp))
                     .clickable { changeColorDialogShow(true) }
             )
 
@@ -215,6 +220,7 @@ fun RewriteCategory(
                             }
                         }
                     },
+                    colors = ButtonDefaults.buttonColors(Color.White),
                     modifier = Modifier
                         .width(150.dp)
                         .padding(end = 8.dp)
@@ -233,10 +239,13 @@ fun RewriteCategory(
                             }
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(Color.Red),
+                    colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.onError),
                     modifier = Modifier.width(150.dp)
                 ) {
-                   Text("Удалить")
+                   Text(
+                       text = "Удалить",
+                       color = MaterialTheme.colorScheme.onSurface
+                   )
                 }
             }
         }

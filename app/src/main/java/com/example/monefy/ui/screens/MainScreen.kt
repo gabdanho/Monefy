@@ -15,8 +15,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -43,6 +45,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
+import androidx.core.graphics.alpha
 import com.example.monefy.data.Category
 import com.example.monefy.data.Finance
 import com.example.monefy.utils.Constants.tabDateRangeItems
@@ -56,6 +59,15 @@ import java.lang.Math.pow
 import java.time.LocalDate
 import kotlin.math.PI
 import kotlin.math.atan2
+
+fun Color.darken(factor: Float): Color {
+    return Color(
+        red = (this.red * (1 - factor)).coerceIn(0f, 1f),
+        green = (this.green * (1 - factor)).coerceIn(0f, 1f),
+        blue = (this.blue * (1 - factor)).coerceIn(0f, 1f),
+        alpha = this.alpha
+    )
+}
 
 @Composable
 fun MainScreen(
@@ -124,7 +136,10 @@ fun Main(
             modifier = modifier.padding(innerPadding)
         ) {
             // Выбор типа финансов: доходы или расходы
-            TabRow(selectedTabIndex = selectedTabIndex) {
+            TabRow(
+                selectedTabIndex = selectedTabIndex,
+                contentColor = MaterialTheme.colorScheme.onSurface
+            ) {
                 tabItems.forEachIndexed { index, item ->
                     Tab(
                         selected = index == selectedTabIndex,
@@ -140,6 +155,7 @@ fun Main(
             if (isHasFinances) {
                 TabRow(
                     selectedTabIndex = selectedDateRangeIndex,
+                    contentColor = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.padding(bottom = 16.dp)
                 ) {
                     tabDateRangeItems.forEachIndexed { index, item ->
@@ -392,19 +408,27 @@ fun FinancesPieChart(
                 var startAngle = 0f
                 circleCenter = Offset(x = width / 2f, y = height / 2f)
 
-                // Тень
-                drawCircle(
-                    color = Color.LightGray,
-                    center = Offset(circleCenter.x, circleCenter.y),
-                    radius = radius,
-                    alpha = 0.8f,
-                    style = Stroke(
-                        width = radius / 3f
-                    )
-                )
-
                 // Обработка категорий для отрисовки секций доната
                 for (i in categoriesToSumFinance.keys.indices) {
+                    // Тень категории
+                    drawArc(
+                        color = Color(categoriesToSumFinance.keys.toList()[i].color).darken(0.4f),
+                        startAngle = startAngle,
+                        sweepAngle = sweepAnglePercentage[i],
+                        useCenter = false,
+                        style = Stroke(
+                            width = radius / 3f
+                        ),
+                        size = Size(
+                            radius * 2f,
+                            radius * 2f
+                        ),
+                        topLeft = Offset(
+                            (width - radius * 2f) / 2f,
+                            (height - radius * 2f) / 2f
+                        )
+                    )
+
                     val finances = financesMap[categoriesToSumFinance.keys.toList()[i].id] ?: emptyList()
                     if (finances.isNotEmpty()) {
                         val scale = if (categoriesToSumFinance.keys.toList()[i].isTapped) 1.1f else 1.0f
@@ -446,31 +470,41 @@ fun FinancesTable(
     goToFinance: (Finance) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // Выводим категории и их блоки с финансами
-    LazyColumn(modifier = modifier.padding(8.dp)) {
-        items(categoriesToSumFinance.keys.toList()) { category ->
-            val finances by getFinancesByCategoryId(category.id).collectAsState(emptyList())
-            val filteredByDateFinances = finances.filter { isDateInRange(it.date, dateRange[0], dateRange[1]) }
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(300.dp),
+        shape = RoundedCornerShape(
+            topStart = 20.dp,
+            topEnd = 20.dp
+        )
+    ) {
+        // Выводим категории и их блоки с финансами
+        LazyColumn(modifier = modifier.padding(16.dp)) {
+            items(categoriesToSumFinance.keys.toList()) { category ->
+                val finances by getFinancesByCategoryId(category.id).collectAsState(emptyList())
+                val filteredByDateFinances = finances.filter { isDateInRange(it.date, dateRange[0], dateRange[1]) }
 
-            if (filteredByDateFinances.isNotEmpty() && categoriesToSumFinance.keys.toList().all { !it.isTapped }) {
-                CategoryBlock(
-                    finances = filteredByDateFinances,
-                    category = category,
-                    categorySum = categoriesToSumFinance[category] ?: 0.0,
-                    totalPrice = totalPriceFromAllCategories,
-                    goToFinance = goToFinance,
-                    showAllExpensesWithoutClick = false
-                )
-            }
-            else if (category.isTapped) {
-                CategoryBlock(
-                    finances = filteredByDateFinances,
-                    category = category,
-                    categorySum = categoriesToSumFinance[category] ?: 0.0,
-                    totalPrice = totalPriceFromAllCategories,
-                    goToFinance = goToFinance,
-                    showAllExpensesWithoutClick = true
-                )
+                if (filteredByDateFinances.isNotEmpty() && categoriesToSumFinance.keys.toList().all { !it.isTapped }) {
+                    CategoryBlock(
+                        finances = filteredByDateFinances,
+                        category = category,
+                        categorySum = categoriesToSumFinance[category] ?: 0.0,
+                        totalPrice = totalPriceFromAllCategories,
+                        goToFinance = goToFinance,
+                        showAllExpensesWithoutClick = false
+                    )
+                }
+                else if (category.isTapped) {
+                    CategoryBlock(
+                        finances = filteredByDateFinances,
+                        category = category,
+                        categorySum = categoriesToSumFinance[category] ?: 0.0,
+                        totalPrice = totalPriceFromAllCategories,
+                        goToFinance = goToFinance,
+                        showAllExpensesWithoutClick = true
+                    )
+                }
             }
         }
     }

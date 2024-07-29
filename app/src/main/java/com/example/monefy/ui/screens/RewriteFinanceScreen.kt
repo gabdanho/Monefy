@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -36,6 +37,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
@@ -135,12 +137,15 @@ fun RewriteFinance(
     val colorTextFinanceName = remember { mutableStateOf(Color.Black) }
     val colorTextSelectedCategory = remember { mutableStateOf(Color.Black) }
 
+    val onSurfaceColor = MaterialTheme.colorScheme.onSurface
+    val onErrorColor = MaterialTheme.colorScheme.onError
+
     // Если категория не выбрана, уведомляем пользователю миганием
     LaunchedEffect(isSelectedCategoryNotSelected) {
         for (i in 1..3) {
-            colorTextSelectedCategory.value = Color.Red
+            colorTextSelectedCategory.value = onErrorColor
             delay(500)
-            colorTextSelectedCategory.value = Color.Black
+            colorTextSelectedCategory.value = onSurfaceColor
             delay(500)
         }
         isSelectedCategoryNotSelected = false
@@ -183,7 +188,7 @@ fun RewriteFinance(
             // Название финанса
             Text(
                 text = "Название",
-                color = if (!isFinanceNameNotSelected) Color.Black else colorTextFinanceName.value,
+                color = if (!isFinanceNameNotSelected) onSurfaceColor else colorTextFinanceName.value,
                 modifier = Modifier.padding(4.dp)
             )
             Row(
@@ -295,6 +300,7 @@ fun RewriteFinance(
                     },
                     textStyle = LocalTextStyle.current.copy(
                         textAlign = TextAlign.Center,
+                        color = onSurfaceColor,
                         fontSize = 20.sp
                     ),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -305,7 +311,7 @@ fun RewriteFinance(
                             if (focusState.isFocused) {
                                 count = 1
                                 countForTextFieldValue = ""
-                            // Если пользователь убирает фокус с поля ввода
+                                // Если пользователь убирает фокус с поля ввода
                             } else {
                                 // Поле пустое, то обязательно количество будет = 1
                                 if (countForTextFieldValue.isEmpty()) {
@@ -329,24 +335,71 @@ fun RewriteFinance(
                 }
             }
             // Категория
-            Text(
-                text = "Категория",
-                color = if (!isSelectedCategoryNotSelected) Color.Black else colorTextSelectedCategory.value,
-                modifier = Modifier.padding(4.dp)
-            )
-            // Выводим все существующие категории
-            LazyHorizontalGrid(
-                rows = GridCells.Fixed(2),
-                modifier = Modifier
-                    .height(maxOf(200.dp))
-                    .padding(bottom = 8.dp)
-            ) {
-                items(categories) { category ->
-                    ChangeCategoryCard(
-                        category = category,
-                        currentCategoryId = selectedCategoryId,
-                        changeSelectedCategory = changeSelectedCategory
-                    )
+            val revenueCategories = categories.filter { it.type == "Доходы" }
+            val spendCategories = categories.filter { it.type == "Расходы" }
+
+            // Если есть хоть какие-то расходы
+            if (categories.isNotEmpty()) {
+                // Выводим категории доходов, если они существуют
+                if (revenueCategories.isNotEmpty()) {
+                    // Категории доходов
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(4.dp),
+                    ) {
+                        Text(
+                            text = "Доходы"
+                        )
+                    }
+
+                    LazyHorizontalGrid(
+                        rows = GridCells.Fixed(2),
+                        modifier = Modifier
+                            .height(maxOf(200.dp))
+                            .padding(bottom = 8.dp)
+                    ) {
+                        items(revenueCategories) { category ->
+                            ChangeCategoryCard(
+                                category = category,
+                                currentCategoryId = selectedCategoryId,
+                                changeSelectedCategory = changeSelectedCategory
+                            )
+                        }
+                    }
+                }
+
+                // Выводим категории расходов, если они существуют
+                if (spendCategories.isNotEmpty()) {
+                    // Категории расходов
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(4.dp),
+                    ) {
+                        Text(
+                            text = "Расходы"
+                        )
+                    }
+
+                    LazyHorizontalGrid(
+                        rows = GridCells.Fixed(2),
+                        modifier = Modifier
+                            .height(maxOf(200.dp))
+                            .padding(bottom = 8.dp)
+                    ) {
+                        items(spendCategories) { category ->
+                            ChangeCategoryCard(
+                                category = category,
+                                currentCategoryId = selectedCategoryId,
+                                changeSelectedCategory = changeSelectedCategory
+                            )
+                        }
+                    }
                 }
             }
             // Дата
@@ -446,6 +499,7 @@ fun RewriteFinance(
                             endOfScreen()
                         }
                     },
+                    colors = ButtonDefaults.buttonColors(Color.White),
                     modifier = Modifier
                         .width(150.dp)
                         .padding(end = 8.dp)
@@ -460,10 +514,13 @@ fun RewriteFinance(
                             endOfScreen()
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(Color.Red),
+                    colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.onError),
                     modifier = Modifier.width(150.dp)
                 ) {
-                    Text("Удалить")
+                    Text(
+                        text = "Удалить",
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
                 }
             }
         }
@@ -512,7 +569,7 @@ fun ChangeCategoryCard(
             .border(
                 width = 1.dp,
                 shape = RoundedCornerShape(10.dp),
-                color = if (currentCategoryId == category.id) Color.Green else Color.Transparent,
+                color = if (currentCategoryId == category.id) MaterialTheme.colorScheme.onSurface else Color.Transparent,
             )
     ) {
         Box(

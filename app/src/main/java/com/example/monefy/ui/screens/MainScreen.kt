@@ -44,6 +44,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.alpha
 import com.example.monefy.data.Category
@@ -329,9 +330,9 @@ fun FinancesPieChart(
     financesMap: Map<Int, List<Finance>>,
     isAllNotTapped: suspend () -> Boolean,
     updateIsTapped: suspend (Category) -> Unit,
-    radius: Float = 300f,
     modifier: Modifier = Modifier
 ) {
+    val radius = LocalDensity.current.run { 80.dp.toPx() }
     val scope = rememberCoroutineScope()
 
     // Переменная для отображения суммы текущей категории (если никакая не выбрана, то тотал сумма)

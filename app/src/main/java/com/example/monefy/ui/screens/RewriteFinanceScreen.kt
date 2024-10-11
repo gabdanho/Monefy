@@ -29,7 +29,6 @@ import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -77,8 +76,6 @@ import com.vanpra.composematerialdialogs.datetime.date.datepicker
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
@@ -126,8 +123,7 @@ fun RewriteFinance(
     val scrollState = rememberScrollState()
 
     var financeName by rememberSaveable { mutableStateOf(initialFinance.name) }
-    var financePrice by rememberSaveable { mutableStateOf(initialFinance.price) }
-    var financePriceForTextFieldValue by rememberSaveable { mutableStateOf(String.format("%.2f", initialFinance.price)) }
+    var financePrice by rememberSaveable { mutableStateOf(String.format("%.2f", initialFinance.price).replace(',', '.')) }
     var financeDescription by rememberSaveable { mutableStateOf(initialFinance.description) }
     var count by rememberSaveable { mutableStateOf(initialFinance.count) }
     var countForTextFieldValue by rememberSaveable { mutableStateOf(initialFinance.count.toString()) }
@@ -212,24 +208,21 @@ fun RewriteFinance(
             )
             Row {
                 TextField(
-                    value = financePriceForTextFieldValue,
+                    value = financePrice,
                     onValueChange = {
                         // Если значение пусто или нажимается первой точка, то значение 0.0
                         if (it == "" || it == ".") {
-                            financePriceForTextFieldValue = ""
-                            financePrice = 0.0
+                            financePrice = ""
                         }
                         // Если пользователь удаляет символ
-                        else if (it.length < financePriceForTextFieldValue.length) {
-                            financePriceForTextFieldValue = it
-                            financePrice = it.toDouble()
+                        else if (it.length < financePrice.length) {
+                            financePrice = it
                         }
                         // Если пользователь пытается ввести после введённого нуля еще один - запрещаем
                         else if (it == "00") { }
                         // Проверяем, что вводится цифра или точка && Точка одна или нет && Проверяем чтобы число не было больше константы
                         else if (it.all { it.isDigit() || it == '.' } && it.count { it == '.' } <= 1 && it.toDouble() < Constants.maxPrice) {
-                            financePriceForTextFieldValue = it
-                            financePrice = it.toDouble()
+                            financePrice = it
                         }
                     },
                     textStyle = LocalTextStyle.current.copy(fontSize = 20.sp),
@@ -240,14 +233,12 @@ fun RewriteFinance(
                         .weight(4f)
                         .onFocusChanged { focusState ->
                             if (focusState.isFocused) {
-                                if (financePrice == 0.0) {
-                                    financePrice = 0.0
-                                    financePriceForTextFieldValue = ""
+                                if (financePrice == "0.0") {
+                                    financePrice = ""
                                 }
                             } else {
-                                if (financePriceForTextFieldValue.isEmpty()) {
-                                    financePrice = 0.0
-                                    financePriceForTextFieldValue = "0"
+                                if (financePrice.isEmpty()) {
+                                    financePrice = "0"
                                 }
                             }
                         }
@@ -482,7 +473,7 @@ fun RewriteFinance(
                                 name = financeName,
                                 categoryId = selectedCategoryId,
                                 description = financeDescription,
-                                price = financePrice,
+                                price = financePrice.toDouble(),
                                 date = pickedDate,
                                 count = count
                             )

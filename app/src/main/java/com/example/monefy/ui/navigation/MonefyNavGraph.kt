@@ -43,7 +43,6 @@ fun MonefyNavGraph(
         ) {
             MainScreen(
                 financesViewModel = financesViewModel,
-                updateScreen = { navController.navigate(route = "MainScreen") },
                 goToFinance = { finance ->
                     financesViewModel.changeSelectedCategory(finance.categoryId)
                     financesViewModel.changeSelectedFinanceToChange(finance)

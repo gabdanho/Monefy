@@ -46,7 +46,6 @@ import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
-import androidx.core.graphics.alpha
 import com.example.monefy.data.Category
 import com.example.monefy.data.Finance
 import com.example.monefy.utils.Constants.tabDateRangeItems
@@ -74,7 +73,6 @@ fun Color.darken(factor: Float): Color {
 fun MainScreen(
     financesViewModel: FinancesViewModel,
     goToFinance: (Finance) -> Unit,
-    updateScreen: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val financesUiState by financesViewModel.uiState.collectAsState()
@@ -93,7 +91,6 @@ fun MainScreen(
         changeSelectedDateRangeIndex = financesViewModel::changeSelectedDateRangeIndex,
         changeShowDateRangeDialog = financesViewModel::changeShowDateRangeDialog,
         updateCustomDateRange = financesViewModel::updateCustomDateRange,
-        updateScreen = updateScreen,
         goToFinance = goToFinance,
         modifier = modifier
     )
@@ -115,7 +112,6 @@ fun Main(
     getCategoriesByType: (String) -> Flow<List<Category>>,
     getFinancesByCategoryId: (Int) -> Flow<List<Finance>>,
     updateCustomDateRange: (List<LocalDate>) -> Unit,
-    updateScreen: () -> Unit,
     goToFinance: (Finance) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -127,8 +123,7 @@ fun Main(
             ModalBottomSheet(onDismissRequest = { changeShowDateRangeDialog(false) }) {
                 CustomDateRangePicker(
                     changeShowDateRangeDialog = changeShowDateRangeDialog,
-                    updateDateRange = updateCustomDateRange,
-                    updateScreen = updateScreen
+                    updateDateRange = updateCustomDateRange
                 )
             }
         }
@@ -146,7 +141,6 @@ fun Main(
                         selected = index == selectedTabIndex,
                         onClick = {
                             changeSelectedTabIndex(index)
-                            updateScreen()
                         },
                         text = { Text(item) }
                     )
@@ -168,7 +162,6 @@ fun Main(
                                     changeShowDateRangeDialog(true)
                                 }
                                 changeSelectedDateRangeIndex(index)
-                                updateScreen()
                             }
                         ) {
                             Row(
@@ -205,7 +198,7 @@ fun Main(
             var isLoadingFinances by remember { mutableStateOf(true) }
 
             // Получаем список категорий
-            LaunchedEffect(selectedTabIndex) {
+            LaunchedEffect(selectedTabIndex, selectedDateRangeIndex) {
                 isLoadingCategories = true
                 val flow = if (selectedTabIndex == 0)
                     getCategoriesByType("Расходы")
@@ -258,7 +251,7 @@ fun Main(
                 }
 
                 // Получаем мапу с финансами доходов или расходов (крч, что выбрал пользователь)
-                LaunchedEffect(Unit) {
+                LaunchedEffect(selectedTabIndex, selectedDateRangeIndex) {
                     isLoadingFinances = true
                     val flowMap = categories!!.associate { category ->
                         category.id to getFinancesByCategoryId(category.id)
@@ -276,6 +269,8 @@ fun Main(
                     }
                 }
 
+                var categoriesToSumFinance by remember { mutableStateOf(mapOf<Category, Double>()) }
+
                 if (isLoadingFinances) { /* Ничего не делаем */ }
                 // Если финансов доходов/расходов нет - то выводим сообщение
                 else if (financesMap.isNullOrEmpty()) {
@@ -285,7 +280,7 @@ fun Main(
                 else {
                     val finances = financesMap!!.values.flatten()
                     // Мапа с категориями и тотал суммой их
-                    val categoriesToSumFinance = categories!!.filter { it.id in financesMap!!.keys }.associate { category ->
+                    categoriesToSumFinance = categories!!.filter { it.id in financesMap!!.keys }.associate { category ->
                         category to finances.filter { it.categoryId == category.id }.sumOf { it.price * it.count.toDouble() }
                     }
 

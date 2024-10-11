@@ -29,8 +29,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun CustomDateRangePicker(
     changeShowDateRangeDialog: (Boolean) -> Unit,
-    updateDateRange: (List<LocalDate>) -> Unit,
-    updateScreen: () -> Unit
+    updateDateRange: (List<LocalDate>) -> Unit
 ) {
     val state = rememberDateRangePickerState()
 
@@ -78,7 +77,6 @@ fun CustomDateRangePicker(
 
                                 updateDateRange(listOf(startDate, endDate))
                                 changeShowDateRangeDialog(false)
-                                updateScreen()
                             }
                         ) {
                             Icon(

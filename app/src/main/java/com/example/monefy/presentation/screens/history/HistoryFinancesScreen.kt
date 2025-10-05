@@ -1,6 +1,5 @@
 package com.example.monefy.presentation.screens.history
 
-import android.annotation.SuppressLint
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -16,39 +15,31 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.example.monefy.data.local.entity.Finance
-import com.example.monefy.presentation.screens.FinancesViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.example.monefy.presentation.model.Finance
+import com.example.monefy.presentation.model.FinanceType
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
+private const val CURRENT_YEAR_DATE_PATTERN = "d MMMM"
+private const val ANOTHER_YEAR_DATE_PATTERN = "d MMMM y"
+
 @Composable
 fun HistoryFinancesScreen(
-    financesViewModel: FinancesViewModel,
-    goToFinance: (Finance) -> Unit
+    modifier: Modifier = Modifier,
+    viewModel: HistoryFinancesScreenViewModel = hiltViewModel<HistoryFinancesScreenViewModel>(),
 ) {
-    val finances = financesViewModel.getSortedFinancesByDate().collectAsState(initial = emptyList()).value
-    // Список дат должен быть без дупликатов
-    val dates = finances.map { it.date }.distinct()
+    val uiState by viewModel.uiState.collectAsState()
+    val dates = uiState.finances.map { it.date }.distinct()
 
-    HistoryFinances(finances, dates, goToFinance)
-}
-
-@SuppressLint("WeekBasedYear")
-@Composable
-fun HistoryFinances(
-    finances: List<Finance>,
-    dates: List<LocalDate>,
-    goToFinance: (Finance) -> Unit,
-    modifier: Modifier = Modifier
-) {
     // Выводим данные
     LazyColumn(modifier = modifier) {
         items(dates) { date ->
@@ -59,8 +50,8 @@ fun HistoryFinances(
             ) {
                 // Делаем формат вывода даты (текущий год выводится без года, предыдущие с годом)
                 val formattedDated = if (LocalDate.now().year == date.year)
-                    date.format(DateTimeFormatter.ofPattern("d MMMM"))
-                else date.format(DateTimeFormatter.ofPattern("d MMMM YYYY"))
+                    date.format(DateTimeFormatter.ofPattern(CURRENT_YEAR_DATE_PATTERN))
+                else date.format(DateTimeFormatter.ofPattern(ANOTHER_YEAR_DATE_PATTERN))
 
                 Text(
                     text = formattedDated,
@@ -70,8 +61,8 @@ fun HistoryFinances(
                 )
             }
             FinancesHistoryBlock(
-                finances = finances.filter { it.date == date },
-                goToFinance = goToFinance
+                finances = uiState.finances.filter { it.date == date },
+                goToFinance = { viewModel.goToFinance(it) }
             )
         }
     }
@@ -101,15 +92,15 @@ fun FinancesHistoryBlock(
                         .widthIn(max = 220.dp)
                 )
 
-                // В зависимости от дохода или расхода меняется цвет
-                val colorText = if (finance.type == "Доход") Color.Green
-                else Color.Red
+                val textColor = if (finance.type == FinanceType.REVENUE) Color.Green else Color.Red
+                val text =
+                    "${if (finance.type == FinanceType.REVENUE) "+" else "-"} ${finance.totalPrice}"
 
                 Text(
-                    text = "${if (finance.type == "Доход") "+" else "-"} ${finance.price * finance.count}",
+                    text = text,
                     overflow = TextOverflow.Ellipsis,
                     maxLines = 1,
-                    style = TextStyle(color = colorText),
+                    color = textColor,
                     modifier = Modifier
                         .padding(top = 8.dp, bottom = 8.dp, end = 8.dp)
                         .widthIn(max = 180.dp)

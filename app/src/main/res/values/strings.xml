@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">Monefy</string>
+
+    <string name="error_no_name_and_color_category">Укажите название и цвет категории</string>
+    <string name="error_no_name_category">Укажите название категории</string>
+    <string name="error_no_color_category">Укажите цвет категории</string>
+    <string name="error_to_create_category">Не удалось создать категорию</string>
+
+    <string name="success_category_created">Категория создана</string>
 </resources>

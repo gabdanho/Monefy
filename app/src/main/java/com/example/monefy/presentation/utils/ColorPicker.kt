@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toColorLong
 import androidx.compose.ui.unit.dp
 import com.github.skydoves.colorpicker.compose.BrightnessSlider
 import com.github.skydoves.colorpicker.compose.HsvColorPicker
@@ -23,8 +24,7 @@ import com.github.skydoves.colorpicker.compose.rememberColorPickerController
 
 @Composable
 fun ColorPicker(
-    changeColorCategory: (Color) -> Unit,
-    changeColorDialogShow: (Boolean) -> Unit
+    changeColorCategory: (Long) -> Unit,
 ) {
     val colorController = rememberColorPickerController()
 
@@ -66,8 +66,9 @@ fun ColorPicker(
             )
             Button(
                 onClick = {
-                    changeColorCategory(colorController.selectedColor.value.copy(alpha = 1f))
-                    changeColorDialogShow(false)
+                    changeColorCategory(
+                        colorController.selectedColor.value.copy(alpha = 1f).toColorLong()
+                    )
                 }
             ) {
                 Text("Выбрать")

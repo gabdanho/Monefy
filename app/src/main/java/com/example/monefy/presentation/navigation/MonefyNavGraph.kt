@@ -1,133 +1,60 @@
 package com.example.monefy.presentation.navigation
 
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
+import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import com.example.monefy.presentation.navigation.model.MonefyGraph
+import com.example.monefy.presentation.screens.categories.CategoriesScreen
 import com.example.monefy.presentation.screens.create_category.AddCategoryScreen
 import com.example.monefy.presentation.screens.create_finance.AddFinanceScreen
-import com.example.monefy.presentation.screens.main_monefy.MainMonefyScreen
-import com.example.monefy.presentation.screens.categories.CategoriesScreen
 import com.example.monefy.presentation.screens.diagrams.DiagramScreen
-import com.example.monefy.presentation.screens.rewrite_category.RewriteCategoryScreen
 import com.example.monefy.presentation.screens.finances.FinancesScreen
-import com.example.monefy.presentation.screens.rewrite_finance.RewriteFinanceScreen
-import com.example.monefy.presentation.screens.FinancesViewModel
 import com.example.monefy.presentation.screens.history.HistoryFinancesScreen
+import com.example.monefy.presentation.screens.main_monefy.MainMonefyScreen
+import com.example.monefy.presentation.screens.rewrite_category.RewriteCategoryScreen
+import com.example.monefy.presentation.screens.rewrite_finance.RewriteFinanceScreen
 
-@Composable
-fun MonefyNavGraph(
-    financesViewModel: FinancesViewModel = viewModel(factory = FinancesViewModel.factory),
-    navController: NavHostController,
+/**
+ * Построение навграфа приложения.
+ *
+ * @param modifier модификатор для экранов
+ */
+fun NavGraphBuilder.monefyGraph(
     modifier: Modifier = Modifier
 ) {
-    NavHost(
-        navController = navController,
-        startDestination = "MainScreen",
-        modifier = modifier
-    ) {
-        // Основной экран с донатом и таблицей категорий с расходами
-        composable(
-            route = "MainScreen",
-            enterTransition = { EnterTransition.None },
-            exitTransition = { ExitTransition.None }
-        ) {
-            MainMonefyScreen(
-                financesViewModel = financesViewModel,
-                goToFinance = { finance ->
-                    financesViewModel.changeSelectedCategory(finance.categoryId)
-                    financesViewModel.changeSelectedFinanceToChange(finance)
-                    navController.navigate(route = "RewriteFinanceScreen")
-                }
-            )
-        }
-        // Экран добавления финансов
-        composable(route = "AddFinanceScreen") {
-            AddFinanceScreen(
-                financesViewModel = financesViewModel,
-                context = LocalContext.current,
-                onAddCategoryScreenClick = {
-                    navController.navigate(route = "AddCategoryScreen")
-                }
-            )
-        }
-        // Экран добавления категории
-        composable(route = "AddCategoryScreen") {
-            financesViewModel.removeSelectedCategoryColor()
-            AddCategoryScreen(
-                financesViewModel = financesViewModel,
-                endOfScreen = {
-                    navController.popBackStack()
-                }
-            )
-        }
-        // Экран со списком категории
-        composable(route = "CategoriesListScreen") {
-            CategoriesScreen(
-                financesViewModel = financesViewModel,
-                onCategoryClick = {
-                    navController.navigate(route = "FinanceListScreen")
-                },
-                onAddCategoryClick = {
-                    navController.navigate(route = "AddCategoryScreen")
-                },
-                rewriteCategoryClick = {
-                    navController.navigate(route = "RewriteCategoryScreen")
-                }
-            )
-        }
-        // Экран с финансами
-        composable(route = "FinanceListScreen") {
-            FinancesScreen(
-                financesViewModel = financesViewModel,
-                rewriteFinanceClick = {
-                    navController.navigate("RewriteFinanceScreen")
-                }
-            )
-        }
-        // Экран для изменения категории
-        composable(route = "RewriteCategoryScreen") {
-            RewriteCategoryScreen(
-                financesViewModel = financesViewModel,
-                endOfScreen = {
-                    navController.popBackStack()
-                }
-            )
-        }
-        // Экран для изменении финанса
-        composable(route = "RewriteFinanceScreen") {
-            RewriteFinanceScreen(
-                financesViewModel = financesViewModel,
-                context = LocalContext.current,
-                endOfScreen = {
-                    navController.popBackStack()
-                }
-            )
-        }
-        // Экран для диаграм
-        composable(route = "DiagramScreen") {
-            DiagramScreen(
-                financesViewModel = financesViewModel,
-                updateScreen = {
-                    navController.navigate("DiagramScreen")
-                }
-            )
-        }
-        // Экран истории финансов
-        composable(route = "HistoryFinancesScreen") {
-            HistoryFinancesScreen(
-                financesViewModel = financesViewModel,
-                goToFinance = { finance ->
-                    financesViewModel.changeSelectedCategory(finance.categoryId)
-                    financesViewModel.changeSelectedFinanceToChange(finance)
-                    navController.navigate(route = "RewriteFinanceScreen")
-                }
-            )
-        }
+    composable<MonefyGraph.MainMonefyScreen> {
+        MainMonefyScreen(modifier = modifier)
+    }
+
+    composable<MonefyGraph.HistoryScreen> {
+        HistoryFinancesScreen(modifier = modifier)
+    }
+
+    composable<MonefyGraph.DiagramsScreen> {
+        DiagramScreen(modifier = modifier)
+    }
+
+    composable<MonefyGraph.FinancesScreen> {
+        FinancesScreen(modifier = modifier)
+    }
+
+    composable<MonefyGraph.CategoriesScreen> {
+        CategoriesScreen(modifier = modifier)
+    }
+
+    composable<MonefyGraph.CreateCategoryScreen> {
+        AddCategoryScreen(modifier = modifier)
+    }
+
+    composable<MonefyGraph.CreateFinanceScreen> {
+        AddFinanceScreen(modifier = modifier)
+    }
+
+    composable<MonefyGraph.RewriteCategoryScreen> {
+        RewriteCategoryScreen(modifier = modifier)
+    }
+
+    composable<MonefyGraph.RewriteFinanceScreen> {
+        RewriteFinanceScreen(modifier = modifier)
     }
 }

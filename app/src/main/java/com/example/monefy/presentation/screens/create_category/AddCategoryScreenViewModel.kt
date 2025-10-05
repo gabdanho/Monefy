@@ -107,7 +107,7 @@ class AddCategoryScreenViewModel @Inject constructor(
                     financesRepository.createCategory(newCategory.toDomainLayer())
                     _uiState.update { it.copy(messageResName = StringResName.SUCCESS_CATEGORY_CREATED) }
                 } catch (_: Exception) {
-                    _uiState.update { it.copy(messageResName = StringResName.SUCCESS_CATEGORY_CREATED) }
+                    _uiState.update { it.copy(messageResName = StringResName.ERROR_TO_CREATE_CATEGORY) }
                 } finally {
                     _uiState.update {
                         it.copy(

@@ -33,11 +33,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.fromColorLong
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.example.monefy.data.mappers.resources.StringToResourceIdMapperImpl
 import com.example.monefy.presentation.model.FinanceType
 import com.example.monefy.presentation.utils.ColorPicker
 
@@ -48,15 +50,22 @@ fun AddCategoryScreen(
 ) {
     val snackBarHostState = remember { SnackbarHostState() }
     val uiState by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
 
-    // Показываем пользователю миганием, что не выбрана категория
     LaunchedEffect(uiState.isCategoryNameError) {
         viewModel.blinkingCategoryName()
     }
 
-    // Показываем пользователю миганием, что не выбран цвет категории
     LaunchedEffect(uiState.isCategoryColorError) {
         viewModel.blinkingColorCategory()
+    }
+
+    LaunchedEffect(uiState.isShowSnackBar) {
+        uiState.messageResName?.let {
+            snackBarHostState.showSnackbar(
+                message = context.getString(StringToResourceIdMapperImpl().map(it))
+            )
+        }
     }
 
     Scaffold(

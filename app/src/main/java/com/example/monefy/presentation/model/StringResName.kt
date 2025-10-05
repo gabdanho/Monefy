@@ -10,5 +10,4 @@ enum class StringResName {
     ERROR_TO_CREATE_CATEGORY,
 
     SUCCESS_CATEGORY_CREATED,
-
 }

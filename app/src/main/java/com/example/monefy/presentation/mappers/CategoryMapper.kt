@@ -1,6 +1,7 @@
 package com.example.monefy.presentation.mappers
 
 import com.example.monefy.presentation.model.Category
+import com.example.monefy.presentation.model.FinanceType
 import com.example.monefy.domain.model.Category as CategoryDomain
 
 fun CategoryDomain.toPresentationLayer(): Category {
@@ -10,7 +11,7 @@ fun CategoryDomain.toPresentationLayer(): Category {
         colorLong = colorLong,
         totalCategoryPrice = totalCategoryPrice,
         isTapped = isTapped,
-        type = type,
+        type = FinanceType.fromTag(type),
     )
 }
 
@@ -21,6 +22,6 @@ fun Category.toDomainLayer(): CategoryDomain {
         colorLong = colorLong,
         totalCategoryPrice = totalCategoryPrice,
         isTapped = isTapped,
-        type = type,
+        type = type.tag,
     )
 }

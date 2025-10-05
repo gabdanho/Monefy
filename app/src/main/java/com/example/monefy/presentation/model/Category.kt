@@ -6,5 +6,5 @@ data class Category(
     val colorLong: Long = 0L,
     val totalCategoryPrice: Double = 0.0,
     val isTapped: Boolean = false,
-    val type: String = "",
+    val type: FinanceType = FinanceType.EXPENSE,
 )

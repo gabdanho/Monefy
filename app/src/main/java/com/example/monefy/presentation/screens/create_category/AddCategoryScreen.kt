@@ -1,4 +1,4 @@
-package com.example.monefy.presentation.screens
+package com.example.monefy.presentation.screens.create_category
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.monefy.data.local.entity.Category
+import com.example.monefy.presentation.screens.FinancesViewModel
 import com.example.monefy.presentation.utils.ColorPicker
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch

@@ -1,4 +1,4 @@
-package com.example.monefy.presentation.screens
+package com.example.monefy.presentation.screens.diagrams
 
 import android.graphics.Paint
 import androidx.compose.foundation.Canvas
@@ -40,6 +40,7 @@ import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.monefy.presentation.screens.FinancesViewModel
 import com.example.monefy.presentation.utils.Constants
 import kotlinx.coroutines.launch
 import kotlin.math.abs

@@ -9,16 +9,16 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.monefy.presentation.screens.AddCategoryScreen
-import com.example.monefy.presentation.screens.AddFinanceScreen
-import com.example.monefy.presentation.screens.MainScreen
-import com.example.monefy.presentation.screens.CategoriesListScreen
-import com.example.monefy.presentation.screens.DiagramScreen
-import com.example.monefy.presentation.screens.RewriteCategoryScreen
-import com.example.monefy.presentation.screens.FinanceListScreen
-import com.example.monefy.presentation.screens.RewriteFinanceScreen
+import com.example.monefy.presentation.screens.create_category.AddCategoryScreen
+import com.example.monefy.presentation.screens.create_finance.AddFinanceScreen
+import com.example.monefy.presentation.screens.main_monefy.MainMonefyScreen
+import com.example.monefy.presentation.screens.categories.CategoriesScreen
+import com.example.monefy.presentation.screens.diagrams.DiagramScreen
+import com.example.monefy.presentation.screens.rewrite_category.RewriteCategoryScreen
+import com.example.monefy.presentation.screens.finances.FinancesScreen
+import com.example.monefy.presentation.screens.rewrite_finance.RewriteFinanceScreen
 import com.example.monefy.presentation.screens.FinancesViewModel
-import com.example.monefy.presentation.screens.HistoryFinancesScreen
+import com.example.monefy.presentation.screens.history.HistoryFinancesScreen
 
 @Composable
 fun MonefyNavGraph(
@@ -37,7 +37,7 @@ fun MonefyNavGraph(
             enterTransition = { EnterTransition.None },
             exitTransition = { ExitTransition.None }
         ) {
-            MainScreen(
+            MainMonefyScreen(
                 financesViewModel = financesViewModel,
                 goToFinance = { finance ->
                     financesViewModel.changeSelectedCategory(finance.categoryId)
@@ -68,7 +68,7 @@ fun MonefyNavGraph(
         }
         // Экран со списком категории
         composable(route = "CategoriesListScreen") {
-            CategoriesListScreen(
+            CategoriesScreen(
                 financesViewModel = financesViewModel,
                 onCategoryClick = {
                     navController.navigate(route = "FinanceListScreen")
@@ -83,7 +83,7 @@ fun MonefyNavGraph(
         }
         // Экран с финансами
         composable(route = "FinanceListScreen") {
-            FinanceListScreen(
+            FinancesScreen(
                 financesViewModel = financesViewModel,
                 rewriteFinanceClick = {
                     navController.navigate("RewriteFinanceScreen")

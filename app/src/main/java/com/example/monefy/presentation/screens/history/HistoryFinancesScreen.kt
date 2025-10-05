@@ -1,4 +1,4 @@
-package com.example.monefy.presentation.screens
+package com.example.monefy.presentation.screens.history
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.clickable
@@ -25,6 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.monefy.data.local.entity.Finance
+import com.example.monefy.presentation.screens.FinancesViewModel
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 

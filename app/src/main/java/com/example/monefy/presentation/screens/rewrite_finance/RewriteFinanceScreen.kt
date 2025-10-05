@@ -1,4 +1,4 @@
-package com.example.monefy.presentation.screens
+package com.example.monefy.presentation.screens.rewrite_finance
 
 import android.content.Context
 import android.widget.Toast
@@ -67,6 +67,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.text.isDigitsOnly
 import com.example.monefy.data.local.entity.Category
 import com.example.monefy.data.local.entity.Finance
+import com.example.monefy.presentation.screens.FinancesViewModel
 import com.example.monefy.presentation.utils.Constants
 import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.datetime.date.datepicker

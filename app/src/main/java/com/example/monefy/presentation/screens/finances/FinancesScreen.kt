@@ -1,4 +1,4 @@
-package com.example.monefy.presentation.screens
+package com.example.monefy.presentation.screens.finances
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -26,9 +26,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.monefy.data.local.entity.Finance
+import com.example.monefy.presentation.screens.FinancesViewModel
 
 @Composable
-fun FinanceListScreen(
+fun FinancesScreen(
     financesViewModel: FinancesViewModel,
     rewriteFinanceClick: () -> Unit,
 ) {

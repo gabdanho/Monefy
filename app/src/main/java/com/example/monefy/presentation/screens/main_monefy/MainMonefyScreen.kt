@@ -1,4 +1,4 @@
-package com.example.monefy.presentation.screens
+package com.example.monefy.presentation.screens.main_monefy
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Canvas
@@ -48,6 +48,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import com.example.monefy.data.local.entity.Category
 import com.example.monefy.data.local.entity.Finance
+import com.example.monefy.presentation.screens.FinancesViewModel
 import com.example.monefy.presentation.utils.Constants.tabDateRangeItems
 import com.example.monefy.presentation.utils.Constants.tabItems
 import com.example.monefy.presentation.utils.CustomDateRangePicker
@@ -70,7 +71,7 @@ fun Color.darken(factor: Float): Color {
 }
 
 @Composable
-fun MainScreen(
+fun MainMonefyScreen(
     financesViewModel: FinancesViewModel,
     goToFinance: (Finance) -> Unit,
     modifier: Modifier = Modifier

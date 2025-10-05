@@ -1,4 +1,4 @@
-package com.example.monefy.presentation.screens
+package com.example.monefy.presentation.screens.rewrite_category
 
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.monefy.data.local.entity.Category
+import com.example.monefy.presentation.screens.FinancesViewModel
 import com.example.monefy.presentation.utils.ColorPicker
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.android.awaitFrame

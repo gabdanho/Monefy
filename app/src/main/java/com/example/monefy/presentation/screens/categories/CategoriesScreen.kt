@@ -1,4 +1,4 @@
-package com.example.monefy.presentation.screens
+package com.example.monefy.presentation.screens.categories
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
@@ -34,10 +34,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.monefy.R
 import com.example.monefy.data.local.entity.Category
+import com.example.monefy.presentation.screens.FinancesViewModel
 import kotlinx.coroutines.flow.Flow
 
 @Composable
-fun CategoriesListScreen(
+fun CategoriesScreen(
     financesViewModel: FinancesViewModel,
     onAddCategoryClick: () -> Unit,
     onCategoryClick: () -> Unit,

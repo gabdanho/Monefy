@@ -7,7 +7,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.monefy.presentation.navigation.MonefyNavGraph
-import com.example.monefy.presentation.screens.BottomMenuBar
+import com.example.monefy.presentation.components.BottomMenuBar
 
 @Composable
 fun MonefyApp(navController: NavHostController = rememberNavController()) {

@@ -61,7 +61,7 @@ class AddCategoryScreenViewModel @Inject constructor(
         _uiState.update { it.copy(isShowColorPicker = value) }
 
     fun changeIsShowSnackBar(value: Boolean) =
-        _uiState.update { it.copy(isShowSnackBar = value) }
+        _uiState.update { it.copy(isShowSnackBar = value, messageResName = null) }
 
     fun createCategory() {
         val state = _uiState.value

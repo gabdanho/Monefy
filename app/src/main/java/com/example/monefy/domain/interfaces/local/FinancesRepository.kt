@@ -3,7 +3,6 @@ package com.example.monefy.domain.interfaces.local
 import com.example.monefy.domain.model.Category
 import com.example.monefy.domain.model.CategoryWithFinances
 import com.example.monefy.domain.model.Finance
-import kotlinx.coroutines.flow.Flow
 
 interface FinancesRepository {
 
@@ -13,19 +12,19 @@ interface FinancesRepository {
 
     suspend fun updateCategory(category: Category)
 
-    suspend fun getCategoriesId(): Flow<List<Int>>
+    suspend fun getCategoriesId(): List<Int>
 
-    suspend fun getCategoryById(categoryId: Int): Flow<Category>
+    suspend fun getCategoryById(categoryId: Int): Category
 
-    suspend fun getCategoryWithFinances(categoryId: Int): Flow<CategoryWithFinances>
+    suspend fun getCategoryWithFinances(categoryId: Int): CategoryWithFinances
 
-    suspend fun getCategoriesByDateSortDesc(): Flow<List<Finance>>
+    suspend fun getCategoriesByDateSortDesc(): List<Finance>
 
-    suspend fun getAllCategories(): Flow<List<Category>>
+    suspend fun getAllCategories(): List<Category>
 
-    suspend fun getCategoriesByType(categoryType: String): Flow<List<Category>>
+    suspend fun getCategoriesByType(categoryType: String): List<Category>
 
-    suspend fun getFinancesByType(financeType: String): Flow<List<Finance>>
+    suspend fun getFinancesByType(financeType: String): List<Finance>
 
     suspend fun addFinance(finance: Finance)
 
@@ -33,5 +32,5 @@ interface FinancesRepository {
 
     suspend fun updateFinance(finance: Finance)
 
-    suspend fun getAllFinances(): Flow<List<Finance>>
+    suspend fun getAllFinances(): List<Finance>
 }

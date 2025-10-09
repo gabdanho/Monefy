@@ -1,6 +1,7 @@
 package com.example.monefy.presentation.mappers
 
 import com.example.monefy.presentation.model.Finance
+import com.example.monefy.presentation.model.FinanceType
 import com.example.monefy.domain.model.Finance as FinanceDomain
 
 fun FinanceDomain.toPresentationLayer(): Finance {
@@ -12,7 +13,7 @@ fun FinanceDomain.toPresentationLayer(): Finance {
         date = date,
         price = price,
         count = count,
-        type = type,
+        type = FinanceType.fromTag(type),
         isRegular = isRegular
     )
 }
@@ -26,7 +27,7 @@ fun Finance.toDomainLayer(): FinanceDomain {
         date = date,
         price = price,
         count = count,
-        type = type,
+        type = type.tag,
         isRegular = isRegular
     )
 }

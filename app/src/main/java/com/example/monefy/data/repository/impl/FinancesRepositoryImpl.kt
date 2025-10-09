@@ -7,8 +7,6 @@ import com.example.monefy.domain.interfaces.local.FinancesRepository
 import com.example.monefy.domain.model.Category
 import com.example.monefy.domain.model.CategoryWithFinances
 import com.example.monefy.domain.model.Finance
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 
 class FinancesRepositoryImpl(
     private val financesDao: FinancesDao,
@@ -26,40 +24,33 @@ class FinancesRepositoryImpl(
         financesDao.updateCategory(category = category.toDataLayer())
     }
 
-    override suspend fun getCategoriesId(): Flow<List<Int>> {
+    override suspend fun getCategoriesId(): List<Int> {
         return financesDao.getCategoriesId()
     }
 
-    override suspend fun getCategoryById(categoryId: Int): Flow<Category> {
-        return financesDao.getCategoryById(categoryId = categoryId).map { it.toDomainLayer() }
+    override suspend fun getCategoryById(categoryId: Int): Category {
+        return financesDao.getCategoryById(categoryId = categoryId).toDomainLayer()
     }
 
-    override suspend fun getCategoryWithFinances(categoryId: Int): Flow<CategoryWithFinances> {
-        return financesDao.getCategoryWithFinances(categoryId = categoryId).map { it.toDomainLayer() }
+    override suspend fun getCategoryWithFinances(categoryId: Int): CategoryWithFinances {
+        return financesDao.getCategoryWithFinances(categoryId = categoryId).toDomainLayer()
     }
 
-    override suspend fun getCategoriesByDateSortDesc(): Flow<List<Finance>> {
-        return financesDao.getCategoriesByDateSortDesc().map { list ->
-            list.map { it.toDomainLayer() }
-        }
+    override suspend fun getCategoriesByDateSortDesc(): List<Finance> {
+        return financesDao.getCategoriesByDateSortDesc().map { it.toDomainLayer() }
     }
 
-    override suspend fun getAllCategories(): Flow<List<Category>> {
-        return financesDao.getAllCategories().map { list ->
-            list.map { it.toDomainLayer() }
-        }
+    override suspend fun getAllCategories(): List<Category> {
+        return financesDao.getAllCategories().map { it.toDomainLayer() }
     }
 
-    override suspend fun getCategoriesByType(categoryType: String): Flow<List<Category>> {
-        return financesDao.getCategoriesByType(categoryType = categoryType).map { list ->
-            list.map { it.toDomainLayer() }
-        }
+    override suspend fun getCategoriesByType(categoryType: String): List<Category> {
+        return financesDao.getCategoriesByType(categoryType = categoryType)
+            .map { it.toDomainLayer() }
     }
 
-    override suspend fun getFinancesByType(financeType: String): Flow<List<Finance>> {
-        return financesDao.getFinancesByType(financeType = financeType).map { list ->
-            list.map { it.toDomainLayer() }
-        }
+    override suspend fun getFinancesByType(financeType: String): List<Finance> {
+        return financesDao.getFinancesByType(financeType = financeType).map { it.toDomainLayer() }
     }
 
     override suspend fun addFinance(finance: Finance) {
@@ -74,9 +65,7 @@ class FinancesRepositoryImpl(
         return financesDao.updateFinance(finance = finance.toDataLayer())
     }
 
-    override suspend fun getAllFinances(): Flow<List<Finance>> {
-        return financesDao.getAllFinances().map { list ->
-            list.map { it.toDomainLayer() }
-        }
+    override suspend fun getAllFinances(): List<Finance> {
+        return financesDao.getAllFinances().map { it.toDomainLayer() }
     }
 }

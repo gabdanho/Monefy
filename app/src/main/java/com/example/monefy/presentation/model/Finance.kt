@@ -10,6 +10,7 @@ data class Finance(
     val date: LocalDate = LocalDate.now(),
     val price: Double = 0.0,
     val count: Int = 0,
-    val type: String = "",
+    val type: FinanceType = FinanceType.EXPENSE,
     val isRegular: Boolean = false,
+    val totalPrice: Double = price * count,
 )

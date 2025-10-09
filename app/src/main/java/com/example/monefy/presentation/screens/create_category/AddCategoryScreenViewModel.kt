@@ -9,7 +9,6 @@ import com.example.monefy.presentation.mappers.toDomainLayer
 import com.example.monefy.presentation.model.Category
 import com.example.monefy.presentation.model.FinanceType
 import com.example.monefy.presentation.model.StringResName
-import com.example.monefy.presentation.navigation.Navigator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,7 +20,6 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AddCategoryScreenViewModel @Inject constructor(
-    private val navigator: Navigator,
     private val financesRepository: FinancesRepository,
 ) : ViewModel() {
 
@@ -62,7 +60,7 @@ class AddCategoryScreenViewModel @Inject constructor(
     fun changeIsShowColorPicker(value: Boolean) =
         _uiState.update { it.copy(isShowColorPicker = value) }
 
-    private fun changeIsShowSnackBar(value: Boolean) =
+    fun changeIsShowSnackBar(value: Boolean) =
         _uiState.update { it.copy(isShowSnackBar = value) }
 
     fun createCategory() {
@@ -109,6 +107,7 @@ class AddCategoryScreenViewModel @Inject constructor(
                 } catch (_: Exception) {
                     _uiState.update { it.copy(messageResName = StringResName.ERROR_TO_CREATE_CATEGORY) }
                 } finally {
+                    changeIsShowSnackBar(true)
                     _uiState.update {
                         it.copy(
                             categoryName = "",

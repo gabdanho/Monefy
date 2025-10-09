@@ -66,6 +66,7 @@ fun AddCategoryScreen(
                 message = context.getString(StringToResourceIdMapperImpl().map(it))
             )
         }
+        viewModel.changeIsShowSnackBar(false)
     }
 
     Scaffold(

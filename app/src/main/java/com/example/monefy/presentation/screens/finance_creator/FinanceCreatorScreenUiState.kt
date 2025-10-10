@@ -1,10 +1,10 @@
-package com.example.monefy.presentation.screens.create_finance
+package com.example.monefy.presentation.screens.finance_creator
 
 import com.example.monefy.presentation.model.Category
 import com.example.monefy.presentation.model.StringResName
 import java.time.LocalDate
 
-data class AddFinanceScreenUiState(
+data class FinanceCreatorScreenUiState(
     val isCategoryNotSelected: Boolean = false,
     val isFinanceNameNotFilled: Boolean = false,
     val isShowDateDialog: Boolean = false,

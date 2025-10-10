@@ -1,4 +1,4 @@
-package com.example.monefy.presentation.screens.create_finance
+package com.example.monefy.presentation.screens.finance_editor
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toColorLong
@@ -9,7 +9,6 @@ import com.example.monefy.domain.interfaces.local.FinancesRepository
 import com.example.monefy.presentation.constants.MAX_PRICE
 import com.example.monefy.presentation.mappers.toDomainLayer
 import com.example.monefy.presentation.mappers.toPresentationLayer
-import com.example.monefy.presentation.model.Finance
 import com.example.monefy.presentation.model.StringResName
 import com.example.monefy.presentation.navigation.Navigator
 import com.example.monefy.presentation.navigation.model.MonefyGraph
@@ -24,13 +23,13 @@ import java.time.LocalDate
 import javax.inject.Inject
 
 @HiltViewModel
-class AddFinanceScreenViewModel @Inject constructor(
-    private val financesRepository: FinancesRepository,
+class FinanceEditorScreenViewModel @Inject constructor(
     private val navigator: Navigator,
+    private val financesRepository: FinancesRepository,
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(AddFinanceScreenUiState())
-    val uiState: StateFlow<AddFinanceScreenUiState> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow(FinanceEditorScreenUiState())
+    val uiState: StateFlow<FinanceEditorScreenUiState> = _uiState.asStateFlow()
 
     init {
         getCategories()
@@ -115,67 +114,43 @@ class AddFinanceScreenViewModel @Inject constructor(
         _uiState.update { it.copy(pickedDate = date) }
     }
 
-    fun createFinance() {
+    fun editFinance() {
         viewModelScope.launch {
-            // Нет названия и категории
-            if (_uiState.value.financeName.isEmpty() && _uiState.value.selectedCategoryId == 0) {
-                _uiState.update {
-                    it.copy(
-                        isFinanceNameNotFilled = true,
-                        isCategoryNotSelected = true,
-                        messageResName = StringResName.ERROR_NO_NAME_FINANCE_AND_NO_SELECTED_CATEGORY
-                    )
-                }
-            }
-            // Нет названия
-            else if (_uiState.value.financeName.isEmpty()) {
+            val state = _uiState.value
+            val initialFinance = state.selectedFinance
+
+            if (state.financeName.isEmpty()) {
                 _uiState.update {
                     it.copy(
                         isFinanceNameNotFilled = true,
                         messageResName = StringResName.ERROR_NO_NAME_FINANCE
                     )
                 }
-            }
-            // Нет категории
-            else if (_uiState.value.selectedCategoryId == 0) {
-                _uiState.update {
-                    it.copy(
-                        isCategoryNotSelected = true,
-                        messageResName = StringResName.ERROR_NO_NAME_CATEGORY
-                    )
-                }
-            }
-            // Если всё хорошо - добавляем, при этом очищаем введённые параметры
-            else {
-                val state = _uiState.value
-                val newFinance = Finance(
-                    categoryId = state.selectedCategoryId,
+            } else {
+                val updatedFinance = initialFinance.copy(
                     name = state.financeName,
+                    categoryId = state.selectedCategoryId,
                     description = state.financeDescription,
-                    count = state.count,
                     price = state.price,
                     date = state.pickedDate,
-                    isRegular = state.isRegular
+                    count = state.count
                 )
-                try {
-                    financesRepository.addFinance(newFinance.toDomainLayer())
 
-                    _uiState.update {
-                        it.copy(
-                            financeName = "",
-                            price = 0.0,
-                            count = 1,
-                            pickedDate = LocalDate.now(),
-                            financeDescription = "",
-                            selectedCategoryId = 0,
-                            isRegular = false,
-                            messageResName = StringResName.SUCCESS_FINANCE_CREATED
-                        )
-                    }
+                try {
+                    financesRepository.updateFinance(updatedFinance.toDomainLayer())
+                    _uiState.update { it.copy(messageResName = StringResName.SUCCESS_EDIT_FINANCE) }
+                    navigator.navigatePopBackStack()
                 } catch (_: Exception) {
-                    _uiState.update { it.copy(messageResName = StringResName.ERROR_TO_CREATE_FINANCE) }
+                    _uiState.update { it.copy(messageResName = StringResName.ERROR_TO_EDIT_FINANCE) }
                 }
             }
+        }
+    }
+
+    fun deleteFinance() {
+        viewModelScope.launch {
+            financesRepository.deleteFinance(_uiState.value.selectedFinance.toDomainLayer())
+            _uiState.update { it.copy(messageResName = StringResName.SUCCESS_DELETE_FINANCE) }
         }
     }
 

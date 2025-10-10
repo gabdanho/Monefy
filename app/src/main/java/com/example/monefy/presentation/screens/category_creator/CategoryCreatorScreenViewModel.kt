@@ -1,4 +1,4 @@
-package com.example.monefy.presentation.screens.create_category
+package com.example.monefy.presentation.screens.category_creator
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toColorLong
@@ -19,12 +19,12 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class AddCategoryScreenViewModel @Inject constructor(
+class CategoryCreatorScreenViewModel @Inject constructor(
     private val financesRepository: FinancesRepository,
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(AddCategoryScreenUiState())
-    val uiState: StateFlow<AddCategoryScreenUiState> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow(CategoryCreatorScreenUiState())
+    val uiState: StateFlow<CategoryCreatorScreenUiState> = _uiState.asStateFlow()
 
     fun blinkingColorCategory() {
         viewModelScope.launch {

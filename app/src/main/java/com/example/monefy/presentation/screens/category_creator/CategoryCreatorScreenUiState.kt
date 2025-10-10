@@ -1,14 +1,12 @@
-package com.example.monefy.presentation.screens.rewrite_category
+package com.example.monefy.presentation.screens.category_creator
 
-import com.example.monefy.presentation.model.Category
 import com.example.monefy.presentation.model.FinanceType
 import com.example.monefy.presentation.model.StringResName
 
-data class CategoryEditorScreenUiState(
+data class CategoryCreatorScreenUiState(
     val categoryName: String = "",
     val colorCategory: Long? = null,
     val selectedFinanceType: FinanceType = FinanceType.EXPENSE,
-    val selectedCategory: Category = Category(),
 
     val isShowColorPicker: Boolean = false,
 

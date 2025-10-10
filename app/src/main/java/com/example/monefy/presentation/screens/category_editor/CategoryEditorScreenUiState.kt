@@ -1,12 +1,14 @@
-package com.example.monefy.presentation.screens.create_category
+package com.example.monefy.presentation.screens.category_editor
 
+import com.example.monefy.presentation.model.Category
 import com.example.monefy.presentation.model.FinanceType
 import com.example.monefy.presentation.model.StringResName
 
-data class AddCategoryScreenUiState(
+data class CategoryEditorScreenUiState(
     val categoryName: String = "",
     val colorCategory: Long? = null,
     val selectedFinanceType: FinanceType = FinanceType.EXPENSE,
+    val selectedCategory: Category = Category(),
 
     val isShowColorPicker: Boolean = false,
 

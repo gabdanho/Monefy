@@ -1,16 +1,13 @@
-package com.example.monefy.presentation.screens.rewrite_category
+package com.example.monefy.presentation.screens.category_creator
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -46,9 +43,9 @@ import com.example.monefy.presentation.components.CategoryType
 import com.example.monefy.presentation.utils.ColorPicker
 
 @Composable
-fun CategoryEditorScreen(
+fun CategoryCreatorScreen(
     modifier: Modifier = Modifier,
-    viewModel: CategoryEditorScreenViewModel = hiltViewModel<CategoryEditorScreenViewModel>(),
+    viewModel: CategoryCreatorScreenViewModel = hiltViewModel<CategoryCreatorScreenViewModel>(),
 ) {
     val snackBarHostState = remember { SnackbarHostState() }
     val uiState by viewModel.uiState.collectAsState()
@@ -147,31 +144,15 @@ fun CategoryEditorScreen(
                     .clickable { viewModel.changeIsShowColorPicker(true) }
             )
 
-            Row(
-                horizontalArrangement = Arrangement.Center,
-                modifier = Modifier.fillMaxWidth()
+            // Создаём категорию, проверяя при этом необходимые условия для этого (обязательные параметры: название, цвет, тип)
+            Button(
+                onClick = {
+                    viewModel.createCategory()
+                },
+                colors = ButtonDefaults.buttonColors(Color.White),
+                modifier = Modifier.align(Alignment.CenterHorizontally)
             ) {
-                // Принимаем изменения
-                Button(
-                    onClick = { viewModel.editCategory() },
-                    colors = ButtonDefaults.buttonColors(Color.White),
-                    modifier = Modifier
-                        .width(150.dp)
-                        .padding(end = 8.dp)
-                ) {
-                    Text("Изменить")
-                }
-                // Кнопка удаления категории
-                Button(
-                    onClick = { viewModel.deleteCategory() },
-                    colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.onError),
-                    modifier = Modifier.width(150.dp)
-                ) {
-                    Text(
-                        text = "Удалить",
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                }
+                Text("Добавить")
             }
         }
     }

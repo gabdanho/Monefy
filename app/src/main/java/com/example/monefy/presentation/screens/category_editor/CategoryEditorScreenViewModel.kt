@@ -1,4 +1,4 @@
-package com.example.monefy.presentation.screens.rewrite_category
+package com.example.monefy.presentation.screens.category_editor
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toColorLong

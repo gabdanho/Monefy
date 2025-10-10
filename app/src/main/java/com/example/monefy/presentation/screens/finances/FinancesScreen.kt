@@ -16,73 +16,43 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.example.monefy.data.local.entity.Finance
-import com.example.monefy.presentation.screens.FinancesViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.example.monefy.presentation.model.Finance
 
 @Composable
 fun FinancesScreen(
-    financesViewModel: FinancesViewModel,
-    rewriteFinanceClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: FinancesScreenViewModel = hiltViewModel<FinancesScreenViewModel>(),
 ) {
-    val uiState by financesViewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
 
-    var finances by rememberSaveable { mutableStateOf(listOf<Finance>()) }
-    finances = financesViewModel.getFinancesByCategoryId(uiState.currentCategoryIdForFinances).collectAsState(initial = emptyList()).value
-
-    FinancesList(
-        finances = finances,
-        changeSelectedFinanceToChange = financesViewModel::changeSelectedFinanceToChange,
-        changeSelectedCategory = financesViewModel::changeSelectedCategory,
-        rewriteFinanceClick = rewriteFinanceClick
-    )
-}
-
-// Список финансов
-@Composable
-fun FinancesList(
-    finances: List<Finance>,
-    changeSelectedFinanceToChange: (Finance) -> Unit,
-    rewriteFinanceClick: () -> Unit,
-    changeSelectedCategory: (Int) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    // Если есть финансы, то отображаем их
-    if (finances.isNotEmpty()) {
+    if (uiState.finances.isNotEmpty()) {
         LazyColumn(modifier = modifier) {
-            items(finances) { finance ->
+            items(uiState.finances) { finance ->
                 FinanceCard(
                     finance = finance,
-                    rewriteFinanceClick = rewriteFinanceClick,
-                    changeSelectedFinanceToChange = changeSelectedFinanceToChange,
-                    changeSelectedCategory = changeSelectedCategory,
+                    navigateToFinanceEditorScreen = { viewModel.navigateToFinanceEditorScreen(finance) },
                     modifier = Modifier.padding(16.dp)
                 )
             }
         }
-    }
-    // Расходов нет, то говорим об этом пользователю
-    else {
-        Text(text = "Расходов нет. Добавь их!")
+    } else {
+        Text(text = "Расходов нет. Добавьте их!")
     }
 }
 
 // Карточка финанса
 @Composable
-fun FinanceCard(
+private fun FinanceCard(
     finance: Finance,
-    rewriteFinanceClick: () -> Unit,
-    changeSelectedFinanceToChange: (Finance) -> Unit,
-    changeSelectedCategory: (Int) -> Unit,
-    modifier: Modifier = Modifier
+    navigateToFinanceEditorScreen: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     Card(
         modifier = modifier
@@ -93,11 +63,7 @@ fun FinanceCard(
                 spotColor = Color.Black,
                 shape = RoundedCornerShape(20.dp)
             )
-            .clickable {
-                changeSelectedCategory(finance.categoryId)
-                changeSelectedFinanceToChange(finance)
-                rewriteFinanceClick()
-            }
+            .clickable { navigateToFinanceEditorScreen() }
     ) {
         Row(
             horizontalArrangement = Arrangement.End,
@@ -105,7 +71,7 @@ fun FinanceCard(
                 .fillMaxWidth()
                 .padding(end = 16.dp)
         ) {
-            // Дата сделки
+            // Дата финанса
             Text(
                 text = finance.date.toString(),
                 style = MaterialTheme.typography.labelSmall,

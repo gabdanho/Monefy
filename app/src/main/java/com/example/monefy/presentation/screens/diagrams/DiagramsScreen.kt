@@ -20,14 +20,10 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -40,10 +36,12 @@ import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.monefy.presentation.screens.FinancesViewModel
-import com.example.monefy.presentation.utils.Constants
+import com.example.monefy.R
 import kotlinx.coroutines.launch
 import kotlin.math.abs
+import androidx.compose.ui.platform.LocalResources
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.example.monefy.presentation.model.DiagramInfo
 
 /*
 * Сделать диаграммы по месяцам, по годам и т.д.
@@ -56,28 +54,12 @@ import kotlin.math.abs
 
 @Composable
 fun DiagramScreen(
-    financesViewModel: FinancesViewModel,
-    updateScreen: () -> Unit
+    modifier: Modifier = Modifier,
+    viewModel: DiagramsScreenViewModel = hiltViewModel<DiagramsScreenViewModel>(),
 ) {
-    val uiState by financesViewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
+    val diagramsItems = LocalResources.current.getStringArray(R.array.diagramsItems)
 
-    MainDiagramScreen(
-        selectedTabIndex = uiState.selectedDiagramTabIndex,
-        getFinancesInDateRange = financesViewModel::getFinancesInDateRange,
-        changeSelectedDiagramTabIndex = financesViewModel::changeSelectedDiagramTabIndex,
-        updateScreen = updateScreen
-    )
-}
-
-// В этой функции описывается сам экран, а также обрабатываются данные для работы с ними
-@Composable
-fun MainDiagramScreen(
-    selectedTabIndex: Int,
-    getFinancesInDateRange: suspend (Int) -> Map<String, List<Double>>,
-    changeSelectedDiagramTabIndex: (Int) -> Unit,
-    updateScreen: () -> Unit,
-    modifier: Modifier = Modifier
-) {
     Scaffold(modifier = modifier) { innerPadding ->
         Column(
             modifier = Modifier
@@ -85,66 +67,67 @@ fun MainDiagramScreen(
                 .fillMaxSize()
         ) {
             TabRow(
-                selectedTabIndex = selectedTabIndex,
+                selectedTabIndex = uiState.selectedTabIndex,
                 contentColor = MaterialTheme.colorScheme.onSurface
             ) {
-                Constants.diagramsItems.forEachIndexed { index, item ->
+                diagramsItems.forEachIndexed { index, item ->
                     Tab(
-                        selected = index == selectedTabIndex,
-                        onClick = {
-                            changeSelectedDiagramTabIndex(index)
-                            updateScreen()
-                        },
+                        selected = index == uiState.selectedTabIndex,
+                        onClick = { viewModel.changeSelectedDiagramTabIndex(index) },
                         text = { Text(item) }
                     )
                 }
-            }
-
-            // Мапа, где первый аргумент это период даты, а второй список сумм, где первый доходы, а второй расходы
-            var diagramsInfo by remember { mutableStateOf<Map<String, List<Double>>>(emptyMap()) }
-
-            LaunchedEffect(selectedTabIndex) {
-                diagramsInfo = getFinancesInDateRange(selectedTabIndex)
             }
 
             Box(
                 contentAlignment = Alignment.BottomCenter,
                 modifier = Modifier.fillMaxSize()
             ) {
-                if (diagramsInfo.isNotEmpty()) Diagrams(diagramsInfo)
+                if (uiState.diagramsInfo.isNotEmpty()) Diagrams(
+                    diagramsInfo = uiState.diagramsInfo,
+                    modifier = Modifier.padding(start = 8.dp)
+                )
                 else Text(text = "Доходов и расходов не найдено")
             }
         }
     }
+
 }
 
 // Вызываем функцию для рисования диаграмм, легенд, дат
 @Composable
-fun Diagrams(
-    diagramsInfo: Map<String, List<Double>>
+private fun Diagrams(
+    diagramsInfo: List<DiagramInfo>,
+    modifier: Modifier = Modifier,
 ) {
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
 
     // Скроллим к последнему элементу
-    DisposableEffect(Unit) {
+    LaunchedEffect(Unit) {
         coroutineScope.launch {
             listState.scrollToItem(diagramsInfo.size - 1)
         }
-        onDispose {  }
     }
 
-    DrawLegend()
+    DrawLegend(
+        Modifier
+            .fillMaxWidth()
+            .height(50.dp)
+    )
 
     LazyRow(
         state = listState,
-        modifier = Modifier.padding(start = 8.dp)
+        modifier = modifier
     ) {
-        items(diagramsInfo.keys.toList()) {
+        items(diagramsInfo) { sums ->
             DrawDiagramBlock(
-                revenuesSum = diagramsInfo[it]?.first() ?: 0.0,
-                spendsSum = diagramsInfo[it]?.last() ?: 0.0,
-                date = it
+                revenuesSum = sums.totalRevenuesToExpenses.first,
+                spendsSum = sums.totalRevenuesToExpenses.second,
+                date = sums.date,
+                modifier = Modifier
+                    .height(300.dp)
+                    .width(90.dp)
             )
         }
     }
@@ -152,21 +135,19 @@ fun Diagrams(
 
 // Рисуем легенду о цветах диаграмм
 @Composable
-fun DrawLegend() {
+private fun DrawLegend(
+    modifier: Modifier = Modifier,
+    paddingY: Float = 60f,
+) {
     val textMeasurer = rememberTextMeasurer()
-
     val onSurfaceColor = MaterialTheme.colorScheme.onSurface
-
-    val paddingY = 60f
 
     Card(
         shape = RoundedCornerShape(
             topStart = 20.dp,
             topEnd = 20.dp
         ),
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(50.dp)
+        modifier = modifier
     ) {
         Box(
             contentAlignment = Alignment.Center,
@@ -239,10 +220,11 @@ fun DrawLegend() {
 
 // Рисуем диаграммы
 @Composable
-fun DrawDiagramBlock(
+private fun DrawDiagramBlock(
     revenuesSum: Double,
     spendsSum: Double,
     date: String,
+    modifier: Modifier = Modifier,
     paddingX: Float = 5f,
     paddingY: Float = 200f,
 ) {
@@ -255,9 +237,7 @@ fun DrawDiagramBlock(
     val onSurfaceColor = MaterialTheme.colorScheme.onSurface
 
     Canvas(
-        modifier = Modifier
-            .height(300.dp)
-            .width(90.dp)
+        modifier = modifier
     ) {
         val maxHeight = size.height - 400f
         val paddingSumText = 680f
@@ -295,7 +275,10 @@ fun DrawDiagramBlock(
         // Диаграммы
         drawLine(
             start = Offset(x = (paddingX + 35f), y = size.height - paddingY),
-            end = Offset(x = (paddingX + 35f), y = size.height - (paddingY + (revenuesPercent * maxHeight))),
+            end = Offset(
+                x = (paddingX + 35f),
+                y = size.height - (paddingY + (revenuesPercent * maxHeight))
+            ),
             color = Color.Blue,
             strokeWidth = 40f
         )
@@ -319,7 +302,10 @@ fun DrawDiagramBlock(
 
         drawLine(
             start = Offset(x = (paddingX + 93f), y = size.height - paddingY),
-            end = Offset(x = (paddingX + 93f), y = size.height - (paddingY + (spendsPercent * maxHeight))),
+            end = Offset(
+                x = (paddingX + 93f),
+                y = size.height - (paddingY + (spendsPercent * maxHeight))
+            ),
             color = Color.Magenta,
             strokeWidth = 40f
         )
@@ -350,7 +336,10 @@ fun DrawDiagramBlock(
 
         drawLine(
             start = Offset(x = (paddingX + 150f), y = size.height - paddingY),
-            end = Offset(x = (paddingX + 150f), y = size.height - (paddingY + (differencePercent * maxHeight))),
+            end = Offset(
+                x = (paddingX + 150f),
+                y = size.height - (paddingY + (differencePercent * maxHeight))
+            ),
             color = differenceColor,
             strokeWidth = 40f
         )
@@ -373,11 +362,3 @@ fun DrawDiagramBlock(
         }
     }
 }
-
-//@Preview
-//@Composable
-//fun DiagramsTestPreview() {
-//    DiagramsTest(
-//        getFinancesInDateRange = suspend { }
-//    )
-//}

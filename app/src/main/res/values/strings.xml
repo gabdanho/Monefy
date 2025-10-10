@@ -11,4 +11,24 @@
 
     <string name="success_category_created">Категория создана</string>
     <string name="success_finance_created">Запись добавлена</string>
+
+    <string-array name="diagramsItems">
+        <item>По дням</item>
+        <item>По неделям</item>
+        <item>По месяцам</item>
+        <item>По годам</item>
+    </string-array>
+
+    <string-array name="tabDateRangeItems">
+        <item>…</item>
+        <item>Год</item>
+        <item>Месяц</item>
+        <item>Сегодня</item>
+    </string-array>
+
+    <string-array name="tabItems">
+        <item>Расходы</item>
+        <item>Доходы</item>
+    </string-array>
+
 </resources>

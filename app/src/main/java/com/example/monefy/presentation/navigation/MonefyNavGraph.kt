@@ -11,7 +11,7 @@ import com.example.monefy.presentation.screens.diagrams.DiagramScreen
 import com.example.monefy.presentation.screens.finances.FinancesScreen
 import com.example.monefy.presentation.screens.history.HistoryFinancesScreen
 import com.example.monefy.presentation.screens.main_monefy.MainMonefyScreen
-import com.example.monefy.presentation.screens.rewrite_category.RewriteCategoryScreen
+import com.example.monefy.presentation.screens.rewrite_category.CategoryEditorScreen
 import com.example.monefy.presentation.screens.rewrite_finance.RewriteFinanceScreen
 
 /**
@@ -51,7 +51,7 @@ fun NavGraphBuilder.monefyGraph(
     }
 
     composable<MonefyGraph.RewriteCategoryScreen> {
-        RewriteCategoryScreen(modifier = modifier)
+        CategoryEditorScreen(modifier = modifier)
     }
 
     composable<MonefyGraph.RewriteFinanceScreen> {

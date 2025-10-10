@@ -109,8 +109,7 @@ class AddFinanceScreenViewModel @Inject constructor(
 
     fun onDescriptionChange(value: String) = _uiState.update { it.copy(financeDescription = value) }
 
-    fun changeIsShowSnackBar(isShow: Boolean) =
-        _uiState.update { it.copy(isShowSnackBar = isShow, messageResName = null) }
+    fun clearMessage() = _uiState.update { it.copy(messageResName = null) }
 
     fun onPickedDateChange(date: LocalDate) {
         _uiState.update { it.copy(pickedDate = date) }
@@ -177,7 +176,6 @@ class AddFinanceScreenViewModel @Inject constructor(
                     _uiState.update { it.copy(messageResName = StringResName.ERROR_TO_CREATE_FINANCE) }
                 }
             }
-            changeIsShowSnackBar(true)
         }
     }
 

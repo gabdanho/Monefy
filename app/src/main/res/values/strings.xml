@@ -8,9 +8,12 @@
     <string name="error_no_name_finance_and_no_selected_category">Укажите название и категорию траты</string>
     <string name="error_no_name_finance">Укажите название траты</string>
     <string name="error_to_create_finance">Не удалось создать операцию</string>
+    <string name="error_to_edit_category">Не удалось изменить категорию</string>
 
     <string name="success_category_created">Категория создана</string>
     <string name="success_finance_created">Запись добавлена</string>
+    <string name="success_delete_category">Категория успешно удалена</string>
+    <string name="success_edit_category">Категория успешно изменена</string>
 
     <string-array name="diagramsItems">
         <item>По дням</item>

@@ -8,7 +8,6 @@ data class AddFinanceScreenUiState(
     val isCategoryNotSelected: Boolean = false,
     val isFinanceNameNotFilled: Boolean = false,
     val isShowDateDialog: Boolean = false,
-    val isShowSnackBar: Boolean = false,
 
     val textColorFinanceName: Long = 0L,
     val textColorCategory: Long = 0L,

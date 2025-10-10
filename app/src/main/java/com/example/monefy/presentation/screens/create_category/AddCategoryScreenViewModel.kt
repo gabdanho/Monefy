@@ -60,8 +60,7 @@ class AddCategoryScreenViewModel @Inject constructor(
     fun changeIsShowColorPicker(value: Boolean) =
         _uiState.update { it.copy(isShowColorPicker = value) }
 
-    fun changeIsShowSnackBar(value: Boolean) =
-        _uiState.update { it.copy(isShowSnackBar = value, messageResName = null) }
+    fun clearMessage() = _uiState.update { it.copy(messageResName = null) }
 
     fun createCategory() {
         val state = _uiState.value
@@ -107,7 +106,6 @@ class AddCategoryScreenViewModel @Inject constructor(
                 } catch (_: Exception) {
                     _uiState.update { it.copy(messageResName = StringResName.ERROR_TO_CREATE_CATEGORY) }
                 } finally {
-                    changeIsShowSnackBar(true)
                     _uiState.update {
                         it.copy(
                             categoryName = "",

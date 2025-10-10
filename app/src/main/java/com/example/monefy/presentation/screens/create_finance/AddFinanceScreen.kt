@@ -95,13 +95,13 @@ fun AddFinanceScreen(
     }
 
     // Показываем SnackBar
-    LaunchedEffect(uiState.isShowSnackBar) {
+    LaunchedEffect(uiState.messageResName != null) {
         uiState.messageResName?.let {
             snackBarHostState.showSnackbar(
                 message = context.getString(StringToResourceIdMapperImpl().map(it))
             )
         }
-        viewModel.changeIsShowSnackBar(false)
+        viewModel.clearMessage()
     }
 
     Scaffold(

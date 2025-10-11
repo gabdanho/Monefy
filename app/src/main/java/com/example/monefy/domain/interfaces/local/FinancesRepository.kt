@@ -16,7 +16,7 @@ interface FinancesRepository {
 
     suspend fun getCategoryById(categoryId: Int): Category
 
-    suspend fun getCategoryWithFinances(categoryId: Int): CategoryWithFinances
+    suspend fun getCategoryWithFinances(categoryId: Int): CategoryWithFinances?
 
     suspend fun getFinancesByDateSortDesc(): List<Finance>
 

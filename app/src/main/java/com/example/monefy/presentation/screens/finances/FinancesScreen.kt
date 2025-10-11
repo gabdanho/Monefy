@@ -32,14 +32,17 @@ fun FinancesScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    if (uiState.finances.isNotEmpty()) {
-        LazyColumn(modifier = modifier) {
-            items(uiState.finances) { finance ->
-                FinanceCard(
-                    finance = finance,
-                    navigateToFinanceEditorScreen = { viewModel.navigateToFinanceEditorScreen(finance) },
-                    modifier = Modifier.padding(16.dp)
-                )
+
+    if (uiState.finances != null) {
+        uiState.finances?.let {
+            LazyColumn(modifier = modifier) {
+                items(it) { finance ->
+                    FinanceCard(
+                        finance = finance,
+                        navigateToFinanceEditorScreen = { viewModel.navigateToFinanceEditorScreen(finance) },
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
             }
         }
     } else {

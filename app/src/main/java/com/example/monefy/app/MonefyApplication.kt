@@ -1,8 +1,7 @@
 package com.example.monefy.app
 
 import android.app.Application
-import com.example.monefy.data.local.datasource.MonefyDatabase
+import dagger.hilt.android.HiltAndroidApp
 
-class MonefyApplication : Application() {
-    val database: MonefyDatabase by lazy { MonefyDatabase.Companion.getDatabase(this) }
-}
+@HiltAndroidApp
+class MonefyApplication : Application()

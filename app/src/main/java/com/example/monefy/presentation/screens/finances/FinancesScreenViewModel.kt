@@ -38,7 +38,7 @@ class FinancesScreenViewModel @Inject constructor(
         viewModelScope.launch {
             val categoryId = _uiState.value.categoryId
             val financesMapped =
-                financesRepository.getCategoryWithFinances(categoryId).finances.map { it.toPresentationLayer() }
+                financesRepository.getCategoryWithFinances(categoryId)?.finances?.map { it.toPresentationLayer() }
             _uiState.update { it.copy(finances = financesMapped) }
         }
     }

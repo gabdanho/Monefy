@@ -27,31 +27,31 @@ interface FinancesDao {
 
     // Получить id-шники категорий
     @Query("SELECT id FROM categories")
-    fun getCategoriesId(): List<Int>
+    suspend fun getCategoriesId(): List<Int>
 
     // Получить категорию по id
     @Query("SELECT * FROM categories WHERE id = :categoryId")
-    fun getCategoryById(categoryId: Int): Category
+    suspend fun getCategoryById(categoryId: Int): Category
 
     // Получить категории с финансами
     @Query("SELECT * FROM categories WHERE id = :categoryId")
-    fun getCategoryWithFinances(categoryId: Int): CategoryWithFinances
+    suspend fun getCategoryWithFinances(categoryId: Int): CategoryWithFinances?
 
     // Получить категории, отсортированные по дате
     @Query("SELECT * FROM finances ORDER BY date DESC")
-    fun getFinancesByDateSortDesc(): List<Finance>
+    suspend fun getFinancesByDateSortDesc(): List<Finance>
 
     // Получить все категории
     @Query("SELECT * FROM categories")
-    fun getAllCategories(): List<Category>
+    suspend fun getAllCategories(): List<Category>
 
     // Получить категории по типу
     @Query("SELECT * FROM categories WHERE type = :categoryType")
-    fun getCategoriesByType(categoryType: String): List<Category>
+    suspend fun getCategoriesByType(categoryType: String): List<Category>
 
     // Получить доходы/расходы
     @Query("SELECT * FROM finances WHERE type = :financeType")
-    fun getFinancesByType(financeType: String): List<Finance>
+    suspend fun getFinancesByType(financeType: String): List<Finance>
 
     // Добавить финанс
     @Insert(onConflict = OnConflictStrategy.IGNORE)
@@ -67,5 +67,5 @@ interface FinancesDao {
 
     // Получить все финансы
     @Query("SELECT * FROM finances")
-    fun getAllFinances(): List<Finance>
+    suspend fun getAllFinances(): List<Finance>
 }

@@ -21,12 +21,12 @@ import com.example.monefy.R
 // Нижнее меню
 @Composable
 fun BottomMenuBar(
+    modifier: Modifier = Modifier,
     onPieChartClick: () -> Unit = { },
     onFinancesListClick: () -> Unit = { },
     onAddButtonClick: () -> Unit = { },
     onDiagramClick: () -> Unit = { },
     onHistoryClick: () -> Unit = { },
-    modifier: Modifier = Modifier
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,

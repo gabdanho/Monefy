@@ -6,10 +6,10 @@ import com.example.monefy.data.local.entity.Category
 import com.example.monefy.data.local.entity.Finance
 
 data class CategoryWithFinances(
-    @Embedded val category: Category,
+    @Embedded val category: Category = Category(),
     @Relation(
         parentColumn = "id",
         entityColumn = "categoryId"
     )
-    val finances: List<Finance>
+    val finances: List<Finance> = emptyList()
 )

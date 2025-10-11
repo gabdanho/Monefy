@@ -11,7 +11,7 @@ import com.example.monefy.data.local.entity.Category
 import com.example.monefy.data.local.entity.Finance
 
 @TypeConverters(DateConverter::class)
-@Database(entities = [Category::class, Finance::class], version = 6)
+@Database(entities = [Category::class, Finance::class], version = 7)
 abstract class MonefyDatabase : RoomDatabase() {
     abstract fun categoryDao() : FinancesDao
     companion object {
@@ -21,10 +21,11 @@ abstract class MonefyDatabase : RoomDatabase() {
         fun getDatabase(context: Context): MonefyDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
-                    context,
+                    context.applicationContext,
                     MonefyDatabase::class.java,
-                    "app_database")
+                    "app_database.db")
                     .createFromAsset("database/monefy_database.db")
+                    .fallbackToDestructiveMigration()
                     .build()
                 INSTANCE = instance
 

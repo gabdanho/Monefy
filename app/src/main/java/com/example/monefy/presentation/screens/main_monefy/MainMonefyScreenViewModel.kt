@@ -131,15 +131,17 @@ class MainMonefyScreenViewModel @Inject constructor(
                 financesRepository.getCategoriesByType(type.tag).map { it.toPresentationLayer() }
 
             val categoriesToFinances = categories.associateWith { category ->
-                financesRepository.getCategoryWithFinances(category.id).finances
-                    .filter {
-                        isDateInRange(
-                            it.date,
-                            currentDateRange.first(),
-                            currentDateRange.last()
-                        )
-                    }
-                    .map { it.toPresentationLayer() }
+                financesRepository.getCategoryWithFinances(category.id)?.let {
+                    it.finances
+                        .filter { finance ->
+                            isDateInRange(
+                                finance.date,
+                                currentDateRange.first(),
+                                currentDateRange.last()
+                            )
+                        }
+                        .map { finance -> finance.toPresentationLayer() }
+                } ?: emptyList()
             }
 
             val categoriesIdToFinances = categoriesToFinances

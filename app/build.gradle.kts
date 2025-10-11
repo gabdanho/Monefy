@@ -29,11 +29,6 @@ android {
         viewBinding = true
     }
 
-    ksp {
-        arg("room.schemaLocation", "$projectDir/schemas")
-        arg("room.generateKotlin", "true")
-    }
-
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -84,15 +79,14 @@ dependencies {
     // Color Picker
     implementation("com.github.skydoves:colorpicker-compose:1.1.2")
     // Room
-    implementation("androidx.room:room-runtime:2.8.1")
-    implementation("androidx.room:room-ktx:2.8.1")
-    ksp("androidx.room:room-compiler:2.8.1")
+    implementation("androidx.room:room-ktx:2.8.2")
+    ksp("androidx.room:room-compiler:2.8.2")
     // Work Manager
     implementation("androidx.work:work-runtime-ktx:2.10.5")
     // Hilt
     implementation("androidx.hilt:hilt-navigation-compose:1.3.0")
-    implementation("com.google.dagger:hilt-android:2.53")
-    ksp("com.google.dagger:hilt-compiler:2.53")
+    implementation("com.google.dagger:hilt-android:2.57.2")
+    ksp("com.google.dagger:hilt-compiler:2.57.2")
     // Json Serialization
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
 

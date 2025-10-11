@@ -9,7 +9,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import com.example.compose.AppTheme
 import com.example.monefy.presentation.notification.NotificationModule
+import com.example.monefy.presentation.screens.MainScreen
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -24,7 +27,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    MonefyApp()
+                    MainScreen()
                 }
             }
         }

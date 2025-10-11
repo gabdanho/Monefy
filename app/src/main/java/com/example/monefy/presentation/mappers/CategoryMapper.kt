@@ -12,7 +12,6 @@ fun CategoryDomain.toPresentationLayer(): Category {
         name = name,
         colorLong = colorLong,
         totalCategoryPrice = totalCategoryPrice,
-        isTapped = isTapped,
         type = FinanceType.fromTag(type),
     )
 }
@@ -23,7 +22,6 @@ fun Category.toDomainLayer(): CategoryDomain {
         name = name,
         colorLong = colorLong ?: Color.Transparent.toColorLong(),
         totalCategoryPrice = totalCategoryPrice,
-        isTapped = isTapped,
         type = type.tag,
     )
 }

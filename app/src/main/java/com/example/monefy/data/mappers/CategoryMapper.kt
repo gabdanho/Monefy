@@ -9,7 +9,6 @@ fun CategoryDomain.toDataLayer(): Category {
         name = name,
         colorLong = colorLong,
         totalCategoryPrice = totalCategoryPrice,
-        isTapped = isTapped,
         type = type,
     )
 }
@@ -20,7 +19,6 @@ fun Category.toDomainLayer(): CategoryDomain {
         name = name,
         colorLong = colorLong,
         totalCategoryPrice = totalCategoryPrice,
-        isTapped = isTapped,
         type = type,
     )
 }

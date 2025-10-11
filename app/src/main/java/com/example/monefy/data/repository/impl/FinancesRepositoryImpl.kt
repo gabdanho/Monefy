@@ -36,8 +36,8 @@ class FinancesRepositoryImpl(
         return financesDao.getCategoryWithFinances(categoryId = categoryId).toDomainLayer()
     }
 
-    override suspend fun getCategoriesByDateSortDesc(): List<Finance> {
-        return financesDao.getCategoriesByDateSortDesc().map { it.toDomainLayer() }
+    override suspend fun getFinancesByDateSortDesc(): List<Finance> {
+        return financesDao.getFinancesByDateSortDesc().map { it.toDomainLayer() }
     }
 
     override suspend fun getAllCategories(): List<Category> {

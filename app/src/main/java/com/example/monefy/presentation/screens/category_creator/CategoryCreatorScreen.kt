@@ -40,7 +40,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.monefy.data.mappers.resources.StringToResourceIdMapperImpl
 import com.example.monefy.presentation.components.CategoryType
-import com.example.monefy.presentation.utils.ColorPicker
+import com.example.monefy.presentation.components.ColorPicker
 
 @Composable
 fun CategoryCreatorScreen(

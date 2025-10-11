@@ -39,7 +39,7 @@ interface FinancesDao {
 
     // Получить категории, отсортированные по дате
     @Query("SELECT * FROM finances ORDER BY date DESC")
-    fun getCategoriesByDateSortDesc(): List<Finance>
+    fun getFinancesByDateSortDesc(): List<Finance>
 
     // Получить все категории
     @Query("SELECT * FROM categories")

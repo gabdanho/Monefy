@@ -1,4 +1,4 @@
-package com.example.monefy.presentation.utils
+package com.example.monefy.presentation.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -71,7 +71,7 @@ fun ColorPicker(
                     )
                 }
             ) {
-                Text("Выбрать")
+                Text(text = "Выбрать")
             }
         }
     }

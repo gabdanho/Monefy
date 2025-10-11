@@ -1,4 +1,4 @@
-package com.example.monefy.presentation.utils
+package com.example.monefy.presentation.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Done
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDateRangePickerState
 import androidx.compose.runtime.Composable
@@ -20,18 +19,19 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.unit.dp
+import com.example.monefy.presentation.utils.convertLongToLocalDate
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CustomDateRangePicker(
-    changeShowDateRangeDialog: (Boolean) -> Unit,
-    updateDateRange: (List<LocalDate>) -> Unit
+    updateDateRange: (List<LocalDate>) -> Unit,
 ) {
     val state = rememberDateRangePickerState()
 
-    Box(modifier = Modifier
-        .background(Color.White)
-        .fillMaxSize()) {
+    Box(
+        modifier = Modifier
+            .background(Color.White)
+            .fillMaxSize()
+    ) {
         DateRangePicker(
             state = state,
             title = {
@@ -44,14 +44,20 @@ fun CustomDateRangePicker(
                         .padding(16.dp)
                 ) {
                     Box(modifier = Modifier.weight(1f)) {
-                        val startDate = if(state.selectedStartDateMillis != null) convertLongToLocalDate(state.selectedStartDateMillis!!) else "Начальная дата"
+                        val startDate =
+                            if (state.selectedStartDateMillis != null) convertLongToLocalDate(
+                                state.selectedStartDateMillis!!
+                            ) else "Начальная дата"
                         Text(
                             text = startDate.toString(),
                             style = MaterialTheme.typography.titleMedium
                         )
                     }
                     Box(modifier = Modifier.weight(1f)) {
-                        val endDate = if(state.selectedEndDateMillis != null) convertLongToLocalDate(state.selectedEndDateMillis!!) else "Конечная дата"
+                        val endDate =
+                            if (state.selectedEndDateMillis != null) convertLongToLocalDate(
+                                state.selectedEndDateMillis!!
+                            ) else "Конечная дата"
                         Text(
                             text = endDate.toString(),
                             style = MaterialTheme.typography.titleMedium
@@ -72,7 +78,6 @@ fun CustomDateRangePicker(
                                     else LocalDate.now()
 
                                 updateDateRange(listOf(startDate, endDate))
-                                changeShowDateRangeDialog(false)
                             }
                         ) {
                             Icon(

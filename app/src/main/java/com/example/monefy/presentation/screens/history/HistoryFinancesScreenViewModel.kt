@@ -37,7 +37,7 @@ class HistoryFinancesScreenViewModel @Inject constructor(
     private fun getFinances() {
         viewModelScope.launch {
             val mappedFinances =
-                financesRepository.getCategoriesByDateSortDesc().map { it.toPresentationLayer() }
+                financesRepository.getFinancesByDateSortDesc().map { it.toPresentationLayer() }
             _uiState.update { it.copy(finances = mappedFinances) }
         }
     }

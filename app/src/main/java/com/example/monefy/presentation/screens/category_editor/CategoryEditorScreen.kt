@@ -60,12 +60,9 @@ fun CategoryEditorScreen(
         viewModel.initCategory(category)
     }
 
-    LaunchedEffect(uiState.isCategoryNameError) {
-        viewModel.blinkingCategoryName()
-    }
-
-    LaunchedEffect(uiState.isCategoryColorError) {
-        viewModel.blinkingColorCategory()
+    LaunchedEffect(uiState.isCategoryNameError, uiState.isCategoryColorError) {
+        if (uiState.isCategoryNameError) viewModel.blinkingCategoryName()
+        if (uiState.isCategoryColorError) viewModel.blinkingColorCategory()
     }
 
     LaunchedEffect(uiState.messageResName != null) {
@@ -97,7 +94,7 @@ fun CategoryEditorScreen(
             // Название категории
             Text(
                 text = "Название категории",
-                color = Color.fromColorLong(uiState.textColorCategoryColor),
+                color = Color.fromColorLong(uiState.textColorCategoryName),
                 modifier = Modifier.padding(4.dp)
             )
             Row(
@@ -134,6 +131,7 @@ fun CategoryEditorScreen(
             // Цвет категории
             Text(
                 text = "Цвет категории",
+                color = Color.fromColorLong(uiState.textColorCategoryColor),
                 modifier = Modifier.padding(4.dp)
             )
             Box(

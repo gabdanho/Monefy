@@ -1,5 +1,6 @@
 package com.example.monefy.presentation.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Text
@@ -21,6 +22,9 @@ fun RegularPayment(
             checked = isRegular,
             onCheckedChange = { onValueChange() }
         )
-        Text(text = "Регулярный платёж")
+        Text(
+            text = "Регулярный платёж",
+            modifier = Modifier.clickable { onValueChange() }
+        )
     }
 }

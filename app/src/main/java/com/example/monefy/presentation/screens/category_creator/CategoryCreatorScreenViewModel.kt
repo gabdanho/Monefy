@@ -32,7 +32,7 @@ class CategoryCreatorScreenViewModel @Inject constructor(
                 delay(500L)
                 _uiState.update { it.copy(textColorCategoryColor = Color.Red.toColorLong()) } // TODO : убрать Color
                 delay(500L)
-                _uiState.update { it.copy(textColorCategoryColor = Color.Black.toColorLong()) } // TODO : убрать Color
+                _uiState.update { it.copy(textColorCategoryColor = Color.White.toColorLong()) } // TODO : убрать Color
             }
             _uiState.update { it.copy(isCategoryColorError = false) }
         }
@@ -44,15 +44,18 @@ class CategoryCreatorScreenViewModel @Inject constructor(
                 delay(500L)
                 _uiState.update { it.copy(textColorCategoryName = Color.Red.toColorLong()) } // TODO : убрать Color
                 delay(500L)
-                _uiState.update { it.copy(textColorCategoryName = Color.Black.toColorLong()) } // TODO : убрать Color
+                _uiState.update { it.copy(textColorCategoryName = Color.White.toColorLong()) } // TODO : убрать Color
             }
-            _uiState.update { it.copy(isCategoryColorError = false) }
+            _uiState.update { it.copy(isCategoryNameError = false) }
         }
     }
 
     fun changeCategoryName(value: String) = _uiState.update { it.copy(categoryName = value) }
 
-    fun changeColorCategory(value: Long) = _uiState.update { it.copy(colorCategory = value) }
+    fun changeColorCategory(value: Long) {
+        _uiState.update { it.copy(colorCategory = value) }
+        changeIsShowColorPicker(false)
+    }
 
     fun changeSelectedFinanceType(value: FinanceType) =
         _uiState.update { it.copy(selectedFinanceType = value) }
@@ -66,52 +69,38 @@ class CategoryCreatorScreenViewModel @Inject constructor(
         val state = _uiState.value
 
         viewModelScope.launch {
-            if (state.categoryName.isBlank() && state.colorCategory == null) {
-                _uiState.update {
-                    it.copy(
-                        isCategoryNameError = true,
-                        isCategoryColorError = true,
-                        messageResName = StringResName.ERROR_NO_NAME_AND_COLOR_CATEGORY
-                    )
-                }
-            }
-            // Нет названия
-            else if (state.categoryName.isBlank()) {
-                _uiState.update {
+            when {
+                state.categoryName.isBlank() -> _uiState.update {
                     it.copy(
                         isCategoryNameError = true,
                         messageResName = StringResName.ERROR_NO_NAME_CATEGORY
                     )
                 }
-            }
-            // Нет цвета
-            else if (state.colorCategory == null) {
-                _uiState.update {
+                state.colorCategory == null -> _uiState.update {
                     it.copy(
                         isCategoryColorError = true,
                         messageResName = StringResName.ERROR_NO_COLOR_CATEGORY
                     )
                 }
-            }
-            // Всё хорошо - добавляем
-            else {
-                val newCategory = Category(
-                    name = state.categoryName,
-                    colorLong = state.colorCategory,
-                    type = state.selectedFinanceType
-                )
-                try {
-                    financesRepository.createCategory(newCategory.toDomainLayer())
-                    _uiState.update { it.copy(messageResName = StringResName.SUCCESS_CATEGORY_CREATED) }
-                } catch (_: Exception) {
-                    _uiState.update { it.copy(messageResName = StringResName.ERROR_TO_CREATE_CATEGORY) }
-                } finally {
-                    _uiState.update {
-                        it.copy(
-                            categoryName = "",
-                            selectedFinanceType = FinanceType.EXPENSE,
-                            colorCategory = null
-                        )
+                else -> {
+                    val newCategory = Category(
+                        name = state.categoryName,
+                        colorLong = state.colorCategory,
+                        type = state.selectedFinanceType
+                    )
+                    try {
+                        financesRepository.createCategory(newCategory.toDomainLayer())
+                        _uiState.update { it.copy(messageResName = StringResName.SUCCESS_CATEGORY_CREATED) }
+                    } catch (_: Exception) {
+                        _uiState.update { it.copy(messageResName = StringResName.ERROR_TO_CREATE_CATEGORY) }
+                    } finally {
+                        _uiState.update {
+                            it.copy(
+                                categoryName = "",
+                                selectedFinanceType = FinanceType.EXPENSE,
+                                colorCategory = null
+                            )
+                        }
                     }
                 }
             }

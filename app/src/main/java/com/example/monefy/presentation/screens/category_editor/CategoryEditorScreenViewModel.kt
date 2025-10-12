@@ -34,7 +34,7 @@ class CategoryEditorScreenViewModel @Inject constructor(
                 delay(500L)
                 _uiState.update { it.copy(textColorCategoryColor = Color.Red.toColorLong()) } // TODO : убрать Color
                 delay(500L)
-                _uiState.update { it.copy(textColorCategoryColor = Color.Black.toColorLong()) } // TODO : убрать Color
+                _uiState.update { it.copy(textColorCategoryColor = Color.White.toColorLong()) } // TODO : убрать Color
             }
             _uiState.update { it.copy(isCategoryColorError = false) }
         }
@@ -46,15 +46,18 @@ class CategoryEditorScreenViewModel @Inject constructor(
                 delay(500L)
                 _uiState.update { it.copy(textColorCategoryName = Color.Red.toColorLong()) } // TODO : убрать Color
                 delay(500L)
-                _uiState.update { it.copy(textColorCategoryName = Color.Black.toColorLong()) } // TODO : убрать Color
+                _uiState.update { it.copy(textColorCategoryName = Color.White.toColorLong()) } // TODO : убрать Color
             }
-            _uiState.update { it.copy(isCategoryColorError = false) }
+            _uiState.update { it.copy(isCategoryNameError = false) }
         }
     }
 
     fun changeCategoryName(value: String) = _uiState.update { it.copy(categoryName = value) }
 
-    fun changeColorCategory(value: Long) = _uiState.update { it.copy(colorCategory = value) }
+    fun changeColorCategory(value: Long) {
+        _uiState.update { it.copy(colorCategory = value) }
+        changeIsShowColorPicker(false)
+    }
 
     fun changeSelectedFinanceType(value: FinanceType) =
         _uiState.update { it.copy(selectedFinanceType = value) }
@@ -76,18 +79,33 @@ class CategoryEditorScreenViewModel @Inject constructor(
             val state = _uiState.value
             val initialCategory = state.selectedCategory
 
-            val updatedCategory = initialCategory.copy(
-                name = state.categoryName.ifEmpty { initialCategory.name },
-                colorLong = if (state.colorCategory != null) initialCategory.colorLong else state.colorCategory
-            )
+            when {
+                state.categoryName.isBlank() -> _uiState.update {
+                    it.copy(
+                        isCategoryNameError = true,
+                        messageResName = StringResName.ERROR_NO_NAME_CATEGORY
+                    )
+                }
+                state.colorCategory == null -> _uiState.update {
+                    it.copy(
+                        isCategoryColorError = true,
+                        messageResName = StringResName.ERROR_NO_COLOR_CATEGORY
+                    )
+                }
+                else -> {
+                    val updatedCategory = initialCategory.copy(
+                        name = state.categoryName.ifEmpty { initialCategory.name },
+                        colorLong = initialCategory.colorLong
+                    )
 
-            try {
-                financesRepository.updateCategory(updatedCategory.toDomainLayer())
-                _uiState.update { it.copy(messageResName = StringResName.SUCCESS_EDIT_CATEGORY) }
-                navigator.navigatePopBackStack()
+                    try {
+                        financesRepository.updateCategory(updatedCategory.toDomainLayer())
+                        _uiState.update { it.copy(messageResName = StringResName.SUCCESS_EDIT_CATEGORY) }
+                        navigator.navigatePopBackStack()
 
-            } catch (_: Exception) {
-                _uiState.update { it.copy(messageResName = StringResName.ERROR_TO_EDIT_CATEGORY) }
+                    } catch (_: Exception) {
+                        _uiState.update { it.copy(messageResName = StringResName.ERROR_TO_EDIT_CATEGORY) }
+                    }                }
             }
         }
     }

@@ -157,7 +157,7 @@ class FinanceCreatorScreenViewModel @Inject constructor(
                         count = state.count.toInt(),
                         price = state.price.toDouble(),
                         date = state.pickedDate.toString(),
-                        type = state.categories[state.selectedCategoryId - 1].type,
+                        type = state.categories.first { it.id == state.selectedCategoryId }.type,
                         isRegular = state.isRegular
                     )
                     try {

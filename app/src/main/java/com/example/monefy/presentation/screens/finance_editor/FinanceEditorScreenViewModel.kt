@@ -154,7 +154,7 @@ class FinanceEditorScreenViewModel @Inject constructor(
                         categoryId = state.selectedCategoryId,
                         description = state.financeDescription,
                         price = state.price.toDouble(),
-                        type = state.categories[state.selectedCategoryId - 1].type,
+                        type = state.categories.first { it.id == state.selectedCategoryId }.type,
                         date = state.pickedDate.toString(),
                         count = state.count.toInt()
                     )

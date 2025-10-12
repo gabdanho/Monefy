@@ -18,6 +18,9 @@ import androidx.compose.ui.graphics.fromColorLong
 import androidx.compose.ui.unit.dp
 import com.example.monefy.presentation.model.Category
 
+private const val GRID_ROWS = 2
+private const val GRID_ROWS_WHEN_ONE_CATEGORY = 1
+
 @Composable
 fun CategoriesGrid(
     name: String,
@@ -27,6 +30,9 @@ fun CategoriesGrid(
     changeSelectedCategory: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val rows = if (categories.size == 1) GRID_ROWS_WHEN_ONE_CATEGORY else GRID_ROWS
+    val maxHeight = if (categories.size == 1) 100.dp else 200.dp
+
     Column(modifier = modifier) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -39,10 +45,8 @@ fun CategoriesGrid(
         }
 
         LazyHorizontalGrid(
-            rows = GridCells.Fixed(2),
-            modifier = Modifier
-                .height(maxOf(200.dp))
-                .padding(bottom = 8.dp)
+            rows = GridCells.Fixed(rows),
+            modifier = Modifier.height(maxOf(maxHeight))
         ) {
             items(categories) { category ->
                 CategoryCard(

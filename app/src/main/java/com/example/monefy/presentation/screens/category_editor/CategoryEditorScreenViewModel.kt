@@ -69,8 +69,17 @@ class CategoryEditorScreenViewModel @Inject constructor(
 
     fun deleteCategory() {
         viewModelScope.launch {
+            val categoryFinances =
+                financesRepository.getCategoryWithFinances(_uiState.value.selectedCategory.id)?.finances
+            categoryFinances?.let { finances ->
+                finances.forEach {
+                    financesRepository.deleteFinance(it)
+                }
+            }
             financesRepository.deleteCategory(_uiState.value.selectedCategory.toDomainLayer())
+
             _uiState.update { it.copy(messageResName = StringResName.SUCCESS_DELETE_CATEGORY) }
+            navigator.navigatePopBackStack()
         }
     }
 
@@ -86,16 +95,19 @@ class CategoryEditorScreenViewModel @Inject constructor(
                         messageResName = StringResName.ERROR_NO_NAME_CATEGORY
                     )
                 }
+
                 state.colorCategory == null -> _uiState.update {
                     it.copy(
                         isCategoryColorError = true,
                         messageResName = StringResName.ERROR_NO_COLOR_CATEGORY
                     )
                 }
+
                 else -> {
                     val updatedCategory = initialCategory.copy(
                         name = state.categoryName.ifEmpty { initialCategory.name },
-                        colorLong = initialCategory.colorLong
+                        colorLong = state.colorCategory,
+                        type = state.selectedFinanceType
                     )
 
                     try {
@@ -105,7 +117,8 @@ class CategoryEditorScreenViewModel @Inject constructor(
 
                     } catch (_: Exception) {
                         _uiState.update { it.copy(messageResName = StringResName.ERROR_TO_EDIT_CATEGORY) }
-                    }                }
+                    }
+                }
             }
         }
     }
@@ -113,6 +126,7 @@ class CategoryEditorScreenViewModel @Inject constructor(
     fun initCategory(category: Category) {
         _uiState.update {
             it.copy(
+                selectedCategory = category,
                 categoryName = category.name,
                 selectedFinanceType = category.type,
                 colorCategory = category.colorLong

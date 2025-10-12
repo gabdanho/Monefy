@@ -6,13 +6,13 @@ import androidx.core.text.isDigitsOnly
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.monefy.domain.interfaces.local.FinancesRepository
-import com.example.monefy.presentation.constants.MAX_PRICE
 import com.example.monefy.presentation.mappers.toDomainLayer
 import com.example.monefy.presentation.mappers.toPresentationLayer
 import com.example.monefy.presentation.model.Finance
 import com.example.monefy.presentation.model.StringResName
 import com.example.monefy.presentation.navigation.Navigator
 import com.example.monefy.presentation.navigation.model.MonefyGraph
+import com.example.monefy.presentation.utils.priceFormatter
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -42,7 +42,7 @@ class FinanceEditorScreenViewModel @Inject constructor(
                 delay(500L)
                 _uiState.update { it.copy(textColorFinanceName = Color.Red.toColorLong()) } // TODO : убрать Color
                 delay(500L)
-                _uiState.update { it.copy(textColorFinanceName = Color.Black.toColorLong()) } // TODO : убрать Color
+                _uiState.update { it.copy(textColorFinanceName = Color.White.toColorLong()) } // TODO : убрать Color
             }
             _uiState.update { it.copy(isFinanceNameNotFilled = false) }
         }
@@ -54,43 +54,43 @@ class FinanceEditorScreenViewModel @Inject constructor(
                 delay(500L)
                 _uiState.update { it.copy(textColorCategory = Color.Red.toColorLong()) } // TODO : убрать Color
                 delay(500L)
-                _uiState.update { it.copy(textColorCategory = Color.Black.toColorLong()) } // TODO : убрать Color
+                _uiState.update { it.copy(textColorCategory = Color.White.toColorLong()) } // TODO : убрать Color
             }
             _uiState.update { it.copy(isCategoryNotSelected = false) }
+        }
+    }
+
+    fun blinkingFinancePrice() {
+        viewModelScope.launch {
+            repeat(3) {
+                delay(500L)
+                _uiState.update { it.copy(textColorFinancePrice = Color.Red.toColorLong()) } // TODO : убрать Color
+                delay(500L)
+                _uiState.update { it.copy(textColorFinancePrice = Color.White.toColorLong()) } // TODO : убрать Color
+            }
+            _uiState.update { it.copy(isPriceEqualsZero = false) }
         }
     }
 
     fun onFinanceNameChange(value: String) = _uiState.update { it.copy(financeName = value) }
 
     fun onPriceChange(value: String) {
-        if (value == "" || value == ".") {
-            _uiState.update { it.copy(price = 0.0) }
-        }
-        // Если пользователь удаляет символ
-        else if (value.length < _uiState.value.price.toString().length) {
-            _uiState.update { it.copy(price = value.toDouble()) }
-        }
-        // Если пользователь пытается ввести после введённого нуля еще один - запрещаем
-        else if (value == "00") {
-            // SKIP, NE NADO
-        }
-        // Проверяем что вводится цифра или точка && Точка одна или нет && Проверяем чтобы число не было больше константы
-        else if (value.all { it.isDigit() || it == '.' } && value.count { it == '.' } <= 1 && value.toDouble() < MAX_PRICE) {
-            _uiState.update { it.copy(price = value.toDouble()) }
+        priceFormatter(value)?.let { newValue ->
+            _uiState.update { it.copy(price = newValue) }
         }
     }
 
     fun minusCount() {
-        if (_uiState.value.count >= 1) {
-            _uiState.update { it.copy(count = it.count - 1) }
+        if (_uiState.value.count.toInt() >= 1) {
+            _uiState.update { it.copy(count = (it.count.toInt() - 1).toString()) }
         }
     }
 
-    fun plusCount() = _uiState.update { it.copy(count = it.count + 1) }
+    fun plusCount() = _uiState.update { it.copy(count = (it.count.toInt() + 1).toString()) }
 
     fun onCountChange(value: String) {
         if (value.isDigitsOnly() && value.toInt() != 0) {
-            _uiState.update { it.copy(count = value.toInt()) }
+            _uiState.update { it.copy(count = value) }
         }
     }
 
@@ -120,30 +120,52 @@ class FinanceEditorScreenViewModel @Inject constructor(
             val state = _uiState.value
             val initialFinance = state.selectedFinance
 
-            if (state.financeName.isEmpty()) {
-                _uiState.update {
-                    it.copy(
-                        isFinanceNameNotFilled = true,
-                        messageResName = StringResName.ERROR_NO_NAME_FINANCE
-                    )
+            when {
+                state.financeName.isEmpty() -> {
+                    _uiState.update {
+                        it.copy(
+                            isFinanceNameNotFilled = true,
+                            messageResName = StringResName.ERROR_NO_NAME_FINANCE
+                        )
+                    }
                 }
-            } else {
-                val updatedFinance = initialFinance.copy(
-                    name = state.financeName,
-                    categoryId = state.selectedCategoryId,
-                    description = state.financeDescription,
-                    price = state.price,
-                    type = state.categories[state.selectedCategoryId].type,
-                    date = state.pickedDate.toString(),
-                    count = state.count
-                )
 
-                try {
-                    financesRepository.updateFinance(updatedFinance.toDomainLayer())
-                    _uiState.update { it.copy(messageResName = StringResName.SUCCESS_EDIT_FINANCE) }
-                    navigator.navigatePopBackStack()
-                } catch (_: Exception) {
-                    _uiState.update { it.copy(messageResName = StringResName.ERROR_TO_EDIT_FINANCE) }
+                state.selectedCategoryId == 0 -> {
+                    _uiState.update {
+                        it.copy(
+                            isCategoryNotSelected = true,
+                            messageResName = StringResName.ERROR_NO_NAME_CATEGORY
+                        )
+                    }
+                }
+
+                state.price.isEmpty() || state.price.toDouble() <= 0 -> {
+                    _uiState.update {
+                        it.copy(
+                            isPriceEqualsZero = true,
+                            messageResName = StringResName.ERROR_PRICE_EQUALS_ZERO
+                        )
+                    }
+                }
+
+                else -> {
+                    val updatedFinance = initialFinance.copy(
+                        name = state.financeName,
+                        categoryId = state.selectedCategoryId,
+                        description = state.financeDescription,
+                        price = state.price.toDouble(),
+                        type = state.categories[state.selectedCategoryId - 1].type,
+                        date = state.pickedDate.toString(),
+                        count = state.count.toInt()
+                    )
+
+                    try {
+                        financesRepository.updateFinance(updatedFinance.toDomainLayer())
+                        _uiState.update { it.copy(messageResName = StringResName.SUCCESS_EDIT_FINANCE) }
+                        navigator.navigatePopBackStack()
+                    } catch (_: Exception) {
+                        _uiState.update { it.copy(messageResName = StringResName.ERROR_TO_EDIT_FINANCE) }
+                    }
                 }
             }
         }
@@ -153,6 +175,7 @@ class FinanceEditorScreenViewModel @Inject constructor(
         viewModelScope.launch {
             financesRepository.deleteFinance(_uiState.value.selectedFinance.toDomainLayer())
             _uiState.update { it.copy(messageResName = StringResName.SUCCESS_DELETE_FINANCE) }
+            navigator.navigatePopBackStack()
         }
     }
 
@@ -163,8 +186,8 @@ class FinanceEditorScreenViewModel @Inject constructor(
                 pickedDate = LocalDate.parse(finance.date),
                 financeName = finance.name,
                 financeDescription = finance.description,
-                price = finance.price,
-                count = finance.count,
+                price = finance.price.toString(),
+                count = finance.count.toString(),
                 isRegular = finance.isRegular,
                 selectedCategoryId = finance.categoryId
             )

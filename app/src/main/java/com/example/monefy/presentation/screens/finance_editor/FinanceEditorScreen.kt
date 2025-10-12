@@ -59,14 +59,22 @@ fun FinanceEditorScreen(
         viewModel.initFinance(finance)
     }
 
-    // Показываем пользователю миганием, что не выбрана категория
-    LaunchedEffect(uiState.isCategoryNotSelected) {
-        viewModel.blinkingSelectedTypeFinance()
+    LaunchedEffect(
+        uiState.isCategoryNotSelected,
+        uiState.isFinanceNameNotFilled,
+        uiState.isPriceEqualsZero
+    ) {
+        if (uiState.isCategoryNotSelected) viewModel.blinkingSelectedTypeFinance()
+        if (uiState.isFinanceNameNotFilled) viewModel.blinkingFinanceName()
+        if (uiState.isPriceEqualsZero) viewModel.blinkingFinancePrice()
     }
 
-    // Показываем пользователю миганием, что не выбрано название
-    LaunchedEffect(uiState.isFinanceNameNotFilled) {
-        viewModel.blinkingFinanceName()
+    LaunchedEffect(uiState.isShowDateDialog) {
+        if (uiState.isShowDateDialog) {
+            dateDialogState.show()
+        } else {
+            dateDialogState.hide()
+        }
     }
 
     // Показываем SnackBar
@@ -108,14 +116,15 @@ fun FinanceEditorScreen(
             // Стоимость/доход
             InputParamItem(
                 paramName = "Стоимость / доход",
-                value = uiState.price.toString(),
+                value = uiState.price,
+                textColor = uiState.textColorFinancePrice,
                 onValueChange = { viewModel.onPriceChange(it) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.fillMaxWidth()
             )
             // Количество
             ItemCounter(
-                count = uiState.count,
+                count = uiState.count.toInt(),
                 minusCount = { viewModel.minusCount() },
                 plusCount = { viewModel.plusCount() },
                 onValueChange = { viewModel.onCountChange(it) },
@@ -213,30 +222,29 @@ fun FinanceEditorScreen(
         }
     }
 
-    if (uiState.isShowDateDialog) {
-        // Диалоговое окно с выбором даты
-        MaterialDialog(
-            dialogState = dateDialogState,
-            buttons = {
-                positiveButton(text = "ОК") {
-                    Toast.makeText(
-                        context,
-                        "Выбрана дата: ${uiState.pickedDate}",
-                        Toast.LENGTH_LONG
-                    ).show()
-                    viewModel.changeIsShowDateDialog(false)
-                }
-                negativeButton(text = "ОТМЕНА") {
-                    viewModel.changeIsShowDateDialog(false)
-                }
+    // Диалоговое окно с выбором даты
+    MaterialDialog(
+        dialogState = dateDialogState,
+        onCloseRequest = { viewModel.changeIsShowDateDialog(false) },
+        buttons = {
+            positiveButton(text = "ОК") {
+                Toast.makeText(
+                    context,
+                    "Выбрана дата: ${uiState.pickedDate}",
+                    Toast.LENGTH_LONG
+                ).show()
+                viewModel.changeIsShowDateDialog(false)
             }
+            negativeButton(text = "ОТМЕНА") {
+                viewModel.changeIsShowDateDialog(false)
+            }
+        }
+    ) {
+        datepicker(
+            initialDate = uiState.pickedDate,
+            title = "Pick a date"
         ) {
-            datepicker(
-                initialDate = uiState.pickedDate,
-                title = "Pick a date"
-            ) {
-                viewModel.onPickedDateChange(it)
-            }
+            viewModel.onPickedDateChange(it)
         }
     }
 }

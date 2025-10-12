@@ -149,14 +149,15 @@ class FinanceCreatorScreenViewModel @Inject constructor(
 
                 else -> {
                     val state = _uiState.value
+                    println(state.selectedCategoryId)
                     val newFinance = Finance(
                         categoryId = state.selectedCategoryId,
                         name = state.financeName,
                         description = state.financeDescription,
                         count = state.count.toInt(),
                         price = state.price.toDouble(),
-                        date = state.pickedDate,
-                        type = state.categories[state.selectedCategoryId].type,
+                        date = state.pickedDate.toString(),
+                        type = state.categories[state.selectedCategoryId - 1].type,
                         isRegular = state.isRegular
                     )
                     try {
@@ -186,6 +187,7 @@ class FinanceCreatorScreenViewModel @Inject constructor(
         viewModelScope.launch {
             val categories = financesRepository.getAllCategories().map { it.toPresentationLayer() }
             _uiState.update { it.copy(categories = categories) }
+            println(categories.toString())
         }
     }
 }

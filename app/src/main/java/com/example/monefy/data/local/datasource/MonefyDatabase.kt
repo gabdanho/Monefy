@@ -4,14 +4,11 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import androidx.room.TypeConverters
-import com.example.monefy.data.local.converters.DateConverter
 import com.example.monefy.data.local.dao.FinancesDao
 import com.example.monefy.data.local.entity.Category
 import com.example.monefy.data.local.entity.Finance
 
-@TypeConverters(DateConverter::class)
-@Database(entities = [Category::class, Finance::class], version = 7)
+@Database(entities = [Category::class, Finance::class], version = 9)
 abstract class MonefyDatabase : RoomDatabase() {
     abstract fun categoryDao() : FinancesDao
     companion object {

@@ -14,6 +14,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -27,11 +28,15 @@ import com.example.monefy.presentation.model.Finance
 
 @Composable
 fun FinancesScreen(
+    categoryId: Int,
     modifier: Modifier = Modifier,
     viewModel: FinancesScreenViewModel = hiltViewModel<FinancesScreenViewModel>(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
+    LaunchedEffect(categoryId) {
+        viewModel.getFinanceByCategoryId(categoryId)
+    }
 
     if (uiState.finances != null) {
         uiState.finances?.let {
@@ -76,7 +81,7 @@ private fun FinanceCard(
         ) {
             // Дата финанса
             Text(
-                text = finance.date.toString(),
+                text = finance.date,
                 style = MaterialTheme.typography.labelSmall,
                 color = Color.Gray,
             )

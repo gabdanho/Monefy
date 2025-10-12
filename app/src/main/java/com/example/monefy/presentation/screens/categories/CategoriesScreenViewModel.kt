@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.monefy.domain.interfaces.local.FinancesRepository
 import com.example.monefy.presentation.mappers.toPresentationLayer
+import com.example.monefy.presentation.model.Category
 import com.example.monefy.presentation.navigation.Navigator
 import com.example.monefy.presentation.navigation.model.MonefyGraph
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -29,7 +30,7 @@ class CategoriesScreenViewModel @Inject constructor(
 
     fun onCategoryClick(id: Int) {
         viewModelScope.launch {
-            navigator.navigate(destination = MonefyGraph.FinancesScreen)
+            navigator.navigate(destination = MonefyGraph.FinancesScreen(id))
         }
     }
 
@@ -39,9 +40,9 @@ class CategoriesScreenViewModel @Inject constructor(
         }
     }
 
-    fun onRedactorClick(id: Int) {
+    fun onRedactorClick(category: Category) {
         viewModelScope.launch {
-            navigator.navigate(destination = MonefyGraph.RewriteCategoryScreen)
+            navigator.navigate(destination = MonefyGraph.RewriteCategoryScreen(category))
         }
     }
 

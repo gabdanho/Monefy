@@ -1,13 +1,11 @@
 package com.example.monefy.domain.model
 
-import java.time.LocalDate
-
 data class Finance(
     val id: Int = 0,
     val categoryId: Int = 0,
     val name: String = "",
     val description: String = "",
-    val date: LocalDate = LocalDate.now(),
+    val date: String = "",
     val price: Double = 0.0,
     val count: Int = 0,
     val type: String = "",

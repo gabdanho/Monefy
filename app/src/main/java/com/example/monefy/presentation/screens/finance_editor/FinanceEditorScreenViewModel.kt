@@ -9,6 +9,7 @@ import com.example.monefy.domain.interfaces.local.FinancesRepository
 import com.example.monefy.presentation.constants.MAX_PRICE
 import com.example.monefy.presentation.mappers.toDomainLayer
 import com.example.monefy.presentation.mappers.toPresentationLayer
+import com.example.monefy.presentation.model.Finance
 import com.example.monefy.presentation.model.StringResName
 import com.example.monefy.presentation.navigation.Navigator
 import com.example.monefy.presentation.navigation.model.MonefyGraph
@@ -132,7 +133,8 @@ class FinanceEditorScreenViewModel @Inject constructor(
                     categoryId = state.selectedCategoryId,
                     description = state.financeDescription,
                     price = state.price,
-                    date = state.pickedDate,
+                    type = state.categories[state.selectedCategoryId].type,
+                    date = state.pickedDate.toString(),
                     count = state.count
                 )
 
@@ -151,6 +153,21 @@ class FinanceEditorScreenViewModel @Inject constructor(
         viewModelScope.launch {
             financesRepository.deleteFinance(_uiState.value.selectedFinance.toDomainLayer())
             _uiState.update { it.copy(messageResName = StringResName.SUCCESS_DELETE_FINANCE) }
+        }
+    }
+
+    fun initFinance(finance: Finance) {
+        _uiState.update {
+            it.copy(
+                selectedFinance = finance,
+                pickedDate = LocalDate.parse(finance.date),
+                financeName = finance.name,
+                financeDescription = finance.description,
+                price = finance.price,
+                count = finance.count,
+                isRegular = finance.isRegular,
+                selectedCategoryId = finance.categoryId
+            )
         }
     }
 

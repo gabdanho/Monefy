@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.monefy.domain.interfaces.local.FinancesRepository
 import com.example.monefy.presentation.mappers.toDomainLayer
+import com.example.monefy.presentation.model.Category
 import com.example.monefy.presentation.model.FinanceType
 import com.example.monefy.presentation.model.StringResName
 import com.example.monefy.presentation.navigation.Navigator
@@ -88,6 +89,16 @@ class CategoryEditorScreenViewModel @Inject constructor(
             } catch (_: Exception) {
                 _uiState.update { it.copy(messageResName = StringResName.ERROR_TO_EDIT_CATEGORY) }
             }
+        }
+    }
+
+    fun initCategory(category: Category) {
+        _uiState.update {
+            it.copy(
+                categoryName = category.name,
+                selectedFinanceType = category.type,
+                colorCategory = category.colorLong
+            )
         }
     }
 }

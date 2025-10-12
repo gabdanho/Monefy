@@ -41,8 +41,8 @@ class DiagramsScreenViewModel @Inject constructor(
 
                 val tabIndex = _uiState.value.selectedTabIndex
 
-                val minDate = allFinances.minOf { it.date }.toEpochDay()
-                val maxDate = allFinances.maxOf { it.date }.toEpochDay()
+                val minDate = allFinances.minOf { LocalDate.parse(it.date) }.toEpochDay()
+                val maxDate = allFinances.maxOf { LocalDate.parse(it.date) }.toEpochDay()
                 val totalDateRange = (minDate..maxDate)
 
                 when (tabIndex) {
@@ -109,9 +109,9 @@ class DiagramsScreenViewModel @Inject constructor(
                     // С днями работаем немного иным способом, с остальными одинаково
                     if (tabIndex != 0) {
                         val revenuesSum =
-                            revenues.sumOf { if (it.date.toEpochDay() in range) it.count * it.price else 0.0 }
+                            revenues.sumOf { if (LocalDate.parse(it.date).toEpochDay() in range) it.count * it.price else 0.0 }
                         val spendsSum =
-                            spends.sumOf { if (it.date.toEpochDay() in range) it.count * it.price else 0.0 }
+                            spends.sumOf { if (LocalDate.parse(it.date).toEpochDay() in range) it.count * it.price else 0.0 }
 
                         listSums.add(Pair(revenuesSum, spendsSum))
                         // В соответствии с типом рэнжы, будет разный вывод даты
@@ -131,9 +131,9 @@ class DiagramsScreenViewModel @Inject constructor(
                         range.forEach { day ->
                             // Находим суммы доходов и расходов
                             val revenuesSum =
-                                revenues.sumOf { if (it.date.toEpochDay() == day) it.count * it.price else 0.0 }
+                                revenues.sumOf { if (LocalDate.parse(it.date).toEpochDay() == day) it.count * it.price else 0.0 }
                             val spendsSum =
-                                spends.sumOf { if (it.date.toEpochDay() == day) it.count * it.price else 0.0 }
+                                spends.sumOf { if (LocalDate.parse(it.date).toEpochDay() == day) it.count * it.price else 0.0 }
 
                             listSums.add(Pair(revenuesSum, spendsSum))
                             listDates.add(

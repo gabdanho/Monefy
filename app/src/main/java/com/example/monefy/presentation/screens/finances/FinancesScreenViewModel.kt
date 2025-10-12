@@ -24,19 +24,14 @@ class FinancesScreenViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(FinancesScreenUiState())
     val uiState: StateFlow<FinancesScreenUiState> = _uiState.asStateFlow()
 
-    init {
-        getFinanceByCategoryId()
-    }
-
     fun navigateToFinanceEditorScreen(finance: Finance) {
         viewModelScope.launch {
-            navigator.navigate(MonefyGraph.RewriteFinanceScreen)
+            navigator.navigate(MonefyGraph.RewriteFinanceScreen(finance))
         }
     }
 
-    private fun getFinanceByCategoryId() {
+    fun getFinanceByCategoryId(categoryId: Int) {
         viewModelScope.launch {
-            val categoryId = _uiState.value.categoryId
             val financesMapped =
                 financesRepository.getCategoryWithFinances(categoryId)?.finances?.map { it.toPresentationLayer() }
             _uiState.update { it.copy(finances = financesMapped) }

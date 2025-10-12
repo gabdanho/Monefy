@@ -1,8 +1,11 @@
 package com.example.monefy.presentation.model
 
+import kotlinx.serialization.Serializable
+
 const val EXPENSE_TAG = "EXPENSE"
 const val REVENUE_TAG = "REVENUE"
 
+@Serializable
 enum class FinanceType(val tag: String) {
     EXPENSE(EXPENSE_TAG),
     REVENUE(REVENUE_TAG);

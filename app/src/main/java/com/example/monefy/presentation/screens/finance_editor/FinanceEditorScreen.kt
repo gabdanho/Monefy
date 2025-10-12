@@ -37,6 +37,7 @@ import com.example.monefy.presentation.components.FinanceDateCreatedPicker
 import com.example.monefy.presentation.components.InputParamItem
 import com.example.monefy.presentation.components.ItemCounter
 import com.example.monefy.presentation.components.RegularPayment
+import com.example.monefy.presentation.model.Finance
 import com.example.monefy.presentation.model.FinanceType
 import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
@@ -44,6 +45,7 @@ import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 
 @Composable
 fun FinanceEditorScreen(
+    finance: Finance,
     modifier: Modifier = Modifier,
     viewModel: FinanceEditorScreenViewModel = hiltViewModel<FinanceEditorScreenViewModel>(),
 ) {
@@ -52,6 +54,10 @@ fun FinanceEditorScreen(
     val dateDialogState = rememberMaterialDialogState()
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(finance) {
+        viewModel.initFinance(finance)
+    }
 
     // Показываем пользователю миганием, что не выбрана категория
     LaunchedEffect(uiState.isCategoryNotSelected) {

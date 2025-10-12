@@ -1,5 +1,8 @@
 package com.example.monefy.presentation.model
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class Category(
     val id: Int = 0,
     val name: String = "",

@@ -44,15 +44,21 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.monefy.presentation.mappers.resources.StringToResourceIdMapperImpl
 import com.example.monefy.presentation.components.CategoryType
 import com.example.monefy.presentation.components.ColorPicker
+import com.example.monefy.presentation.model.Category
 
 @Composable
 fun CategoryEditorScreen(
+    category: Category,
     modifier: Modifier = Modifier,
     viewModel: CategoryEditorScreenViewModel = hiltViewModel<CategoryEditorScreenViewModel>(),
 ) {
     val snackBarHostState = remember { SnackbarHostState() }
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
+
+    LaunchedEffect(category) {
+        viewModel.initCategory(category)
+    }
 
     LaunchedEffect(uiState.isCategoryNameError) {
         viewModel.blinkingCategoryName()

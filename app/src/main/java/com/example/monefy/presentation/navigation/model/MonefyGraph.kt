@@ -1,5 +1,7 @@
 package com.example.monefy.presentation.navigation.model
 
+import com.example.monefy.presentation.model.Category
+import com.example.monefy.presentation.model.Finance
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -18,7 +20,7 @@ sealed class MonefyGraph : NavigationDestination {
     data object DiagramsScreen : MonefyGraph()
 
     @Serializable
-    data object FinancesScreen : MonefyGraph()
+    data class FinancesScreen(val categoryId: Int) : MonefyGraph()
 
     @Serializable
     data object HistoryScreen : MonefyGraph()
@@ -27,8 +29,8 @@ sealed class MonefyGraph : NavigationDestination {
     data object MainMonefyScreen : MonefyGraph()
 
     @Serializable
-    data object RewriteCategoryScreen : MonefyGraph()
+    data class RewriteCategoryScreen(val category: Category = Category()) : MonefyGraph()
 
     @Serializable
-    data object RewriteFinanceScreen : MonefyGraph()
+    data class RewriteFinanceScreen(val finance: Finance = Finance()) : MonefyGraph()
 }

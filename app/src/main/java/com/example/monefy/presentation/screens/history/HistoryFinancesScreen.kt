@@ -49,7 +49,7 @@ fun HistoryFinancesScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 // Делаем формат вывода даты (текущий год выводится без года, предыдущие с годом)
-                val formattedDated = if (LocalDate.now().year == date.year)
+                val formattedDated = if (LocalDate.now().year == LocalDate.parse(date).year)
                     date.format(DateTimeFormatter.ofPattern(CURRENT_YEAR_DATE_PATTERN))
                 else date.format(DateTimeFormatter.ofPattern(ANOTHER_YEAR_DATE_PATTERN))
 

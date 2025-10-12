@@ -64,7 +64,7 @@ class MainMonefyScreenViewModel @Inject constructor(
 
     fun goToFinance(finance: Finance) {
         viewModelScope.launch {
-            navigator.navigate(destination = MonefyGraph.RewriteFinanceScreen)
+            navigator.navigate(destination = MonefyGraph.RewriteFinanceScreen(finance))
         }
     }
 
@@ -135,7 +135,7 @@ class MainMonefyScreenViewModel @Inject constructor(
                     it.finances
                         .filter { finance ->
                             isDateInRange(
-                                finance.date,
+                                LocalDate.parse(finance.date),
                                 currentDateRange.first(),
                                 currentDateRange.last()
                             )

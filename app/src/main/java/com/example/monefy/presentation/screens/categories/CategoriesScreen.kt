@@ -60,7 +60,7 @@ fun CategoriesScreen(
                     category = category,
                     onCategoryClick = { viewModel.onCategoryClick(category.id) },
                     onCreateCategoryClick = { viewModel.onCreateCategoryClick() },
-                    onRedactorClick = { viewModel.onRedactorClick(category.id) },
+                    onRedactorClick = { viewModel.onRedactorClick(category) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(16.dp)

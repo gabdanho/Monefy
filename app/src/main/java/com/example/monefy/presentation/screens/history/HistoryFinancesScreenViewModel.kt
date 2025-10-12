@@ -30,7 +30,7 @@ class HistoryFinancesScreenViewModel @Inject constructor(
 
     fun goToFinance(finance: Finance) {
         viewModelScope.launch {
-            navigator.navigate(destination = MonefyGraph.RewriteFinanceScreen)
+            navigator.navigate(destination = MonefyGraph.RewriteFinanceScreen(finance))
         }
     }
 

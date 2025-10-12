@@ -5,11 +5,11 @@
     <string name="error_no_name_category">Укажите название категории</string>
     <string name="error_no_color_category">Укажите цвет категории</string>
     <string name="error_to_create_category">Не удалось создать категорию</string>
-    <string name="error_no_name_finance_and_no_selected_category">Укажите название и категорию траты</string>
     <string name="error_no_name_finance">Укажите название траты</string>
     <string name="error_to_create_finance">Не удалось создать операцию</string>
     <string name="error_to_edit_category">Не удалось изменить категорию</string>
     <string name="error_to_edit_finance">Не удалось изменить операцию</string>
+    <string name="error_price_equals_zero">Цена не может быть равна 0</string>
 
     <string name="success_category_created">Категория создана</string>
     <string name="success_finance_created">Запись добавлена</string>

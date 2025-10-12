@@ -1,4 +1,4 @@
-package com.example.monefy.data.mappers.resources
+package com.example.monefy.presentation.mappers.resources
 
 import androidx.annotation.StringRes
 import com.example.monefy.presentation.model.StringResName

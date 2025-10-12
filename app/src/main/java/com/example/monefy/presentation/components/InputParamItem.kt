@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.fromColorLong
+import androidx.compose.ui.graphics.toColorLong
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -27,7 +28,7 @@ fun InputParamItem(
     value: String,
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
-    textColor: Long = 0L,
+    textColor: Long = Color.White.toColorLong(),
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     textFieldColors: TextFieldColors = TextFieldDefaults.colors(
         focusedContainerColor = Color.Transparent,

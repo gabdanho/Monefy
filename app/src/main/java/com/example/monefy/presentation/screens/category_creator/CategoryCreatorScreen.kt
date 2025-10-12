@@ -38,7 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.example.monefy.data.mappers.resources.StringToResourceIdMapperImpl
+import com.example.monefy.presentation.mappers.resources.StringToResourceIdMapperImpl
 import com.example.monefy.presentation.components.CategoryType
 import com.example.monefy.presentation.components.ColorPicker
 

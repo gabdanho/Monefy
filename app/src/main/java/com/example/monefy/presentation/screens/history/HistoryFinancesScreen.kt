@@ -61,7 +61,7 @@ fun HistoryFinancesScreen(
                 )
             }
             FinancesHistoryBlock(
-                finances = uiState.finances.filter { it.date == date },
+                finances = uiState.finances.filter { it.date == date }.reversed(),
                 goToFinance = { viewModel.goToFinance(it) }
             )
         }

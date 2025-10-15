@@ -105,7 +105,7 @@ class CategoryEditorScreenViewModel @Inject constructor(
 
                 else -> {
                     val updatedCategory = initialCategory.copy(
-                        name = state.categoryName.ifEmpty { initialCategory.name },
+                        name = state.categoryName,
                         colorLong = state.colorCategory,
                         type = state.selectedFinanceType
                     )

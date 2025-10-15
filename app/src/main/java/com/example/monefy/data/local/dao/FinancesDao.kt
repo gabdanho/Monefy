@@ -33,6 +33,10 @@ interface FinancesDao {
     @Query("SELECT * FROM categories WHERE id = :categoryId")
     suspend fun getCategoryById(categoryId: Int): Category
 
+    // Получить финанс по id
+    @Query("SELECT * FROM finances WHERE id = :financeId")
+    suspend fun getFinanceById(financeId: Int): Finance
+
     // Получить категории с финансами
     @Query("SELECT * FROM categories WHERE id = :categoryId")
     suspend fun getCategoryWithFinances(categoryId: Int): CategoryWithFinances?

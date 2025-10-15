@@ -7,6 +7,7 @@ import com.example.monefy.domain.interfaces.local.FinancesRepository
 import com.example.monefy.domain.model.Category
 import com.example.monefy.domain.model.CategoryWithFinances
 import com.example.monefy.domain.model.Finance
+import kotlin.math.floor
 
 class FinancesRepositoryImpl(
     private val financesDao: FinancesDao,
@@ -54,15 +55,31 @@ class FinancesRepositoryImpl(
     }
 
     override suspend fun addFinance(finance: Finance) {
-        return financesDao.addFinance(finance = finance.toDataLayer())
+        val category = financesDao.getCategoryById(finance.categoryId)
+        val updatedTotalPrice =
+            floor((category.totalCategoryPrice + finance.price * finance.count) * 100.0) / 100.0
+
+        financesDao.addFinance(finance = finance.toDataLayer())
+        financesDao.updateCategory(category.copy(totalCategoryPrice = updatedTotalPrice))
     }
 
     override suspend fun deleteFinance(finance: Finance) {
-        return financesDao.deleteFinance(finance = finance.toDataLayer())
+        val category = financesDao.getCategoryById(finance.categoryId)
+        val updatedTotalPrice =
+            floor((category.totalCategoryPrice - finance.price * finance.count) * 100.0) / 100.0
+
+        financesDao.deleteFinance(finance = finance.toDataLayer())
+        financesDao.updateCategory(category.copy(totalCategoryPrice = updatedTotalPrice))
     }
 
-    override suspend fun updateFinance(finance: Finance) {
-        return financesDao.updateFinance(finance = finance.toDataLayer())
+    override suspend fun updateFinance(newFinance: Finance) {
+        val category = financesDao.getCategoryById(newFinance.categoryId)
+        val oldFinance = financesDao.getFinanceById(newFinance.id)
+        val updatedTotalPrice =
+            floor((category.totalCategoryPrice - (oldFinance.price * oldFinance.count) + (newFinance.price * newFinance.count)) * 100.0) / 100.0
+
+        financesDao.updateFinance(finance = newFinance.toDataLayer())
+        financesDao.updateCategory(category.copy(totalCategoryPrice = updatedTotalPrice))
     }
 
     override suspend fun getAllFinances(): List<Finance> {

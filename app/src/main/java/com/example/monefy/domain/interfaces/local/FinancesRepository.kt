@@ -30,7 +30,7 @@ interface FinancesRepository {
 
     suspend fun deleteFinance(finance: Finance)
 
-    suspend fun updateFinance(finance: Finance)
+    suspend fun updateFinance(newFinance: Finance)
 
     suspend fun getAllFinances(): List<Finance>
 }

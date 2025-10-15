@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -40,31 +41,38 @@ fun HistoryFinancesScreen(
     val uiState by viewModel.uiState.collectAsState()
     val dates = uiState.finances.map { it.date }.distinct()
 
-    // Выводим данные
-    LazyColumn(modifier = modifier) {
-        items(dates) { date ->
-            Card(
-                elevation = CardDefaults.cardElevation(8.dp),
-                shape = RectangleShape,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                // Делаем формат вывода даты (текущий год выводится без года, предыдущие с годом)
-                val formattedDated = if (LocalDate.now().year == LocalDate.parse(date).year)
-                    date.format(DateTimeFormatter.ofPattern(CURRENT_YEAR_DATE_PATTERN))
-                else date.format(DateTimeFormatter.ofPattern(ANOTHER_YEAR_DATE_PATTERN))
+    if (dates.isNotEmpty()) {
+        LazyColumn(modifier = modifier) {
+            items(dates) { date ->
+                Card(
+                    elevation = CardDefaults.cardElevation(8.dp),
+                    shape = RectangleShape,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    // Делаем формат вывода даты (текущий год выводится без года, предыдущие с годом)
+                    val formattedDated = if (LocalDate.now().year == LocalDate.parse(date).year)
+                        date.format(DateTimeFormatter.ofPattern(CURRENT_YEAR_DATE_PATTERN))
+                    else date.format(DateTimeFormatter.ofPattern(ANOTHER_YEAR_DATE_PATTERN))
 
-                Text(
-                    text = formattedDated,
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.W300,
-                    modifier = Modifier.padding(top = 8.dp, bottom = 8.dp, start = 4.dp)
+                    Text(
+                        text = formattedDated,
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.W300,
+                        modifier = Modifier.padding(top = 8.dp, bottom = 8.dp, start = 4.dp)
+                    )
+                }
+                FinancesHistoryBlock(
+                    finances = uiState.finances.filter { it.date == date }.reversed(),
+                    goToFinance = { viewModel.goToFinance(it) }
                 )
             }
-            FinancesHistoryBlock(
-                finances = uiState.finances.filter { it.date == date }.reversed(),
-                goToFinance = { viewModel.goToFinance(it) }
-            )
         }
+    } else {
+        Text(
+            text = "Нет данных для отображения",
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth().padding(8.dp)
+        )
     }
 }
 

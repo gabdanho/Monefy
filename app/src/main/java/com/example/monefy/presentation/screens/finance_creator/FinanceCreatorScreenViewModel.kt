@@ -40,9 +40,9 @@ class FinanceCreatorScreenViewModel @Inject constructor(
         viewModelScope.launch {
             repeat(3) {
                 delay(500L)
-                _uiState.update { it.copy(textColorFinanceName = Color.Red.toColorLong()) } // TODO : убрать Color
+                _uiState.update { it.copy(textColorFinanceName = Color.Red.toColorLong()) }
                 delay(500L)
-                _uiState.update { it.copy(textColorFinanceName = Color.White.toColorLong()) } // TODO : убрать Color
+                _uiState.update { it.copy(textColorFinanceName = Color.White.toColorLong()) }
             }
             _uiState.update { it.copy(isFinanceNameNotFilled = false) }
         }
@@ -52,9 +52,9 @@ class FinanceCreatorScreenViewModel @Inject constructor(
         viewModelScope.launch {
             repeat(3) {
                 delay(500L)
-                _uiState.update { it.copy(textColorCategory = Color.Red.toColorLong()) } // TODO : убрать Color
+                _uiState.update { it.copy(textColorCategory = Color.Red.toColorLong()) }
                 delay(500L)
-                _uiState.update { it.copy(textColorCategory = Color.White.toColorLong()) } // TODO : убрать Color
+                _uiState.update { it.copy(textColorCategory = Color.White.toColorLong()) }
             }
             _uiState.update { it.copy(isCategoryNotSelected = false) }
         }
@@ -64,9 +64,9 @@ class FinanceCreatorScreenViewModel @Inject constructor(
         viewModelScope.launch {
             repeat(3) {
                 delay(500L)
-                _uiState.update { it.copy(textColorFinancePrice = Color.Red.toColorLong()) } // TODO : убрать Color
+                _uiState.update { it.copy(textColorFinancePrice = Color.Red.toColorLong()) }
                 delay(500L)
-                _uiState.update { it.copy(textColorFinancePrice = Color.White.toColorLong()) } // TODO : убрать Color
+                _uiState.update { it.copy(textColorFinancePrice = Color.White.toColorLong()) }
             }
             _uiState.update { it.copy(isPriceEqualsZero = false) }
         }

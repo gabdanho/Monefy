@@ -35,7 +35,6 @@ import com.example.monefy.presentation.components.CircleCategoryColor
 import com.example.monefy.presentation.constants.ADD_CATEGORY_ID
 import com.example.monefy.presentation.model.Category
 
-private const val ONE_COLUMN = 1
 private const val TWO_COLUMN = 2
 
 @Composable
@@ -44,28 +43,33 @@ fun CategoriesScreen(
     viewModel: CategoriesScreenViewModel = hiltViewModel<CategoriesScreenViewModel>(),
 ) {
     Scaffold { innerPadding ->
-        // Карточка создания категории
-        // val addCategory = Category(id = ADD_CATEGORY_ID, name = "Добавить категорию (+)", colorLong = Color.Transparent.toArgb())
         val uiState by viewModel.uiState.collectAsState()
 
-        LazyVerticalGrid(
-            columns = if (uiState.categories.isEmpty()) GridCells.Fixed(ONE_COLUMN)
-                else GridCells.Fixed(TWO_COLUMN),
-            modifier = modifier
-                .padding(innerPadding)
-                .padding(bottom = 8.dp)
-        ) {
-            items(uiState.categories) { category ->
-                CategoryCard(
-                    category = category,
-                    onCategoryClick = { viewModel.onCategoryClick(category.id) },
-                    onCreateCategoryClick = { viewModel.onCreateCategoryClick() },
-                    onRedactorClick = { viewModel.onRedactorClick(category) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                )
+        if (uiState.categories.isNotEmpty()) {
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(TWO_COLUMN),
+                modifier = modifier
+                    .padding(innerPadding)
+                    .padding(bottom = 8.dp)
+            ) {
+                items(uiState.categories) { category ->
+                    CategoryCard(
+                        category = category,
+                        onCategoryClick = { viewModel.onCategoryClick(category.id) },
+                        onCreateCategoryClick = { viewModel.onCreateCategoryClick() },
+                        onRedactorClick = { viewModel.onRedactorClick(category) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                    )
+                }
             }
+        } else {
+            Text(
+                text = "Нет данных для отображения",
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth().padding(8.dp)
+            )
         }
     }
 }
@@ -78,7 +82,7 @@ private fun CategoryCard(
     onCreateCategoryClick: () -> Unit,
     onRedactorClick: () -> Unit,
     modifier: Modifier = Modifier,
-) { // TODO: ВОЗМОЖНО НУЖНО ДОБАВИТЬ BOX, ЕСЛИ БУДУТ ПРОБЛЕМЫ С UI
+) {
     Card(
         modifier = modifier
             .shadow(

@@ -25,6 +25,10 @@ class DiagramsScreenViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(DiagramsScreenUiState())
     val uiState: StateFlow<DiagramsScreenUiState> = _uiState.asStateFlow()
 
+    init {
+        changeSelectedDiagramTabIndex(index = 0)
+    }
+
     fun changeSelectedDiagramTabIndex(index: Int) {
         _uiState.update { it.copy(selectedTabIndex = index) }
 
@@ -43,7 +47,6 @@ class DiagramsScreenViewModel @Inject constructor(
 
                 val minDate = allFinances.minOf { LocalDate.parse(it.date) }.toEpochDay()
                 val maxDate = allFinances.maxOf { LocalDate.parse(it.date) }.toEpochDay()
-                val totalDateRange = (minDate..maxDate)
 
                 when (tabIndex) {
                     // По дням
@@ -52,7 +55,7 @@ class DiagramsScreenViewModel @Inject constructor(
                     1 -> {
                         var currentDate = minDate
 
-                        while (!totalDateRange.contains(currentDate)) {
+                        while (currentDate <= maxDate) {
                             // Находим первый и последний день недели
                             val startOfWeek = LocalDate.ofEpochDay(currentDate)
                                 .with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
@@ -69,7 +72,7 @@ class DiagramsScreenViewModel @Inject constructor(
                     2 -> {
                         var currentDate = minDate
 
-                        while (!totalDateRange.contains(currentDate)) {
+                        while (currentDate <= maxDate) {
                             // Находим первый и последний день месяца
                             val startOfMonth = LocalDate.ofEpochDay(currentDate)
                                 .with(TemporalAdjusters.firstDayOfMonth())
@@ -87,7 +90,7 @@ class DiagramsScreenViewModel @Inject constructor(
                     3 -> {
                         var currentDate = minDate
 
-                        while (!totalDateRange.contains(currentDate)) {
+                        while (currentDate <= maxDate) {
                             // Находим первый и последний день года
                             val startOfYear = LocalDate.ofEpochDay(currentDate)
                                 .with(TemporalAdjusters.firstDayOfYear())
@@ -103,10 +106,9 @@ class DiagramsScreenViewModel @Inject constructor(
                     }
                 }
 
-
                 val listSums = mutableListOf<Pair<Double, Double>>()
                 dateRanges.forEach { range ->
-                    // С днями работаем немного иным способом, с остальными одинаково
+                    // С днями работаем иным способом, с остальными одинаково
                     if (tabIndex != 0) {
                         val revenuesSum =
                             revenues.sumOf { if (LocalDate.parse(it.date).toEpochDay() in range) it.count * it.price else 0.0 }

@@ -48,6 +48,7 @@ import androidx.compose.ui.graphics.toColorLong
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -93,7 +94,11 @@ fun MainMonefyScreen(
             when {
                 uiState.isLoading -> CircularProgressIndicator()
                 !uiState.isHasFinances -> {
-                    Text(text = "Операций не найдено. Добавьте их!")
+                    Text(
+                        text = "Нет данных для отображения",
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth().padding(8.dp)
+                    )
                 }
                 else -> {
                     when {

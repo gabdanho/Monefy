@@ -21,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -38,7 +39,7 @@ fun FinancesScreen(
         viewModel.getFinanceByCategoryId(categoryId)
     }
 
-    if (uiState.finances != null) {
+    if (uiState.finances != null && uiState.finances?.isNotEmpty() == true) {
         uiState.finances?.let {
             LazyColumn(modifier = modifier) {
                 items(it) { finance ->
@@ -51,7 +52,11 @@ fun FinancesScreen(
             }
         }
     } else {
-        Text(text = "Расходов нет. Добавьте их!")
+        Text(
+            text = "Нет данных для отображения",
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth().padding(8.dp)
+        )
     }
 }
 

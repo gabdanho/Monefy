@@ -19,7 +19,8 @@ import androidx.compose.ui.unit.dp
 import com.example.monefy.presentation.model.Category
 
 private const val GRID_ROWS = 2
-private const val GRID_ROWS_WHEN_ONE_CATEGORY = 1
+private const val GRID_ROWS_WHEN_FEW_CATEGORY = 1
+private const val FEW_CATEGORIES = 4
 
 @Composable
 fun CategoriesGrid(
@@ -30,8 +31,8 @@ fun CategoriesGrid(
     changeSelectedCategory: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val rows = if (categories.size == 1) GRID_ROWS_WHEN_ONE_CATEGORY else GRID_ROWS
-    val maxHeight = if (categories.size == 1) 100.dp else 200.dp
+    val rows = if (categories.size <= FEW_CATEGORIES) GRID_ROWS_WHEN_FEW_CATEGORY else GRID_ROWS
+    val maxHeight = if (categories.size <= FEW_CATEGORIES) 100.dp else 200.dp
 
     Column(modifier = modifier) {
         Row(

@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -23,7 +24,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -37,11 +37,11 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.monefy.R
-import kotlinx.coroutines.launch
 import kotlin.math.abs
 import androidx.compose.ui.platform.LocalResources
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.monefy.presentation.model.DiagramInfo
+import kotlin.math.roundToInt
 
 /*
 * Сделать диаграммы по месяцам, по годам и т.д.
@@ -87,11 +87,10 @@ fun DiagramScreen(
                     diagramsInfo = uiState.diagramsInfo,
                     modifier = Modifier.padding(start = 8.dp)
                 )
-                else Text(text = "Доходов и расходов не найдено")
+                else Text(text = "Нет данных для отображения")
             }
         }
     }
-
 }
 
 // Вызываем функцию для рисования диаграмм, легенд, дат
@@ -101,13 +100,10 @@ private fun Diagrams(
     modifier: Modifier = Modifier,
 ) {
     val listState = rememberLazyListState()
-    val coroutineScope = rememberCoroutineScope()
 
     // Скроллим к последнему элементу
-    LaunchedEffect(Unit) {
-        coroutineScope.launch {
-            listState.scrollToItem(diagramsInfo.size - 1)
-        }
+    LaunchedEffect(diagramsInfo) {
+        listState.scrollToLastItem(diagramsInfo.size)
     }
 
     DrawLegend(
@@ -288,7 +284,7 @@ private fun DrawDiagramBlock(
             canvas.save()
             canvas.rotate(270f)
             drawContext.canvas.nativeCanvas.drawText(
-                if (revenuesSum != 0.0) revenuesSum.toString() else "",
+                if (revenuesSum != 0.0) revenuesSum.roundToInt().toString() else "",
                 size.height - (paddingY + (spendsPercent * maxHeight)) - paddingSumText,
                 paddingX + 45f,
                 Paint().apply {
@@ -315,7 +311,7 @@ private fun DrawDiagramBlock(
             canvas.save()
             canvas.rotate(270f)
             drawContext.canvas.nativeCanvas.drawText(
-                if (spendsSum != 0.0) spendsSum.toString() else "",
+                if (spendsSum != 0.0) spendsSum.roundToInt().toString() else "",
                 size.height - (paddingY + (revenuesPercent * maxHeight)) - paddingSumText,
                 paddingX + 105f,
                 Paint().apply {
@@ -328,7 +324,7 @@ private fun DrawDiagramBlock(
         }
 
         // Диаграмма убытка или дохода
-        val differenceSum = revenuesSum - spendsSum
+        val differenceSum = (revenuesSum - spendsSum).roundToInt()
         val differencePercent = (abs(differenceSum) / totalSum).toFloat()
 
         // Выбираем цвет в зависимости чего больше доходов или расходов (difference > 0 - прибыль, иначе убыль)
@@ -349,7 +345,7 @@ private fun DrawDiagramBlock(
             canvas.save()
             canvas.rotate(270f)
             drawContext.canvas.nativeCanvas.drawText(
-                if (differenceSum != 0.0) abs(differenceSum).toString() else "",
+                if (differenceSum != 0) abs(differenceSum).toString() else "",
                 size.height - (paddingY + ((1f - differencePercent) * maxHeight)) - paddingSumText,
                 paddingX + 165f,
                 Paint().apply {
@@ -361,4 +357,8 @@ private fun DrawDiagramBlock(
             canvas.restore()
         }
     }
+}
+
+suspend fun LazyListState.scrollToLastItem(listSize: Int) {
+    this.scrollToItem(listSize - 1)
 }

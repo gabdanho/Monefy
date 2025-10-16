@@ -46,6 +46,13 @@ import com.example.monefy.presentation.components.ColorPicker
 import com.example.monefy.presentation.model.Category
 import com.example.monefy.presentation.theme.defaultDimensions
 
+/**
+ * Экран редактирования категории.
+ *
+ * @param category Категория, которую необходимо отредактировать.
+ * @param modifier Модификатор.
+ * @param viewModel ViewModel.
+ */
 @Composable
 fun CategoryEditorScreen(
     category: Category,

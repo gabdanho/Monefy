@@ -10,6 +10,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.example.monefy.R
 
+/**
+ * Чекбокс для отметки, является ли платеж регулярным.
+ *
+ * Позволяет включить или выключить повторяемость платежа.
+ *
+ * @param isRegular Флаг, указывающий, является ли платеж регулярным.
+ * @param onValueChange Колбэк, вызываемый при изменении состояния чекбокса.
+ * @param modifier Модификатор внешнего оформления.
+ */
 @Composable
 fun RegularPayment(
     isRegular: Boolean,

@@ -16,6 +16,11 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+/**
+ * ViewModel для экрана создания новой категории.
+ *
+ * @property financesRepository Репозиторий, используемый для сохранения категории.
+ */
 @HiltViewModel
 class CategoryCreatorScreenViewModel @Inject constructor(
     private val financesRepository: FinancesRepository,

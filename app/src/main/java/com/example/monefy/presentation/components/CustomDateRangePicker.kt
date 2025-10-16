@@ -23,6 +23,13 @@ import com.example.monefy.presentation.theme.defaultDimensions
 import com.example.monefy.presentation.theme.whiteColor
 import com.example.monefy.presentation.utils.convertLongToLocalDate
 
+/**
+ * Диалог выбора диапазона дат.
+ *
+ * Позволяет пользователю выбрать начальную и конечную дату с помощью календаря.
+ *
+ * @param updateDateRange Колбэк, вызываемый после выбора диапазона дат (список из двух LocalDate).
+ */
 @Composable
 fun CustomDateRangePicker(updateDateRange: (List<LocalDate>) -> Unit) {
     val state = rememberDateRangePickerState()

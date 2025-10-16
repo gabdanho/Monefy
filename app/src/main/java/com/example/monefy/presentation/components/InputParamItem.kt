@@ -22,6 +22,19 @@ import androidx.compose.ui.unit.sp
 import com.example.monefy.R
 import com.example.monefy.presentation.theme.defaultDimensions
 
+/**
+ * Элемент для ввода текстового параметра (название, сумма и т.д.).
+ *
+ * Включает текстовое поле и кнопку очистки введённого значения.
+ *
+ * @param paramName Название параметра (заголовок поля).
+ * @param value Текущее значение поля.
+ * @param onValueChange Обработчик изменения значения.
+ * @param modifier Модификатор внешнего вида.
+ * @param textColor Цвет текста заголовка.
+ * @param keyboardOptions Настройки клавиатуры (тип ввода).
+ * @param textFieldColors Цвета поля ввода (фон, рамка и т.д.).
+ */
 @Composable
 fun InputParamItem(
     paramName: String,

@@ -15,6 +15,12 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+/**
+ * ViewModel для экрана списка финансов определённой категории.
+ *
+ * @property navigator Навигатор для переходов между экранами.
+ * @property financesRepository Репозиторий, обеспечивающий доступ к операциям категории.
+ */
 @HiltViewModel
 class FinancesScreenViewModel @Inject constructor(
     private val navigator: Navigator,

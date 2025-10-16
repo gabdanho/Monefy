@@ -8,6 +8,10 @@ import com.example.monefy.domain.model.Category
 import com.example.monefy.domain.model.CategoryWithFinances
 import com.example.monefy.domain.model.Finance
 
+/**
+ * Репозиторий для работы с категориями и финансами.
+ * Инкапсулирует взаимодействие с [FinancesDao].
+ */
 class FinancesRepositoryImpl(
     private val financesDao: FinancesDao,
 ) : FinancesRepository {

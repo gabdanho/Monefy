@@ -23,6 +23,14 @@ import androidx.compose.ui.unit.sp
 import com.example.monefy.R
 import com.example.monefy.presentation.theme.defaultDimensions
 
+/**
+ * Счётчик количества (например, количества товаров или повторов платежа).
+ *
+ * @param count Текущее значение счётчика.
+ * @param minusCount Колбэк для уменьшения значения.
+ * @param plusCount Колбэк для увеличения значения.
+ * @param modifier Модификатор внешнего вида.
+ */
 @Composable
 fun ItemCounter(
     count: Int,

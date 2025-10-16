@@ -48,15 +48,12 @@ import com.example.monefy.presentation.model.DiagramInfo
 import com.example.monefy.presentation.theme.defaultDimensions
 import kotlin.math.roundToInt
 
-/*
-* Сделать диаграммы по месяцам, по годам и т.д.
-* В соответствии с пунктом выше, получить мапу с датой и соответсвующими доходами/расходами за этот период
-* Выводим минимум 5 лет, месяцев и т.д. (если есть за предыдущие до вплоть до них)
-* Строим рядом с этими диаграммами диаграммы с прибылью, убытками
-* Снизу, под диаграммами, будут подписаны даты. Вверху суммы.
-* По скольку цвета будут статичными, то делаем легенду об этих цветах
-*/
-
+/**
+ * Экран с аналитическими диаграммами.
+ *
+ * @param modifier Модификатор.
+ * @param viewModel ViewModel.
+ */
 @Composable
 fun DiagramScreen(
     modifier: Modifier = Modifier,

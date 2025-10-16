@@ -20,6 +20,12 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
 
+/**
+ * ViewModel для экрана редактирования финансовой операции.
+ *
+ * @property navigator Навигатор для возврата на предыдущий экран.
+ * @property financesRepository Репозиторий для работы с финансовыми данными.
+ */
 @HiltViewModel
 class FinanceEditorScreenViewModel @Inject constructor(
     private val navigator: Navigator,

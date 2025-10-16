@@ -17,6 +17,12 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+/**
+ * ViewModel для экрана редактирования категории.
+ *
+ * @property navigator Навигатор для возврата на предыдущий экран.
+ * @property financesRepository Репозиторий, обеспечивающий доступ к данным категорий.
+ */
 @HiltViewModel
 class CategoryEditorScreenViewModel @Inject constructor(
     private val navigator: Navigator,

@@ -39,6 +39,12 @@ import java.time.format.DateTimeFormatter
 private const val CURRENT_YEAR_DATE_PATTERN = "d MMMM"
 private const val ANOTHER_YEAR_DATE_PATTERN = "d MMMM y"
 
+/**
+ * Экран истории всех финансовых операций.
+ *
+ * @param modifier Модификатор.
+ * @param viewModel ViewModel.
+ */
 @Composable
 fun HistoryFinancesScreen(
     modifier: Modifier = Modifier,

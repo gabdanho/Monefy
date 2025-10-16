@@ -7,6 +7,16 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 
+/**
+ * Отрисовывает круг с указанным цветом категории.
+ *
+ * Используется для отображения визуального цвета категории.
+ *
+ * @param colorLong Цвет в формате Long (ARGB).
+ * @param center Координата центра круга.
+ * @param radius Радиус круга.
+ * @param modifier Модификатор для настройки внешнего вида.
+ */
 @Composable
 fun CircleCategoryColor(
     colorLong: Long,

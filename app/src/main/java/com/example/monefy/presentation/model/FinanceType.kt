@@ -5,6 +5,13 @@ import kotlinx.serialization.Serializable
 const val EXPENSE_TAG = "EXPENSE"
 const val REVENUE_TAG = "REVENUE"
 
+/**
+ * Тип финансовой операции — расход или доход.
+ *
+ * Используется для различения направлений движения средств.
+ *
+ * @property tag Строковой тег, соответствующий типу (например, "EXPENSE" или "REVENUE").
+ */
 @Serializable
 enum class FinanceType(val tag: String) {
     EXPENSE(EXPENSE_TAG),

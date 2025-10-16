@@ -48,6 +48,13 @@ import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 
+/**
+ * Экран редактирования финансовой операции.
+ *
+ * @param finance Финансовая запись, которую необходимо отредактировать.
+ * @param modifier Модификатор.
+ * @param viewModel ViewModel.
+ */
 @Composable
 fun FinanceEditorScreen(
     finance: Finance,

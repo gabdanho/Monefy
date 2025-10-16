@@ -24,6 +24,13 @@ import com.github.skydoves.colorpicker.compose.BrightnessSlider
 import com.github.skydoves.colorpicker.compose.HsvColorPicker
 import com.github.skydoves.colorpicker.compose.rememberColorPickerController
 
+/**
+ * Диалог выбора цвета категории.
+ *
+ * Позволяет пользователю выбрать цвет с помощью HSV-палитры и ползунка яркости.
+ *
+ * @param changeColorCategory Колбэк, вызываемый при выборе цвета (в формате Long ARGB).
+ */
 @Composable
 fun ColorPicker(changeColorCategory: (Long) -> Unit) {
     val colorController = rememberColorPickerController()

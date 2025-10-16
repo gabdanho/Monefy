@@ -18,7 +18,16 @@ import androidx.compose.ui.res.stringResource
 import com.example.monefy.R
 import com.example.monefy.presentation.theme.defaultDimensions
 
-// Нижнее меню
+/**
+ * Нижняя панель навигации приложения.
+ *
+ * @param modifier Модификатор для настройки внешнего вида панели.
+ * @param onPieChartClick Обработчик нажатия на кнопку "Диаграмма расходов".
+ * @param onFinancesListClick Обработчик нажатия на кнопку "Список финансов".
+ * @param onAddButtonClick Обработчик нажатия на кнопку добавления нового финанса.
+ * @param onDiagramClick Обработчик нажатия на кнопку "Диаграммы".
+ * @param onHistoryClick Обработчик нажатия на кнопку "История".
+ */
 @Composable
 fun BottomMenuBar(
     modifier: Modifier = Modifier,

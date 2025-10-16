@@ -17,6 +17,11 @@ import java.time.format.DateTimeFormatter
 import java.time.temporal.TemporalAdjusters
 import javax.inject.Inject
 
+/**
+ * ViewModel для экрана диаграмм.
+ *
+ * @property financesRepository Репозиторий, обеспечивающий доступ к данным финансов.
+ */
 @HiltViewModel
 class DiagramsScreenViewModel @Inject constructor(
     private val financesRepository: FinancesRepository,

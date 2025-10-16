@@ -3,6 +3,7 @@ package com.example.monefy.presentation.theme
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
+/** Дименшины для компоуз компонентов */
 data class Dimensions(
     val verySmall: Dp,
     val small: Dp,
@@ -41,6 +42,7 @@ data class Dimensions(
     val dateRangeSelectorHeight: Dp,
 )
 
+/** Дефолтные дименшины */
 val defaultDimensions = Dimensions(
     verySmall = 4.dp,
     small = 8.dp,

@@ -3,6 +3,19 @@ package com.example.monefy.data.local.entity
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
+/**
+ * Сущность финанс (таблица `finances`).
+ *
+ * @param id Уникальный идентификатор записи.
+ * @param categoryId ID категории, к которой относится финанс.
+ * @param name Название транзакции.
+ * @param description Описание транзакции.
+ * @param date Дата в строковом формате (например, "2025-10-16").
+ * @param price Сумма транзакции.
+ * @param count Количество (для повторяющихся операций).
+ * @param type Тип транзакции (доход или расход).
+ * @param isRegular Флаг регулярности транзакции.
+ */
 @Entity(tableName = "finances")
 data class Finance(
     @PrimaryKey(autoGenerate = true)

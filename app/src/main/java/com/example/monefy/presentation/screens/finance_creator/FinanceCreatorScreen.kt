@@ -45,6 +45,12 @@ import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 
+/**
+ * Экран создания новой финансовой операции.
+ *
+ * @param modifier Модификатор.
+ * @param viewModel ViewModel.
+ */
 @Composable
 fun FinanceCreatorScreen(
     modifier: Modifier = Modifier,

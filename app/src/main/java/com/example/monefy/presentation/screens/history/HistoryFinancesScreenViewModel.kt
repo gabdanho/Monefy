@@ -15,6 +15,12 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+/**
+ * ViewModel для экрана истории всех финансовых операций.
+ *
+ * @property navigator Навигатор для переходов к деталям операций.
+ * @property financesRepository Репозиторий для доступа к финансовым данным.
+ */
 @HiltViewModel
 class HistoryFinancesScreenViewModel @Inject constructor(
     private val navigator: Navigator,

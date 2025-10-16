@@ -8,6 +8,11 @@ import com.example.monefy.data.local.dao.FinancesDao
 import com.example.monefy.data.local.entity.Category
 import com.example.monefy.data.local.entity.Finance
 
+/**
+ * Главная база данных приложения.
+ *
+ * @property categoryDao DAO для работы с категориями и финансами.
+ */
 @Database(entities = [Category::class, Finance::class], version = 9)
 abstract class MonefyDatabase : RoomDatabase() {
     abstract fun categoryDao() : FinancesDao

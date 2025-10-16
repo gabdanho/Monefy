@@ -13,6 +13,13 @@ import com.example.monefy.R
 import com.example.monefy.presentation.model.FinanceType
 import com.example.monefy.presentation.theme.defaultDimensions
 
+/**
+ * Компонент выбора типа категории — "Расход" или "Доход".
+ *
+ * @param selectedFinanceType Текущий выбранный тип (расход или доход).
+ * @param changeSelectedFinanceType Обработчик изменения выбранного типа.
+ * @param modifier Модификатор для настройки внешнего вида.
+ */
 @Composable
 fun CategoryType(
     selectedFinanceType: FinanceType,

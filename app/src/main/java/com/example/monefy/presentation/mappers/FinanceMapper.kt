@@ -4,6 +4,9 @@ import com.example.monefy.presentation.model.Finance
 import com.example.monefy.presentation.model.FinanceType
 import com.example.monefy.domain.model.Finance as FinanceDomain
 
+/**
+ * Преобразует [FinanceDomain] → [Finance].
+ */
 fun FinanceDomain.toPresentationLayer(): Finance {
     return Finance(
         id = id,
@@ -18,6 +21,9 @@ fun FinanceDomain.toPresentationLayer(): Finance {
     )
 }
 
+/**
+ * Преобразует [Finance] → [FinanceDomain].
+ */
 fun Finance.toDomainLayer(): FinanceDomain {
     return FinanceDomain(
         id = id,

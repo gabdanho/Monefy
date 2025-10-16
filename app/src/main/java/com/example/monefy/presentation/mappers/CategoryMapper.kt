@@ -6,6 +6,9 @@ import com.example.monefy.presentation.model.Category
 import com.example.monefy.presentation.model.FinanceType
 import com.example.monefy.domain.model.Category as CategoryDomain
 
+/**
+ * Преобразует [CategoryDomain] → [Category].
+ */
 fun CategoryDomain.toPresentationLayer(): Category {
     return Category(
         id = id,
@@ -16,6 +19,9 @@ fun CategoryDomain.toPresentationLayer(): Category {
     )
 }
 
+/**
+ * Преобразует [Category] → [CategoryDomain].
+ */
 fun Category.toDomainLayer(): CategoryDomain {
     return CategoryDomain(
         id = id,

@@ -42,6 +42,12 @@ import java.util.Locale
 
 private const val TWO_COLUMN = 2
 
+/**
+ * Экран отображения всех категорий.
+ *
+ * @param modifier Модификатор.
+ * @param viewModel ViewModel.
+ */
 @Composable
 fun CategoriesScreen(
     modifier: Modifier = Modifier,

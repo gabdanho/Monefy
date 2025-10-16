@@ -33,6 +33,13 @@ import com.example.monefy.presentation.model.Finance
 import com.example.monefy.presentation.theme.defaultDimensions
 import java.util.Locale
 
+/**
+ * Экран со списком финансов, относящихся к конкретной категории.
+ *
+ * @param categoryId Идентификатор категории, для которой отображаются финансы.
+ * @param modifier Модификатор.
+ * @param viewModel ViewModel.
+ */
 @Composable
 fun FinancesScreen(
     categoryId: Int,

@@ -12,6 +12,9 @@ import com.example.monefy.presentation.notification.NotificationModule
 import com.example.monefy.presentation.screens.MainScreen
 import dagger.hilt.android.AndroidEntryPoint
 
+/**
+ * Главная Activity приложения Monefy.
+ */
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

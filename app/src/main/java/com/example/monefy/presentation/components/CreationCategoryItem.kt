@@ -16,6 +16,12 @@ import com.example.monefy.R
 import com.example.monefy.presentation.model.CREATION_CATEGORY
 import com.example.monefy.presentation.theme.defaultDimensions
 
+/**
+ * Элемент интерфейса для перехода на экран создания новой категории.
+ *
+ * @param onAddCategoryScreenClick Обработчик нажатия на карточку.
+ * @param modifier Модификатор для внешнего оформления.
+ */
 @Composable
 fun CreationCategoryItem(
     onAddCategoryScreenClick: () -> Unit,

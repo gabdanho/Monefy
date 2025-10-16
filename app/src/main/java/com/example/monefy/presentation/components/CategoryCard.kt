@@ -20,7 +20,17 @@ import androidx.compose.ui.text.style.TextAlign
 import com.example.monefy.presentation.constants.ADD_CATEGORY_ID
 import com.example.monefy.presentation.theme.defaultDimensions
 
-// Карточка категории
+/**
+ * Карточка отдельной категории в сетке.
+ *
+ * @param categoryName Название категории.
+ * @param categoryId Уникальный идентификатор категории.
+ * @param categoryColor Цвет категории.
+ * @param selectedCategoryId ID текущей выбранной категории.
+ * @param changeSelectedCategory Вызывается при выборе категории.
+ * @param onAddCategoryScreenClick Вызывается при нажатии на карточку добавления новой категории.
+ * @param modifier Модификатор для внешнего оформления карточки.
+ */
 @Composable
 fun CategoryCard(
     categoryName: String,

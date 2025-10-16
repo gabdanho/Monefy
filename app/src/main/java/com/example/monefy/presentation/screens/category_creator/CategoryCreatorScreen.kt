@@ -45,6 +45,12 @@ import com.example.monefy.presentation.theme.blackColor
 import com.example.monefy.presentation.theme.defaultDimensions
 import com.example.monefy.presentation.theme.whiteColor
 
+/**
+ * Экран создания новой категории.
+ *
+ * @param modifier Модификатор.
+ * @param viewModel ViewModel.
+ */
 @Composable
 fun CategoryCreatorScreen(
     modifier: Modifier = Modifier,

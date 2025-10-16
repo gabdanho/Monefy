@@ -5,6 +5,27 @@ import com.example.monefy.presentation.model.Finance
 import com.example.monefy.presentation.model.StringResName
 import java.time.LocalDate
 
+/**
+ * UI State для экрана редактирования финансовой операции.
+ *
+ * @property isCategoryNotSelected Флаг, что категория не выбрана.
+ * @property isFinanceNameNotFilled Флаг, что имя операции не заполнено.
+ * @property isPriceEqualsZero Флаг, что цена равна нулю.
+ * @property isShowDateDialog Показывать ли диалог выбора даты.
+ * @property textColorFinanceName Цвет текста для имени операции.
+ * @property textColorCategory Цвет текста для выбранной категории.
+ * @property textColorFinancePrice Цвет текста для суммы операции.
+ * @property selectedCategoryId Выбранная категория (id).
+ * @property pickedDate Выбранная дата.
+ * @property financeName Название операции.
+ * @property financeDescription Описание операции.
+ * @property price Сумма операции в виде строки.
+ * @property count Количество операций в виде строки.
+ * @property isRegular Флаг регулярной операции.
+ * @property selectedFinance Редактируемая финансовая запись.
+ * @property categories Список доступных категорий.
+ * @property messageResName Ресурс сообщения об ошибке или подсказки.
+ */
 data class FinanceEditorScreenUiState(
     val isCategoryNotSelected: Boolean = false,
     val isFinanceNameNotFilled: Boolean = false,

@@ -19,6 +19,12 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
 
+/**
+ * ViewModel для главного экрана приложения Monefy.
+ *
+ * @property navigator Навигатор для перехода между разделами.
+ * @property financesRepository Репозиторий, предоставляющий сводные данные.
+ */
 @HiltViewModel
 class MainMonefyScreenViewModel @Inject constructor(
     private val navigator: Navigator,

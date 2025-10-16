@@ -21,6 +21,15 @@ private const val GRID_ROWS = 2
 private const val GRID_ROWS_WHEN_FEW_CATEGORY = 1
 private const val FEW_CATEGORIES = 4
 
+/**
+ * Сетка категорий с возможностью выбора и добавления новой категории.
+ *
+ * @param name Заголовок блока.
+ * @param selectedCategoryId ID выбранной категории.
+ * @param categories Список всех категорий.
+ * @param onAddCategoryScreenClick Обработчик клика по карточке "Добавить категорию".
+ * @param changeSelectedCategory Обработчик выбора категории.
+ */
 @Composable
 fun CategoriesGrid(
     name: String,

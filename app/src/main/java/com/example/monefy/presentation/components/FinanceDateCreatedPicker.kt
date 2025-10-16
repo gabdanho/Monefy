@@ -15,6 +15,15 @@ import com.example.monefy.R
 import com.example.monefy.presentation.theme.defaultDimensions
 import java.time.LocalDate
 
+/**
+ * Поле выбора даты создания финансовой операции.
+ *
+ * Отображает выбранную дату и кнопку для вызова диалога выбора даты.
+ *
+ * @param pickedDate Текущая выбранная дата.
+ * @param showDialogState Функция для отображения диалога выбора даты.
+ * @param modifier Модификатор для внешнего оформления.
+ */
 @Composable
 fun FinanceDateCreatedPicker(
     pickedDate: LocalDate,

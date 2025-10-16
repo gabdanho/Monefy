@@ -69,6 +69,12 @@ import kotlin.math.PI
 import kotlin.math.atan2
 import kotlin.math.pow
 
+/**
+ * Главный экран приложения Monefy.
+ *
+ * @param modifier Модификатор.
+ * @param viewModel ViewModel.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainMonefyScreen(

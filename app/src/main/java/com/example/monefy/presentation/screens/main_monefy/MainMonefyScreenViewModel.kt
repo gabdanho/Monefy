@@ -96,6 +96,7 @@ class MainMonefyScreenViewModel @Inject constructor(
 
     fun updateCustomDateRange(customDateRange: List<LocalDate>) {
         _uiState.update { it.copy(selectedCustomDateRange = customDateRange) }
+        changeIsShowDateRangeDialog(false)
         updateDateRange()
     }
 
@@ -105,7 +106,8 @@ class MainMonefyScreenViewModel @Inject constructor(
         val dateRange = when (dateRangeIndex) {
             // Кастомный промежуток даты
             0 -> {
-                _uiState.value.selectedCustomDateRange
+                val custom = _uiState.value.selectedCustomDateRange
+                custom.ifEmpty { listOf(LocalDate.now(), LocalDate.now()) }
             }
             // Финансы за год
             1 -> {

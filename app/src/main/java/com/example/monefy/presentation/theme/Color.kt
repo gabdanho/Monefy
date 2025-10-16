@@ -1,4 +1,5 @@
-package com.example.compose
+package com.example.monefy.presentation.theme
+
 import androidx.compose.ui.graphics.Color
 
 val primaryLight = Color(0xFF296A47)
@@ -216,6 +217,9 @@ val surfaceContainerLowDarkHighContrast = Color(0xFF171D19)
 val surfaceContainerDarkHighContrast = Color(0xFF1B211D)
 val surfaceContainerHighDarkHighContrast = Color(0xFF262B27)
 val surfaceContainerHighestDarkHighContrast = Color(0xFF313632)
+
+val whiteColor = Color(0xFFFFFFFF)
+val blackColor = Color(0xFF000000)
 
 
 

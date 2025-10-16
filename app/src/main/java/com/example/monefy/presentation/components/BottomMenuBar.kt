@@ -14,8 +14,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import com.example.monefy.R
+import com.example.monefy.presentation.theme.defaultDimensions
 
 // Нижнее меню
 @Composable
@@ -36,40 +37,40 @@ fun BottomMenuBar(
         IconButton(onClick = onDiagramClick) {
             Icon(
                 painter = painterResource(R.drawable.diagrams),
-                contentDescription = "Диаграммы",
-                modifier = Modifier.size(25.dp)
+                contentDescription = stringResource(R.string.content_diagrams),
+                modifier = Modifier.size(defaultDimensions.iconSize)
             )
         }
         // Добавить финанс
         IconButton(onClick = onAddButtonClick) {
             Icon(
                 imageVector = Icons.Filled.Add,
-                contentDescription = "Добавить финанс"
+                contentDescription = stringResource(R.string.content_add_finance)
             )
         }
         // Донат с расходами
         IconButton(onClick = onPieChartClick) {
             Icon(
                 painter = painterResource(R.drawable.chart),
-                contentDescription = "Донат с расходами",
+                contentDescription = stringResource(R.string.content_donat_with_finanances),
                 modifier = Modifier
                     .clip(CircleShape)
-                    .size(40.dp)
+                    .size(defaultDimensions.bottomBarPieChartIconSize)
             )
         }
         // Список финансов
         IconButton(onClick = onFinancesListClick) {
             Icon(
                 painter = painterResource(R.drawable.list),
-                contentDescription = "Список финансов"
+                contentDescription = stringResource(R.string.content_finances_list)
             )
         }
         // История транзакций
         IconButton(onClick = onHistoryClick) {
             Icon(
                 painter = painterResource(R.drawable.history),
-                contentDescription = "История транзакций",
-                modifier = Modifier.size(25.dp)
+                contentDescription = stringResource(R.string.content_history),
+                modifier = Modifier.size(defaultDimensions.iconSize)
             )
         }
     }

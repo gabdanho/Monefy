@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -26,9 +25,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.example.monefy.R
 import com.example.monefy.presentation.mappers.resources.StringToResourceIdMapperImpl
 import com.example.monefy.presentation.components.CategoriesGrid
 import com.example.monefy.presentation.components.CreationCategoryItem
@@ -38,6 +38,9 @@ import com.example.monefy.presentation.components.ItemCounter
 import com.example.monefy.presentation.components.RegularPayment
 import com.example.monefy.presentation.model.Finance
 import com.example.monefy.presentation.model.FinanceType
+import com.example.monefy.presentation.theme.blackColor
+import com.example.monefy.presentation.theme.defaultDimensions
+import com.example.monefy.presentation.theme.whiteColor
 import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
@@ -92,21 +95,21 @@ fun FinanceEditorScreen(
             SnackbarHost(snackBarHostState) { data ->
                 Snackbar(
                     snackbarData = data,
-                    containerColor = Color.White,
-                    contentColor = Color.Black
+                    containerColor = whiteColor,
+                    contentColor = blackColor
                 )
             }
         }
     ) { innerPadding ->
         Column(
             modifier = modifier
-                .padding(8.dp)
+                .padding(defaultDimensions.small)
                 .padding(innerPadding)
                 .verticalScroll(state = scrollState)
         ) {
             // Название
             InputParamItem(
-                paramName = "Название",
+                paramName = stringResource(R.string.input_finance_name),
                 value = uiState.financeName,
                 textColor = Color(uiState.textColorFinanceName),
                 onValueChange = { viewModel.onFinanceNameChange(it) },
@@ -114,7 +117,7 @@ fun FinanceEditorScreen(
             )
             // Стоимость/доход
             InputParamItem(
-                paramName = "Стоимость / доход",
+                paramName = stringResource(R.string.input_finance_price),
                 value = uiState.price,
                 textColor = Color(uiState.textColorFinancePrice),
                 onValueChange = { viewModel.onPriceChange(it) },
@@ -126,14 +129,13 @@ fun FinanceEditorScreen(
                 count = uiState.count.toInt(),
                 minusCount = { viewModel.minusCount() },
                 plusCount = { viewModel.plusCount() },
-                onValueChange = { viewModel.onCountChange(it) },
-                modifier = Modifier.padding(bottom = 8.dp)
+                modifier = Modifier.padding(bottom = defaultDimensions.small)
             )
             // Категория
             Text(
-                text = "Категория",
+                text = stringResource(R.string.text_finance_category),
                 color = Color(uiState.textColorCategory),
-                modifier = Modifier.padding(4.dp)
+                modifier = Modifier.padding(defaultDimensions.verySmall)
             )
 
             if (uiState.categories.isNotEmpty()) {
@@ -144,7 +146,7 @@ fun FinanceEditorScreen(
                 if (revenueCategories.isNotEmpty()) {
                     // Категории доходов
                     CategoriesGrid(
-                        name = "Доходы",
+                        name = stringResource(R.string.text_revenues),
                         categories = revenueCategories,
                         selectedCategoryId = uiState.selectedCategoryId,
                         onAddCategoryScreenClick = { },
@@ -157,7 +159,7 @@ fun FinanceEditorScreen(
                 if (spendCategories.isNotEmpty()) {
                     // Категории расходов
                     CategoriesGrid(
-                        name = "Расходы",
+                        name = stringResource(R.string.text_expenses),
                         categories = spendCategories,
                         selectedCategoryId = uiState.selectedCategoryId,
                         onAddCategoryScreenClick = { },
@@ -188,7 +190,7 @@ fun FinanceEditorScreen(
             )
             // Описание
             InputParamItem(
-                paramName = "Описание",
+                paramName = stringResource(R.string.input_finance_description),
                 value = uiState.financeDescription,
                 onValueChange = { viewModel.onDescriptionChange(it) },
                 modifier = Modifier.fillMaxWidth()
@@ -201,19 +203,17 @@ fun FinanceEditorScreen(
                     onClick = { viewModel.editFinance() },
                     colors = ButtonDefaults.buttonColors(Color.White),
                     modifier = Modifier
-                        .width(150.dp)
-                        .padding(end = 8.dp)
+                        .padding(end = defaultDimensions.small)
                 ) {
-                    Text("Изменить")
+                    Text(text = stringResource(R.string.button_change))
                 }
                 // Удалить финанс
                 Button(
                     onClick = { viewModel.deleteFinance() },
-                    colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.onError),
-                    modifier = Modifier.width(150.dp)
+                    colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.onError)
                 ) {
                     Text(
-                        text = "Удалить",
+                        text = stringResource(R.string.button_delete),
                         color = MaterialTheme.colorScheme.onSurface
                     )
                 }
@@ -226,22 +226,22 @@ fun FinanceEditorScreen(
         dialogState = dateDialogState,
         onCloseRequest = { viewModel.changeIsShowDateDialog(false) },
         buttons = {
-            positiveButton(text = "ОК") {
+            positiveButton(text = stringResource(R.string.button_ok)) {
                 Toast.makeText(
                     context,
-                    "Выбрана дата: ${uiState.pickedDate}",
+                    context.getString(R.string.text_selected_date, uiState.pickedDate),
                     Toast.LENGTH_LONG
                 ).show()
                 viewModel.changeIsShowDateDialog(false)
             }
-            negativeButton(text = "ОТМЕНА") {
+            negativeButton(text = stringResource(R.string.button_cancel)) {
                 viewModel.changeIsShowDateDialog(false)
             }
         }
     ) {
         datepicker(
             initialDate = uiState.pickedDate,
-            title = "Pick a date"
+            title = stringResource(R.string.text_pick_a_date)
         ) {
             viewModel.onPickedDateChange(it)
         }

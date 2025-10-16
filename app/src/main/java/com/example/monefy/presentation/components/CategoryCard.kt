@@ -17,8 +17,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import com.example.monefy.presentation.constants.ADD_CATEGORY_ID
+import com.example.monefy.presentation.theme.defaultDimensions
 
 // Карточка категории
 @Composable
@@ -32,19 +32,19 @@ fun CategoryCard(
     modifier: Modifier = Modifier,
 ) {
     Card(
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-        shape = RoundedCornerShape(10.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = defaultDimensions.small),
+        shape = RoundedCornerShape(defaultDimensions.categoryCardBorderShape),
         modifier = modifier
-            .size(150.dp)
-            .padding(4.dp)
+            .size(defaultDimensions.categoryCardSize)
+            .padding(defaultDimensions.verySmall)
             .clickable {
                 // Если id = -1, то это карточка создания категории, иначе просто выбираем категорию
                 if (categoryId == ADD_CATEGORY_ID) onAddCategoryScreenClick()
                 else changeSelectedCategory(categoryId)
             }
             .border(
-                width = 1.dp,
-                shape = RoundedCornerShape(10.dp),
+                width = defaultDimensions.borderWidth,
+                shape = RoundedCornerShape(defaultDimensions.categoryCardBorderShape),
                 // Белая категория - выбранная категория
                 color = if (selectedCategoryId == categoryId) MaterialTheme.colorScheme.onSurface else Color.Transparent,
             )
@@ -53,7 +53,7 @@ fun CategoryCard(
             contentAlignment = Alignment.Center,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(8.dp)
+                .padding(defaultDimensions.small)
         ) {
             // Рисуем категорию создания
             if (categoryId != ADD_CATEGORY_ID) {

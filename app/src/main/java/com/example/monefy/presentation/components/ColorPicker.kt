@@ -17,7 +17,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.example.monefy.R
+import com.example.monefy.presentation.theme.defaultDimensions
 import com.github.skydoves.colorpicker.compose.BrightnessSlider
 import com.github.skydoves.colorpicker.compose.HsvColorPicker
 import com.github.skydoves.colorpicker.compose.rememberColorPickerController
@@ -31,16 +33,19 @@ fun ColorPicker(changeColorCategory: (Long) -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
             modifier = Modifier
-                .padding(all = 30.dp)
-                .size(width = 300.dp, height = 450.dp)
+                .padding(defaultDimensions.colorPickerColumnPadding)
+                .size(
+                    width = defaultDimensions.colorPickerWidth,
+                    height = defaultDimensions.colorPickerHeight
+                )
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(35.dp)
+                    .height(defaultDimensions.pickerHeight)
                     .background(
-                        color = colorController.selectedColor.value.copy(alpha = 1f),
-                        shape = RoundedCornerShape(4.dp)
+                        color = colorController.selectedColor.value.copy(alpha = defaultDimensions.fullWeight),
+                        shape = RoundedCornerShape(defaultDimensions.verySmall)
                     ),
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
@@ -50,27 +55,27 @@ fun ColorPicker(changeColorCategory: (Long) -> Unit) {
             HsvColorPicker(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(300.dp)
-                    .padding(10.dp),
+                    .height(defaultDimensions.hsvPickerHeight)
+                    .padding(defaultDimensions.pickerPadding),
                 controller = colorController
             )
             BrightnessSlider(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(10.dp)
-                    .height(35.dp),
+                    .padding(defaultDimensions.pickerPadding)
+                    .height(defaultDimensions.pickerHeight),
                 controller = colorController,
                 initialColor = Color.White
             )
             Button(
                 onClick = {
                     changeColorCategory(
-                        colorController.selectedColor.value.copy(alpha = 1f).toArgb().toLong()
+                        colorController.selectedColor.value.copy(alpha = defaultDimensions.fullWeight)
+                            .toArgb().toLong()
                     )
-                    println(colorController.selectedColor.value.copy(alpha = 1f).toArgb().toLong())
                 }
             ) {
-                Text(text = "Выбрать")
+                Text(text = stringResource(R.string.button_select))
             }
         }
     }

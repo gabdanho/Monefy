@@ -21,11 +21,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.example.monefy.R
 import com.example.monefy.presentation.model.Finance
+import com.example.monefy.presentation.theme.defaultDimensions
 import java.util.Locale
 
 @Composable
@@ -46,17 +48,23 @@ fun FinancesScreen(
                 items(it) { finance ->
                     FinanceCard(
                         finance = finance,
-                        navigateToFinanceEditorScreen = { viewModel.navigateToFinanceEditorScreen(finance) },
-                        modifier = Modifier.padding(16.dp)
+                        navigateToFinanceEditorScreen = {
+                            viewModel.navigateToFinanceEditorScreen(
+                                finance
+                            )
+                        },
+                        modifier = Modifier.padding(defaultDimensions.medium)
                     )
                 }
             }
         }
     } else {
         Text(
-            text = "Нет данных для отображения",
+            text = stringResource(R.string.text_no_data),
             textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth().padding(8.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(defaultDimensions.small)
         )
     }
 }
@@ -72,10 +80,10 @@ private fun FinanceCard(
         modifier = modifier
             .fillMaxWidth()
             .shadow(
-                elevation = 10.dp,
+                elevation = defaultDimensions.categoryCardElevation,
                 ambientColor = Color.Black,
                 spotColor = Color.Black,
-                shape = RoundedCornerShape(20.dp)
+                shape = RoundedCornerShape(defaultDimensions.financeCardCornerShape)
             )
             .clickable { navigateToFinanceEditorScreen() }
     ) {
@@ -83,7 +91,7 @@ private fun FinanceCard(
             horizontalArrangement = Arrangement.End,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(end = 16.dp)
+                .padding(end = defaultDimensions.medium)
         ) {
             // Дата финанса
             Text(
@@ -96,7 +104,12 @@ private fun FinanceCard(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier
-                .padding(start = 16.dp, end = 16.dp, bottom = 24.dp, top = 8.dp)
+                .padding(
+                    start = defaultDimensions.medium,
+                    end = defaultDimensions.medium,
+                    bottom = defaultDimensions.veryMedium,
+                    top = defaultDimensions.small
+                )
                 .fillMaxWidth()
         ) {
             Column {
@@ -113,13 +126,17 @@ private fun FinanceCard(
                         color = Color.Gray,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.widthIn(max = 200.dp)
+                        modifier = Modifier.widthIn(max = defaultDimensions.financeMaxWidth)
                     )
                 }
             }
             // Выводим прайс
             Text(
-                text = String.format(Locale.getDefault(), "%.2f", finance.count.toDouble() * finance.price),
+                text = String.format(
+                    Locale.getDefault(),
+                    "%.2f",
+                    finance.count.toDouble() * finance.price
+                ),
                 style = MaterialTheme.typography.bodyLarge
             )
         }

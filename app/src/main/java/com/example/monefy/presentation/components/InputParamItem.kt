@@ -16,9 +16,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.monefy.R
+import com.example.monefy.presentation.theme.defaultDimensions
 
 @Composable
 fun InputParamItem(
@@ -37,11 +39,11 @@ fun InputParamItem(
         Text(
             text = paramName,
             color = textColor,
-            modifier = Modifier.padding(4.dp)
+            modifier = Modifier.padding(defaultDimensions.verySmall)
         )
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(bottom = 8.dp)
+            modifier = Modifier.padding(bottom = defaultDimensions.small)
         ) {
             TextField(
                 value = value,
@@ -59,7 +61,7 @@ fun InputParamItem(
             ) {
                 Icon(
                     imageVector = Icons.Filled.Close,
-                    contentDescription = "Удалить значение",
+                    contentDescription = stringResource(R.string.content_delete_value),
                 )
             }
         }

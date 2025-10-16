@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -35,15 +34,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.example.monefy.R
 import com.example.monefy.presentation.mappers.resources.StringToResourceIdMapperImpl
 import com.example.monefy.presentation.components.CategoryType
 import com.example.monefy.presentation.components.ColorPicker
 import com.example.monefy.presentation.model.Category
+import com.example.monefy.presentation.theme.defaultDimensions
 
 @Composable
 fun CategoryEditorScreen(
@@ -88,17 +89,17 @@ fun CategoryEditorScreen(
         Column(
             modifier = modifier
                 .padding(innerPadding)
-                .padding(8.dp)
+                .padding(defaultDimensions.small)
         ) {
             // Название категории
             Text(
-                text = "Название категории",
+                text = stringResource(R.string.text_category_name),
                 color = Color(uiState.textColorCategoryName),
-                modifier = Modifier.padding(4.dp)
+                modifier = Modifier.padding(defaultDimensions.verySmall)
             )
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(bottom = 8.dp)
+                modifier = Modifier.padding(bottom = defaultDimensions.small)
             ) {
                 TextField(
                     value = uiState.categoryName,
@@ -114,11 +115,11 @@ fun CategoryEditorScreen(
                 // Кнопка очистки названия
                 IconButton(
                     onClick = { viewModel.changeCategoryName("") },
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(defaultDimensions.fullWeight)
                 ) {
                     Icon(
                         imageVector = Icons.Filled.Close,
-                        contentDescription = "Удалить название",
+                        contentDescription = stringResource(R.string.content_delete_name),
                     )
                 }
             }
@@ -129,23 +130,23 @@ fun CategoryEditorScreen(
             )
             // Цвет категории
             Text(
-                text = "Цвет категории",
+                text = stringResource(R.string.text_category_color),
                 color = Color(uiState.textColorCategoryColor),
-                modifier = Modifier.padding(4.dp)
+                modifier = Modifier.padding(defaultDimensions.verySmall)
             )
             Box(
                 modifier = Modifier
-                    .padding(start = 4.dp)
-                    .size(30.dp)
+                    .padding(start = defaultDimensions.verySmall)
+                    .size(defaultDimensions.iconSize)
                     .background(
                         color = uiState.colorCategory?.let { Color(it) }
                             ?: Color.Transparent,
-                        shape = RoundedCornerShape(2.dp)
+                        shape = RoundedCornerShape(defaultDimensions.smallCornerShape)
                     )
                     .border(
                         color = MaterialTheme.colorScheme.onSurface,
-                        width = 1.dp,
-                        shape = RoundedCornerShape(2.dp)
+                        width = defaultDimensions.borderWidth,
+                        shape = RoundedCornerShape(defaultDimensions.smallCornerShape)
                     )
                     .clickable { viewModel.changeIsShowColorPicker(true) }
             )
@@ -158,20 +159,17 @@ fun CategoryEditorScreen(
                 Button(
                     onClick = { viewModel.editCategory() },
                     colors = ButtonDefaults.buttonColors(Color.White),
-                    modifier = Modifier
-                        .width(150.dp)
-                        .padding(end = 8.dp)
+                    modifier = Modifier.padding(end = defaultDimensions.small)
                 ) {
-                    Text("Изменить")
+                    Text(stringResource(R.string.button_change))
                 }
                 // Кнопка удаления категории
                 Button(
                     onClick = { viewModel.deleteCategory() },
-                    colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.onError),
-                    modifier = Modifier.width(150.dp)
+                    colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.onError)
                 ) {
                     Text(
-                        text = "Удалить",
+                        text = stringResource(R.string.button_delete),
                         color = MaterialTheme.colorScheme.onSurface
                     )
                 }

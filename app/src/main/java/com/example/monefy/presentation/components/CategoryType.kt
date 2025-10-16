@@ -8,8 +8,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.example.monefy.R
 import com.example.monefy.presentation.model.FinanceType
+import com.example.monefy.presentation.theme.defaultDimensions
 
 @Composable
 fun CategoryType(
@@ -18,8 +20,8 @@ fun CategoryType(
     modifier: Modifier = Modifier,
 ) {
     Text(
-        text = "Тип категории",
-        modifier = Modifier.padding(4.dp)
+        text = stringResource(R.string.text_category_type),
+        modifier = Modifier.padding(defaultDimensions.verySmall)
     )
     Row(modifier = modifier) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -30,7 +32,7 @@ fun CategoryType(
                 },
             )
             Text(
-                text = "Расходы",
+                text = stringResource(R.string.text_expenses),
                 modifier = Modifier.clickable {
                     changeSelectedFinanceType(FinanceType.EXPENSE)
                 }
@@ -44,7 +46,7 @@ fun CategoryType(
                 },
             )
             Text(
-                text = "Доходы",
+                text = stringResource(R.string.text_revenues),
                 modifier = Modifier.clickable {
                     changeSelectedFinanceType(FinanceType.REVENUE)
                 }

@@ -10,7 +10,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.example.monefy.R
+import com.example.monefy.presentation.theme.defaultDimensions
 import java.time.LocalDate
 
 @Composable
@@ -21,14 +23,14 @@ fun FinanceDateCreatedPicker(
 ) {
     Column(modifier = modifier) {
         Text(
-            text = "Дата",
-            modifier = Modifier.padding(4.dp)
+            text = stringResource(R.string.text_date),
+            modifier = Modifier.padding(defaultDimensions.verySmall)
         )
         TextField(
             value = if (pickedDate == LocalDate.now()) {
-                "Сегодня"
+                stringResource(R.string.text_today)
             } else if (pickedDate == LocalDate.now().minusDays(1)) {
-                "Вчера"
+                stringResource(R.string.text_tomorrow)
             } else {
                 pickedDate.toString()
             },
@@ -41,12 +43,12 @@ fun FinanceDateCreatedPicker(
                 ) {
                     Icon(
                         imageVector = Icons.Filled.DateRange,
-                        contentDescription = "Выбрать дату"
+                        contentDescription = stringResource(R.string.button_select_date)
                     )
                 }
             },
             modifier = Modifier
-                .padding(bottom = 8.dp)
+                .padding(bottom = defaultDimensions.small)
         )
     }
 }

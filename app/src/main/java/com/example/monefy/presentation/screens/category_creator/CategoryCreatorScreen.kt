@@ -32,14 +32,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.example.monefy.R
 import com.example.monefy.presentation.mappers.resources.StringToResourceIdMapperImpl
 import com.example.monefy.presentation.components.CategoryType
 import com.example.monefy.presentation.components.ColorPicker
+import com.example.monefy.presentation.theme.blackColor
+import com.example.monefy.presentation.theme.defaultDimensions
+import com.example.monefy.presentation.theme.whiteColor
 
 @Composable
 fun CategoryCreatorScreen(
@@ -70,8 +74,8 @@ fun CategoryCreatorScreen(
             SnackbarHost(snackBarHostState) { data ->
                 Snackbar(
                     snackbarData = data,
-                    containerColor = Color.White,
-                    contentColor = Color.Black
+                    containerColor = whiteColor,
+                    contentColor = blackColor
                 )
             }
         }
@@ -79,17 +83,17 @@ fun CategoryCreatorScreen(
         Column(
             modifier = modifier
                 .padding(innerPadding)
-                .padding(8.dp)
+                .padding(defaultDimensions.small)
         ) {
             // Название категории
             Text(
-                text = "Название категории",
+                text = stringResource(R.string.text_category_name),
                 color = Color(uiState.textColorCategoryName),
-                modifier = Modifier.padding(4.dp)
+                modifier = Modifier.padding(defaultDimensions.verySmall)
             )
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(bottom = 8.dp)
+                modifier = Modifier.padding(bottom = defaultDimensions.small)
             ) {
                 TextField(
                     value = uiState.categoryName,
@@ -109,7 +113,7 @@ fun CategoryCreatorScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Filled.Close,
-                        contentDescription = "Удалить название",
+                        contentDescription = stringResource(R.string.content_delete_name),
                     )
                 }
             }
@@ -120,23 +124,23 @@ fun CategoryCreatorScreen(
             )
             // Цвет категории
             Text(
-                text = "Цвет категории",
+                text = stringResource(R.string.text_category_color),
                 color = Color(uiState.textColorCategoryColor),
-                modifier = Modifier.padding(4.dp)
+                modifier = Modifier.padding(defaultDimensions.verySmall)
             )
             Box(
                 modifier = Modifier
-                    .padding(start = 4.dp)
-                    .size(30.dp)
+                    .padding(start = defaultDimensions.verySmall)
+                    .size(defaultDimensions.iconSize)
                     .background(
                         color = uiState.colorCategory?.let { Color(it) }
                             ?: Color.Transparent,
-                        shape = RoundedCornerShape(2.dp)
+                        shape = RoundedCornerShape(defaultDimensions.smallCornerShape)
                     )
                     .border(
                         color = MaterialTheme.colorScheme.onSurface,
-                        width = 1.dp,
-                        shape = RoundedCornerShape(2.dp)
+                        width = defaultDimensions.borderWidth,
+                        shape = RoundedCornerShape(defaultDimensions.smallCornerShape)
                     )
                     .clickable { viewModel.changeIsShowColorPicker(true) }
             )
@@ -149,7 +153,7 @@ fun CategoryCreatorScreen(
                 colors = ButtonDefaults.buttonColors(Color.White),
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             ) {
-                Text("Добавить")
+                Text(text = stringResource(R.string.button_add))
             }
         }
     }

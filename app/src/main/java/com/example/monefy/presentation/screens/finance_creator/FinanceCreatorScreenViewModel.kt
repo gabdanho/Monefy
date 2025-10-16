@@ -1,6 +1,5 @@
 package com.example.monefy.presentation.screens.finance_creator
 
-import androidx.core.text.isDigitsOnly
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.monefy.domain.interfaces.local.FinancesRepository
@@ -86,12 +85,6 @@ class FinanceCreatorScreenViewModel @Inject constructor(
 
     fun plusCount() = _uiState.update { it.copy(count = (it.count.toInt() + 1).toString()) }
 
-    fun onCountChange(value: String) {
-        if (value.isDigitsOnly() && value.toInt() != 0) {
-            _uiState.update { it.copy(count = value) }
-        }
-    }
-
     fun changeSelectedCategory(id: Int) = _uiState.update { it.copy(selectedCategoryId = id) }
 
     fun onAddCategoryScreenClick() {
@@ -147,7 +140,6 @@ class FinanceCreatorScreenViewModel @Inject constructor(
 
                 else -> {
                     val state = _uiState.value
-                    println(state.selectedCategoryId)
                     val newFinance = Finance(
                         categoryId = state.selectedCategoryId,
                         name = state.financeName,
@@ -185,7 +177,6 @@ class FinanceCreatorScreenViewModel @Inject constructor(
         viewModelScope.launch {
             val categories = financesRepository.getAllCategories().map { it.toPresentationLayer() }
             _uiState.update { it.copy(categories = categories) }
-            println(categories.toString())
         }
     }
 

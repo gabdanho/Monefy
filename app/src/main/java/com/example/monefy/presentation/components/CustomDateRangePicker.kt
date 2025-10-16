@@ -12,13 +12,15 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDateRangePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import java.time.LocalDate
 import androidx.compose.material3.DateRangePicker
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.example.monefy.R
+import com.example.monefy.presentation.theme.defaultDimensions
+import com.example.monefy.presentation.theme.whiteColor
 import com.example.monefy.presentation.utils.convertLongToLocalDate
 
 @Composable
@@ -27,21 +29,25 @@ fun CustomDateRangePicker(updateDateRange: (List<LocalDate>) -> Unit) {
 
     Box(
         modifier = Modifier
-            .background(Color.White)
+            .background(whiteColor)
             .fillMaxSize()
     ) {
         DateRangePicker(
             state = state,
             title = {
-                Text(text = "Выберите промежуток времени", modifier = Modifier.padding(16.dp))
+                Text(
+                    text = "Выберите промежуток времени", modifier = Modifier.padding(
+                        defaultDimensions.medium
+                    )
+                )
             },
             headline = {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp)
+                        .padding(defaultDimensions.medium)
                 ) {
-                    Box(modifier = Modifier.weight(1f)) {
+                    Box(modifier = Modifier.weight(defaultDimensions.fullWeight)) {
                         val startDate =
                             if (state.selectedStartDateMillis != null) convertLongToLocalDate(
                                 state.selectedStartDateMillis!!
@@ -80,7 +86,7 @@ fun CustomDateRangePicker(updateDateRange: (List<LocalDate>) -> Unit) {
                         ) {
                             Icon(
                                 imageVector = Icons.Filled.Done,
-                                contentDescription = "Done"
+                                contentDescription = stringResource(R.string.text_done)
                             )
                         }
                     }

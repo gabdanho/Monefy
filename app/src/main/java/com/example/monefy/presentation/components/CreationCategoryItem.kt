@@ -11,8 +11,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.example.monefy.R
 import com.example.monefy.presentation.model.CREATION_CATEGORY
+import com.example.monefy.presentation.theme.defaultDimensions
 
 @Composable
 fun CreationCategoryItem(
@@ -25,9 +27,9 @@ fun CreationCategoryItem(
             horizontalArrangement = Arrangement.Center,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(4.dp),
+                .padding(defaultDimensions.verySmall),
         ) {
-            Text(text = "Добавить категорию")
+            Text(text = stringResource(R.string.text_add_category))
         }
         CategoryCard(
             categoryName = CREATION_CATEGORY.name,
@@ -37,7 +39,7 @@ fun CreationCategoryItem(
             selectedCategoryId = CREATION_CATEGORY.id,
             onAddCategoryScreenClick = { onAddCategoryScreenClick() },
             changeSelectedCategory = { },
-            modifier = Modifier.size(70.dp)
+            modifier = Modifier.size(defaultDimensions.mediumSize)
         )
     }
 }

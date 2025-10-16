@@ -31,16 +31,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.monefy.R
 import kotlin.math.abs
 import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.monefy.presentation.model.DiagramInfo
+import com.example.monefy.presentation.theme.defaultDimensions
 import kotlin.math.roundToInt
 
 /*
@@ -85,9 +87,9 @@ fun DiagramScreen(
             ) {
                 if (uiState.diagramsInfo.isNotEmpty()) Diagrams(
                     diagramsInfo = uiState.diagramsInfo,
-                    modifier = Modifier.padding(start = 8.dp)
+                    modifier = Modifier.padding(start = defaultDimensions.small)
                 )
-                else Text(text = "Нет данных для отображения")
+                else Text(text = stringResource(R.string.text_no_data))
             }
         }
     }
@@ -109,7 +111,7 @@ private fun Diagrams(
     DrawLegend(
         Modifier
             .fillMaxWidth()
-            .height(50.dp)
+            .height(defaultDimensions.legendHeight)
     )
 
     LazyRow(
@@ -122,8 +124,8 @@ private fun Diagrams(
                 spendsSum = sums.totalRevenuesToExpenses.second,
                 date = sums.date,
                 modifier = Modifier
-                    .height(300.dp)
-                    .width(90.dp)
+                    .height(defaultDimensions.diagramBlockHeight)
+                    .width(defaultDimensions.diagramBlockWidth)
             )
         }
     }
@@ -137,11 +139,12 @@ private fun DrawLegend(
 ) {
     val textMeasurer = rememberTextMeasurer()
     val onSurfaceColor = MaterialTheme.colorScheme.onSurface
+    val context = LocalContext.current
 
     Card(
         shape = RoundedCornerShape(
-            topStart = 20.dp,
-            topEnd = 20.dp
+            topStart = defaultDimensions.legendCardCornerShape,
+            topEnd = defaultDimensions.legendCardCornerShape
         ),
         modifier = modifier
     ) {
@@ -151,8 +154,8 @@ private fun DrawLegend(
         ) {
             Canvas(
                 modifier = Modifier
-                    .height(300.dp)
-                    .width(320.dp)
+                    .height(defaultDimensions.canvasLegendHeight)
+                    .width(defaultDimensions.canvasLegendWidth)
             ) {
                 // Расходы
                 drawCircle(
@@ -164,7 +167,7 @@ private fun DrawLegend(
                 drawText(
                     textMeasurer = textMeasurer,
                     style = TextStyle(color = onSurfaceColor),
-                    text = "Расходы",
+                    text = context.getString(R.string.text_expenses),
                     topLeft = Offset(60f, size.height - (paddingY + 30))
                 )
 
@@ -178,7 +181,7 @@ private fun DrawLegend(
                 drawText(
                     textMeasurer = textMeasurer,
                     style = TextStyle(color = onSurfaceColor),
-                    text = "Доходы",
+                    text = context.getString(R.string.text_revenues),
                     topLeft = Offset(270f, size.height - (paddingY + 30))
                 )
 
@@ -192,7 +195,7 @@ private fun DrawLegend(
                 drawText(
                     textMeasurer = textMeasurer,
                     style = TextStyle(color = onSurfaceColor),
-                    text = "Прибыль",
+                    text = context.getString(R.string.text_profit),
                     topLeft = Offset(490f, size.height - (paddingY + 30))
                 )
 
@@ -206,7 +209,7 @@ private fun DrawLegend(
                 drawText(
                     textMeasurer = textMeasurer,
                     style = TextStyle(color = onSurfaceColor),
-                    text = "Убыток",
+                    text = context.getString(R.string.text_loss),
                     topLeft = Offset(710f, size.height - (paddingY + 30))
                 )
             }

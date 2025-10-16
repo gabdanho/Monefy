@@ -14,8 +14,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
 import com.example.monefy.presentation.model.Category
+import com.example.monefy.presentation.theme.defaultDimensions
 
 private const val GRID_ROWS = 2
 private const val GRID_ROWS_WHEN_FEW_CATEGORY = 1
@@ -31,7 +31,8 @@ fun CategoriesGrid(
     modifier: Modifier = Modifier,
 ) {
     val rows = if (categories.size <= FEW_CATEGORIES) GRID_ROWS_WHEN_FEW_CATEGORY else GRID_ROWS
-    val maxHeight = if (categories.size <= FEW_CATEGORIES) 100.dp else 200.dp
+    val maxHeight =
+        if (categories.size <= FEW_CATEGORIES) defaultDimensions.heigthFewCategory else defaultDimensions.heightCategory
 
     Column(modifier = modifier) {
         Row(
@@ -39,7 +40,7 @@ fun CategoriesGrid(
             horizontalArrangement = Arrangement.Center,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(4.dp),
+                .padding(defaultDimensions.verySmall),
         ) {
             Text(text = name)
         }

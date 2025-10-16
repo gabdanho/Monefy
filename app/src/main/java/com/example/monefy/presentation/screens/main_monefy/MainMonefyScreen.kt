@@ -48,14 +48,15 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.monefy.R
 import com.example.monefy.presentation.components.CustomDateRangePicker
 import com.example.monefy.presentation.model.Category
 import com.example.monefy.presentation.model.Finance
+import com.example.monefy.presentation.theme.defaultDimensions
 import com.example.monefy.presentation.utils.darken
 import kotlinx.coroutines.launch
 import java.util.Locale
@@ -88,7 +89,7 @@ fun MainMonefyScreen(
                     selectedDateRangeIndex = uiState.selectedDateRangeIndex,
                     showDateRangeDialog = { viewModel.changeIsShowDateRangeDialog(true) },
                     changeSelectedDateRangeIndex = { viewModel.changeSelectedDateRangeIndex(it) },
-                    modifier = Modifier.padding(bottom = 16.dp),
+                    modifier = Modifier.padding(bottom = defaultDimensions.medium),
                 )
             }
 
@@ -96,17 +97,17 @@ fun MainMonefyScreen(
                 uiState.isLoading -> CircularProgressIndicator()
                 !uiState.isHasFinances -> {
                     Text(
-                        text = "Нет данных для отображения",
+                        text = stringResource(R.string.text_no_data),
                         textAlign = TextAlign.Center,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(8.dp)
+                            .padding(defaultDimensions.small)
                     )
                 }
 
                 else -> {
                     when {
-                        uiState.categoryIdToFinances.isEmpty() -> Text(text = "Нет данных для отображения")
+                        uiState.categoryIdToFinances.isEmpty() -> Text(text = stringResource(R.string.text_no_data))
                         else -> {
                             if (uiState.categoriesToSumFinance.isNotEmpty()) {
                                 FinancesPieChart(
@@ -146,7 +147,7 @@ fun FinancesPieChart(
     categoriesToSumFinance: Map<Category, Double>,
     onCategoryTapped: (Category) -> Unit,
     modifier: Modifier = Modifier,
-    radiusDp: Dp = 120.dp,
+    radiusDp: Dp = defaultDimensions.pieChartRadius,
 ) {
     val radius = LocalDensity.current.run { radiusDp.toPx() }
     val scope = rememberCoroutineScope()
@@ -256,19 +257,19 @@ private fun FinancesTable(
     categoriesToSumFinance: Map<Category, Double>,
     goToFinance: (Finance) -> Unit,
     modifier: Modifier = Modifier,
-    height: Dp = 200.dp,
+    height: Dp = defaultDimensions.financeTableHeight,
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .height(height),
         shape = RoundedCornerShape(
-            topStart = 20.dp,
-            topEnd = 20.dp
+            topStart = defaultDimensions.financeCardCornerShape,
+            topEnd = defaultDimensions.financeCardCornerShape
         )
     ) {
         // Выводим категории и их блоки с финансами
-        LazyColumn(modifier = modifier.padding(16.dp)) {
+        LazyColumn(modifier = modifier.padding(defaultDimensions.medium)) {
             items(categoriesToSumFinance.keys.toList()) { category ->
                 val finances = categoryIdToFinances[category.id] ?: emptyList()
                 val financesFilteredByDate = finances.sortedBy { it.date }
@@ -320,13 +321,13 @@ private fun CategoryBlock(
             modifier = modifier
                 .fillMaxWidth()
                 .clickable { expanded = !expanded }
-                .padding(8.dp)
+                .padding(defaultDimensions.small)
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // Кружочек с цветом категории
-                Canvas(Modifier.size(10.dp)) {
+                Canvas(Modifier.size(defaultDimensions.circleColorSize)) {
                     drawCircle(
                         color = Color(category.colorLong ?: Color.Transparent.toArgb().toLong())
                     )
@@ -334,11 +335,15 @@ private fun CategoryBlock(
                 Text(
                     text = category.name,
                     style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(start = 8.dp)
+                    modifier = Modifier.padding(start = defaultDimensions.small)
                 )
             }
             Text(
-                text = "$categorySum ($percentage %)",
+                text = stringResource(
+                    R.string.text_category_sum_and_percent,
+                    categorySum,
+                    percentage
+                ),
                 style = MaterialTheme.typography.titleSmall,
             )
         }
@@ -371,13 +376,13 @@ private fun FinancesBlock(
     goToFinance: (Finance) -> Unit,
 ) {
     Column(
-        modifier = Modifier.padding(8.dp)
+        modifier = Modifier.padding(defaultDimensions.small)
     ) {
         finances.forEach {
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier
-                    .padding(bottom = 8.dp)
+                    .padding(bottom = defaultDimensions.small)
                     .clickable { goToFinance(it) }
                     .fillMaxWidth()
             ) {
@@ -444,13 +449,13 @@ private fun DateRangeSelector(
                     horizontalArrangement = Arrangement.Center,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(30.dp)
+                        .height(defaultDimensions.dateRangeSelectorHeight)
                 ) {
                     // "..." - свой промежуток даты
                     if (index == 0) {
                         Icon(
                             imageVector = Icons.Filled.DateRange,
-                            contentDescription = "Выбрать собственный промежуток времени",
+                            contentDescription = stringResource(R.string.content_selected_custom_date_range),
                             modifier = Modifier
                         )
                     } else {

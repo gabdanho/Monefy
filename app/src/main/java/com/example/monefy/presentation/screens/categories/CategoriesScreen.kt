@@ -26,13 +26,14 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.monefy.R
 import com.example.monefy.presentation.components.CircleCategoryColor
 import com.example.monefy.presentation.constants.ADD_CATEGORY_ID
 import com.example.monefy.presentation.model.Category
+import com.example.monefy.presentation.theme.defaultDimensions
 import java.util.Locale
 
 private const val TWO_COLUMN = 2
@@ -50,7 +51,7 @@ fun CategoriesScreen(
                 columns = GridCells.Fixed(TWO_COLUMN),
                 modifier = modifier
                     .padding(innerPadding)
-                    .padding(bottom = 8.dp)
+                    .padding(bottom = defaultDimensions.small)
             ) {
                 items(uiState.categories) { category ->
                     CategoryCard(
@@ -60,15 +61,17 @@ fun CategoriesScreen(
                         onRedactorClick = { viewModel.onRedactorClick(category) },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp)
+                            .padding(defaultDimensions.medium)
                     )
                 }
             }
         } else {
             Text(
-                text = "Нет данных для отображения",
+                text = stringResource(R.string.text_no_data),
                 textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth().padding(8.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(defaultDimensions.small)
             )
         }
     }
@@ -86,10 +89,10 @@ private fun CategoryCard(
     Card(
         modifier = modifier
             .shadow(
-                elevation = 10.dp,
+                elevation = defaultDimensions.categoryCardElevation,
                 ambientColor = category.colorLong?.let { Color(it) } ?: Color.Transparent,
                 spotColor = category.colorLong?.let { Color(it) } ?: Color.Transparent,
-                shape = RoundedCornerShape(20.dp)
+                shape = RoundedCornerShape(defaultDimensions.categoryCardBorderShape)
             )
             .clickable {
                 // Если -1 - то это категория, иначе создаём категорию
@@ -102,7 +105,7 @@ private fun CategoryCard(
             category = category,
             onRedactorClick = { onRedactorClick() },
             modifier = Modifier
-                .padding(vertical = 32.dp, horizontal = 4.dp)
+                .padding(vertical = defaultDimensions.big, horizontal = defaultDimensions.verySmall)
                 .fillMaxWidth()
         )
     }
@@ -149,7 +152,7 @@ private fun CategoryInfo(
         ) {
             RedactorIcon(
                 onRedactorClick = { onRedactorClick() },
-                modifier = Modifier.size(25.dp)
+                modifier = Modifier.size(defaultDimensions.iconSize)
             )
         }
     }
@@ -167,7 +170,7 @@ private fun RedactorIcon(
     ) {
         Icon(
             painter = painterResource(R.drawable.change),
-            contentDescription = "Редактировать",
+            contentDescription = stringResource(R.string.content_edit),
             modifier = modifier
         )
     }

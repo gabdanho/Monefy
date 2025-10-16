@@ -22,9 +22,7 @@ import androidx.compose.ui.unit.dp
 import com.example.monefy.presentation.utils.convertLongToLocalDate
 
 @Composable
-fun CustomDateRangePicker(
-    updateDateRange: (List<LocalDate>) -> Unit,
-) {
+fun CustomDateRangePicker(updateDateRange: (List<LocalDate>) -> Unit) {
     val state = rememberDateRangePickerState()
 
     Box(

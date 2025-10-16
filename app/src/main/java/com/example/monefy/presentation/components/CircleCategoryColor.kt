@@ -12,7 +12,7 @@ fun CircleCategoryColor(
     colorLong: Long,
     center: Float,
     radius: Float,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Canvas(
         modifier = modifier

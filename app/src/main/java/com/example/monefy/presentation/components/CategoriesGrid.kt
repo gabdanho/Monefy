@@ -24,8 +24,8 @@ private const val FEW_CATEGORIES = 4
 @Composable
 fun CategoriesGrid(
     name: String,
-    categories: List<Category>,
     selectedCategoryId: Int,
+    categories: List<Category>,
     onAddCategoryScreenClick: () -> Unit,
     changeSelectedCategory: (Int) -> Unit,
     modifier: Modifier = Modifier,

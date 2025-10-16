@@ -33,6 +33,7 @@ import com.example.monefy.R
 import com.example.monefy.presentation.components.CircleCategoryColor
 import com.example.monefy.presentation.constants.ADD_CATEGORY_ID
 import com.example.monefy.presentation.model.Category
+import java.util.Locale
 
 private const val TWO_COLUMN = 2
 
@@ -135,7 +136,7 @@ private fun CategoryInfo(
         // Выводим тотал прайс категории
         if (category.id != ADD_CATEGORY_ID) {
             Text(
-                text = String.format("%.2f", category.totalCategoryPrice),
+                text = String.format(Locale.getDefault(), "%.2f", category.totalCategoryPrice),
                 style = MaterialTheme.typography.bodyLarge
             )
         }

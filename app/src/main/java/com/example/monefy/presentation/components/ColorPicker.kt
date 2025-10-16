@@ -23,9 +23,7 @@ import com.github.skydoves.colorpicker.compose.HsvColorPicker
 import com.github.skydoves.colorpicker.compose.rememberColorPickerController
 
 @Composable
-fun ColorPicker(
-    changeColorCategory: (Long) -> Unit,
-) {
+fun ColorPicker(changeColorCategory: (Long) -> Unit) {
     val colorController = rememberColorPickerController()
 
     Card {

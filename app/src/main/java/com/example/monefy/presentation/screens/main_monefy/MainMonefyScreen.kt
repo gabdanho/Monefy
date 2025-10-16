@@ -25,9 +25,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -58,6 +58,7 @@ import com.example.monefy.presentation.model.Category
 import com.example.monefy.presentation.model.Finance
 import com.example.monefy.presentation.utils.darken
 import kotlinx.coroutines.launch
+import java.util.Locale
 import kotlin.collections.forEach
 import kotlin.math.PI
 import kotlin.math.atan2
@@ -242,7 +243,7 @@ fun FinancesPieChart(
                 }
             }
 
-            Text(String.format("%.2f", currentCategorySumPrice))
+            Text(String.format(Locale.getDefault(), "%.2f", currentCategorySumPrice))
         }
     }
 }
@@ -310,7 +311,7 @@ private fun CategoryBlock(
     modifier: Modifier = Modifier,
 ) {
     var expanded by rememberSaveable { mutableStateOf(false) }
-    val percentage = String.format("%.2f", (categorySum / totalSum) * 100)
+    val percentage = String.format(Locale.getDefault(), "%.2f", (categorySum / totalSum) * 100)
 
     Column {
         Row(
@@ -382,7 +383,7 @@ private fun FinancesBlock(
             ) {
                 Text(text = it.name)
                 Text(
-                    text = String.format("%.2f", it.count.toDouble() * it.price),
+                    text = String.format(Locale.getDefault(), "%.2f", it.count.toDouble() * it.price),
                     style = MaterialTheme.typography.titleSmall
                 )
             }
@@ -396,7 +397,7 @@ private fun FinanceTypeSelector(
     changeSelectedTabIndex: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    TabRow(
+    PrimaryTabRow(
         selectedTabIndex = selectedFinanceTypeTabIndex,
         contentColor = MaterialTheme.colorScheme.onSurface,
         modifier = modifier
@@ -420,7 +421,7 @@ private fun DateRangeSelector(
     changeSelectedDateRangeIndex: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    TabRow(
+    PrimaryTabRow(
         selectedTabIndex = selectedDateRangeIndex,
         contentColor = MaterialTheme.colorScheme.onSurface,
         modifier = modifier

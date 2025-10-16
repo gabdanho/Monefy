@@ -26,6 +26,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.monefy.presentation.model.Finance
+import java.util.Locale
 
 @Composable
 fun FinancesScreen(
@@ -118,7 +119,7 @@ private fun FinanceCard(
             }
             // Выводим прайс
             Text(
-                text = String.format("%.2f", finance.count.toDouble() * finance.price),
+                text = String.format(Locale.getDefault(), "%.2f", finance.count.toDouble() * finance.price),
                 style = MaterialTheme.typography.bodyLarge
             )
         }

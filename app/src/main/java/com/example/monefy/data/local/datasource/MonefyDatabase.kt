@@ -27,7 +27,7 @@ abstract class MonefyDatabase : RoomDatabase() {
                     MonefyDatabase::class.java,
                     "app_database.db")
                     .createFromAsset("database/monefy_database.db")
-                    .fallbackToDestructiveMigration()
+                    .fallbackToDestructiveMigration(false)
                     .build()
                 INSTANCE = instance
 

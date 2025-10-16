@@ -1,7 +1,5 @@
 package com.example.monefy.presentation.screens.finance_editor
 
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toColorLong
 import com.example.monefy.presentation.model.Category
 import com.example.monefy.presentation.model.Finance
 import com.example.monefy.presentation.model.StringResName
@@ -13,9 +11,9 @@ data class FinanceEditorScreenUiState(
     val isPriceEqualsZero: Boolean = false,
     val isShowDateDialog: Boolean = false,
 
-    val textColorFinanceName: Long = Color.White.toColorLong(),
-    val textColorCategory: Long = Color.White.toColorLong(),
-    val textColorFinancePrice: Long = Color.White.toColorLong(),
+    val textColorFinanceName: Long = 0xFFFFFFFF,
+    val textColorCategory: Long = 0xFFFFFFFF,
+    val textColorFinancePrice: Long = 0xFFFFFFFF,
 
     val selectedCategoryId: Int = 0,
     val pickedDate: LocalDate = LocalDate.now(),

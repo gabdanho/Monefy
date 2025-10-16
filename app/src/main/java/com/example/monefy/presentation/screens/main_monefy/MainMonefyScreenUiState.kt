@@ -19,6 +19,6 @@ data class MainMonefyScreenUiState(
     val dateRange: List<LocalDate> = emptyList(),
     val selectedCustomDateRange: List<LocalDate> = emptyList(),
 
-    val totalPriceFromAllCategories: Double = 0.0,
+    val totalSum: Double = 0.0,
     val currentCategorySumPrice: Double = 0.0,
 )

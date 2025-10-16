@@ -1,7 +1,5 @@
 package com.example.monefy.presentation.screens.finance_creator
 
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toColorLong
 import androidx.core.text.isDigitsOnly
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -40,9 +38,9 @@ class FinanceCreatorScreenViewModel @Inject constructor(
         viewModelScope.launch {
             repeat(3) {
                 delay(500L)
-                _uiState.update { it.copy(textColorFinanceName = Color.Red.toColorLong()) }
+                _uiState.update { it.copy(textColorFinanceName = ERROR_COLOR) }
                 delay(500L)
-                _uiState.update { it.copy(textColorFinanceName = Color.White.toColorLong()) }
+                _uiState.update { it.copy(textColorFinanceName = TEXT_COLOR) }
             }
             _uiState.update { it.copy(isFinanceNameNotFilled = false) }
         }
@@ -52,9 +50,9 @@ class FinanceCreatorScreenViewModel @Inject constructor(
         viewModelScope.launch {
             repeat(3) {
                 delay(500L)
-                _uiState.update { it.copy(textColorCategory = Color.Red.toColorLong()) }
+                _uiState.update { it.copy(textColorCategory = ERROR_COLOR) }
                 delay(500L)
-                _uiState.update { it.copy(textColorCategory = Color.White.toColorLong()) }
+                _uiState.update { it.copy(textColorCategory = TEXT_COLOR) }
             }
             _uiState.update { it.copy(isCategoryNotSelected = false) }
         }
@@ -64,9 +62,9 @@ class FinanceCreatorScreenViewModel @Inject constructor(
         viewModelScope.launch {
             repeat(3) {
                 delay(500L)
-                _uiState.update { it.copy(textColorFinancePrice = Color.Red.toColorLong()) }
+                _uiState.update { it.copy(textColorFinancePrice = ERROR_COLOR) }
                 delay(500L)
-                _uiState.update { it.copy(textColorFinancePrice = Color.White.toColorLong()) }
+                _uiState.update { it.copy(textColorFinancePrice = TEXT_COLOR) }
             }
             _uiState.update { it.copy(isPriceEqualsZero = false) }
         }
@@ -189,5 +187,10 @@ class FinanceCreatorScreenViewModel @Inject constructor(
             _uiState.update { it.copy(categories = categories) }
             println(categories.toString())
         }
+    }
+
+    companion object {
+        private const val ERROR_COLOR = 0xFFBA1A1A
+        private const val TEXT_COLOR = 0xFFFFFFFF
     }
 }

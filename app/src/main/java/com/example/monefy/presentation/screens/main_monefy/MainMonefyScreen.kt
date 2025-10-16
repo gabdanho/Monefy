@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -43,8 +44,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.scale
-import androidx.compose.ui.graphics.fromColorLong
-import androidx.compose.ui.graphics.toColorLong
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalResources
@@ -74,7 +74,7 @@ fun MainMonefyScreen(
     Scaffold(modifier = modifier) { innerPadding ->
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = modifier.padding(innerPadding)
+            modifier = Modifier.consumeWindowInsets(innerPadding)
         ) {
             // Выбор типа финансов: доходы или расходы
             FinanceTypeSelector(
@@ -97,9 +97,12 @@ fun MainMonefyScreen(
                     Text(
                         text = "Нет данных для отображения",
                         textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth().padding(8.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp)
                     )
                 }
+
                 else -> {
                     when {
                         uiState.categoryIdToFinances.isEmpty() -> Text(text = "Нет данных для отображения")
@@ -107,22 +110,16 @@ fun MainMonefyScreen(
                             if (uiState.categoriesToSumFinance.isNotEmpty()) {
                                 FinancesPieChart(
                                     categoriesToSumFinance = uiState.categoriesToSumFinance,
-                                    categoryIdToFinances = uiState.categoryIdToFinances,
-                                    totalPriceFromAllCategories = uiState.totalPriceFromAllCategories,
-                                    isAllNotTapped = uiState.isAllNotTapped,
                                     currentCategorySumPrice = uiState.currentCategorySumPrice,
-                                    changeCurrentCategorySumPrice = {
-                                        viewModel.changeCurrentCategorySumPrice(it)
-                                    },
-                                    updateIsTapped = { viewModel.updateIsTapped(it) },
-                                    modifier = modifier.weight(1.2f)
+                                    totalSum = uiState.totalSum,
+                                    onCategoryTapped = { viewModel.onCategoryTapped(it) },
+                                    modifier = Modifier.weight(1.2f),
                                 )
                                 FinancesTable(
-                                    totalPriceFromAllCategories = uiState.totalPriceFromAllCategories,
+                                    totalSum = uiState.totalSum,
                                     goToFinance = { viewModel.goToFinance(it) },
                                     categoryIdToFinances = uiState.categoryIdToFinances,
                                     categoriesToSumFinance = uiState.categoriesToSumFinance,
-                                    modifier = modifier.weight(1f),
                                 )
                             }
                         }
@@ -142,32 +139,25 @@ fun MainMonefyScreen(
 
 // Донат с категориями
 @Composable
-private fun FinancesPieChart(
+fun FinancesPieChart(
+    totalSum: Double,
     currentCategorySumPrice: Double,
-    totalPriceFromAllCategories: Double,
-    isAllNotTapped: Boolean,
     categoriesToSumFinance: Map<Category, Double>,
-    categoryIdToFinances: Map<Int, List<Finance>>,
-    changeCurrentCategorySumPrice: (Category?) -> Unit,
-    updateIsTapped: (Category) -> Unit,
+    onCategoryTapped: (Category) -> Unit,
     modifier: Modifier = Modifier,
-    radius: Dp = 80.dp,
+    radiusDp: Dp = 120.dp,
 ) {
-    val radius = LocalDensity.current.run { radius.toPx() }
+    val radius = LocalDensity.current.run { radiusDp.toPx() }
     val scope = rememberCoroutineScope()
 
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Box(
-            contentAlignment = Alignment.Center
-        ) {
-            val anglePerValue = (360 / totalPriceFromAllCategories)
-
-            val sweepAnglePercentage = categoriesToSumFinance.values.toList().map {
-                (it * anglePerValue)
-            }
+        Box(contentAlignment = Alignment.Center) {
+            val anglePerValue = 360f / totalSum
+            val sweepAngleList =
+                categoriesToSumFinance.values.map { (it * anglePerValue).toFloat() }
             var circleCenter by remember { mutableStateOf(Offset.Zero) }
 
             Canvas(
@@ -176,35 +166,27 @@ private fun FinancesPieChart(
                     .pointerInput(true) {
                         detectTapGestures(
                             onTap = { offset ->
-                                // проверяем был ли тач в области диаграммы
-                                if ((offset.x - circleCenter.x).toDouble()
-                                        .pow(2.0) + (offset.y - circleCenter.y).toDouble()
-                                        .pow(2.0) <= (radius.toDouble() + radius / 3f).pow(2.0) &&
-                                    (offset.x - circleCenter.x).toDouble()
-                                        .pow(2.0) + (offset.y - circleCenter.y).toDouble()
-                                        .pow(2.0) >= (radius.toDouble() - radius / 3f).pow(2.0)
-                                ) {
+                                val dx = offset.x - circleCenter.x
+                                val dy = offset.y - circleCenter.y
+                                val dist2 = dx * dx + dy * dy
 
-                                    // тап -> переводим в углы
-                                    val tapAngleInDegrees = (-atan2(
+                                // Проверяем попадание в кольцо
+                                if (dist2 <= (radius + radius / 3f).pow(2) &&
+                                    dist2 >= (radius - radius / 3f).pow(2)
+                                ) {
+                                    val tapAngle = (-atan2(
                                         x = circleCenter.y - offset.y,
                                         y = circleCenter.x - offset.x
                                     ) * (180f / PI).toFloat() - 90f).mod(360f)
 
-                                    // по углу смотрим в какую категорию попадаем
-                                    var currentAngle = 0.0
-
-                                    categoriesToSumFinance.forEach { category, _ ->
-                                        currentAngle += category.totalCategoryPrice * anglePerValue
-                                        if (tapAngleInDegrees < currentAngle) {
+                                    var currentAngle = 0f
+                                    for ((category, value) in categoriesToSumFinance) {
+                                        currentAngle += (value * anglePerValue).toFloat()
+                                        if (tapAngle < currentAngle) {
                                             scope.launch {
-                                                updateIsTapped(category)
-                                                if (!category.isTapped)
-                                                    changeCurrentCategorySumPrice(category)
-                                                if (isAllNotTapped)
-                                                    changeCurrentCategorySumPrice(null)
+                                                onCategoryTapped(category)
                                             }
-                                            return@forEach
+                                            return@detectTapGestures
                                         }
                                     }
                                 }
@@ -215,64 +197,51 @@ private fun FinancesPieChart(
                 val width = size.width
                 val height = size.height
                 var startAngle = 0f
-                circleCenter = Offset(x = width / 2f, y = height / 2f)
+                circleCenter = Offset(width / 2f, height / 2f)
 
-                // Обработка категорий для отрисовки секций доната
-                categoriesToSumFinance.keys.indices.forEach { id ->
-                    val categories = categoriesToSumFinance.keys.toList()
-                    // Тень категории
+                val categories = categoriesToSumFinance.keys.toList()
+
+                for (i in categories.indices) {
+                    val category = categories[i]
+
+                    // тень
                     drawArc(
                         color = Color(
-                            categories[id].colorLong
-                                ?: Color.Transparent.toColorLong()
+                            category.colorLong ?: Color.Transparent.toArgb().toLong()
                         ).darken(0.4f),
                         startAngle = startAngle,
-                        sweepAngle = sweepAnglePercentage[id].toFloat(),
+                        sweepAngle = sweepAngleList[i],
                         useCenter = false,
-                        style = Stroke(
-                            width = radius / 3f
-                        ),
-                        size = Size(
-                            radius * 2f,
-                            radius * 2f
-                        ),
+                        style = Stroke(width = radius / 3f),
+                        size = Size(radius * 2f, radius * 2f),
                         topLeft = Offset(
                             (width - radius * 2f) / 2f,
                             (height - radius * 2f) / 2f
                         )
                     )
 
-                    val finances =
-                        categoryIdToFinances[categoriesToSumFinance.keys.toList()[id].id]
-                            ?: emptyList()
-                    if (finances.isNotEmpty()) {
-                        val scale =
-                            if (categoriesToSumFinance.keys.toList()[id].isTapped) 1.1f else 1.0f
-                        scale(scale) {
-                            drawArc(
-                                color = Color(
-                                    categories[id].colorLong ?: Color.Transparent.toColorLong()
-                                ),
-                                startAngle = startAngle,
-                                sweepAngle = sweepAnglePercentage[id].toFloat(),
-                                useCenter = false,
-                                style = Stroke(
-                                    width = radius / 3f
-                                ),
-                                size = Size(
-                                    radius * 2f,
-                                    radius * 2f
-                                ),
-                                topLeft = Offset(
-                                    (width - radius * 2f) / 2f,
-                                    (height - radius * 2f) / 2f
-                                )
+                    val scaleFactor = if (category.isTapped) 1.1f else 1.0f
+                    scale(scaleFactor) {
+                        drawArc(
+                            color = Color(
+                                category.colorLong ?: Color.Transparent.toArgb().toLong()
+                            ),
+                            startAngle = startAngle,
+                            sweepAngle = sweepAngleList[i],
+                            useCenter = false,
+                            style = Stroke(width = radius / 3f),
+                            size = Size(radius * 2f, radius * 2f),
+                            topLeft = Offset(
+                                (width - radius * 2f) / 2f,
+                                (height - radius * 2f) / 2f
                             )
-                        }
-                        startAngle += sweepAnglePercentage[id].toFloat()
+                        )
                     }
+
+                    startAngle += sweepAngleList[i]
                 }
             }
+
             Text(String.format("%.2f", currentCategorySumPrice))
         }
     }
@@ -281,16 +250,17 @@ private fun FinancesPieChart(
 // Таблица категорий и финансов
 @Composable
 private fun FinancesTable(
-    totalPriceFromAllCategories: Double,
+    totalSum: Double,
     categoryIdToFinances: Map<Int, List<Finance>>,
     categoriesToSumFinance: Map<Category, Double>,
     goToFinance: (Finance) -> Unit,
     modifier: Modifier = Modifier,
+    height: Dp = 200.dp,
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(300.dp),
+            .height(height),
         shape = RoundedCornerShape(
             topStart = 20.dp,
             topEnd = 20.dp
@@ -309,7 +279,7 @@ private fun FinancesTable(
                         finances = financesFilteredByDate,
                         category = category,
                         categorySum = categoriesToSumFinance[category] ?: 0.0,
-                        totalPrice = totalPriceFromAllCategories,
+                        totalSum = totalSum,
                         goToFinance = goToFinance,
                         showCurrentCategoryWithFinances = false
                     )
@@ -318,7 +288,7 @@ private fun FinancesTable(
                         finances = financesFilteredByDate,
                         category = category,
                         categorySum = categoriesToSumFinance[category] ?: 0.0,
-                        totalPrice = totalPriceFromAllCategories,
+                        totalSum = totalSum,
                         goToFinance = goToFinance,
                         showCurrentCategoryWithFinances = true
                     )
@@ -334,13 +304,13 @@ private fun CategoryBlock(
     finances: List<Finance>,
     category: Category,
     categorySum: Double,
-    totalPrice: Double,
+    totalSum: Double,
     showCurrentCategoryWithFinances: Boolean,
     goToFinance: (Finance) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var expanded by rememberSaveable { mutableStateOf(false) }
-    val percentage = String.format("%.2f", (categorySum / totalPrice) * 100)
+    val percentage = String.format("%.2f", (categorySum / totalSum) * 100)
 
     Column {
         Row(
@@ -357,9 +327,7 @@ private fun CategoryBlock(
                 // Кружочек с цветом категории
                 Canvas(Modifier.size(10.dp)) {
                     drawCircle(
-                        color = Color.fromColorLong(
-                            category.colorLong ?: Color.Transparent.toColorLong()
-                        )
+                        color = Color(category.colorLong ?: Color.Transparent.toArgb().toLong())
                     )
                 }
                 Text(

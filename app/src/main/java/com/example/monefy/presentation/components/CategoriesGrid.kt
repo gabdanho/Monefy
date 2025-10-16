@@ -14,7 +14,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.fromColorLong
 import androidx.compose.ui.unit.dp
 import com.example.monefy.presentation.model.Category
 
@@ -53,7 +52,7 @@ fun CategoriesGrid(
                 CategoryCard(
                     categoryName = category.name,
                     categoryId = category.id,
-                    categoryColor = category.colorLong?.let { Color.fromColorLong(it) }
+                    categoryColor = category.colorLong?.let { Color(it) }
                         ?: Color.Transparent,
                     selectedCategoryId = selectedCategoryId,
                     onAddCategoryScreenClick = { onAddCategoryScreenClick() },

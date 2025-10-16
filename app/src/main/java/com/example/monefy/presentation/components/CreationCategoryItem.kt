@@ -11,7 +11,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.fromColorLong
 import androidx.compose.ui.unit.dp
 import com.example.monefy.presentation.model.CREATION_CATEGORY
 
@@ -33,7 +32,7 @@ fun CreationCategoryItem(
         CategoryCard(
             categoryName = CREATION_CATEGORY.name,
             categoryId = CREATION_CATEGORY.id,
-            categoryColor = CREATION_CATEGORY.colorLong?.let { Color.fromColorLong(it) }
+            categoryColor = CREATION_CATEGORY.colorLong?.let { Color(it) }
                 ?: Color.Transparent,
             selectedCategoryId = CREATION_CATEGORY.id,
             onAddCategoryScreenClick = { onAddCategoryScreenClick() },

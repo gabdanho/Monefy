@@ -31,7 +31,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.fromColorLong
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
@@ -85,7 +84,7 @@ fun CategoryCreatorScreen(
             // Название категории
             Text(
                 text = "Название категории",
-                color = Color.fromColorLong(uiState.textColorCategoryName),
+                color = Color(uiState.textColorCategoryName),
                 modifier = Modifier.padding(4.dp)
             )
             Row(
@@ -122,7 +121,7 @@ fun CategoryCreatorScreen(
             // Цвет категории
             Text(
                 text = "Цвет категории",
-                color = Color.fromColorLong(uiState.textColorCategoryColor),
+                color = Color(uiState.textColorCategoryColor),
                 modifier = Modifier.padding(4.dp)
             )
             Box(
@@ -130,7 +129,7 @@ fun CategoryCreatorScreen(
                     .padding(start = 4.dp)
                     .size(30.dp)
                     .background(
-                        color = uiState.colorCategory?.let { Color.fromColorLong(it) }
+                        color = uiState.colorCategory?.let { Color(it) }
                             ?: Color.Transparent,
                         shape = RoundedCornerShape(2.dp)
                     )

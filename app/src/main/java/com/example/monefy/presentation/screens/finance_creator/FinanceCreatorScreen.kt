@@ -22,7 +22,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.fromColorLong
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -100,7 +99,7 @@ fun FinanceCreatorScreen(
             InputParamItem(
                 paramName = "Название",
                 value = uiState.financeName,
-                textColor = uiState.textColorFinanceName,
+                textColor = Color(uiState.textColorFinanceName),
                 onValueChange = { viewModel.onFinanceNameChange(it) },
                 modifier = Modifier.fillMaxWidth()
             )
@@ -108,7 +107,7 @@ fun FinanceCreatorScreen(
             InputParamItem(
                 paramName = "Стоимость / доход",
                 value = uiState.price,
-                textColor = uiState.textColorFinancePrice,
+                textColor = Color(uiState.textColorFinancePrice),
                 onValueChange = { viewModel.onPriceChange(it) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.fillMaxWidth()
@@ -124,7 +123,7 @@ fun FinanceCreatorScreen(
             // Категория
             Text(
                 text = "Категория",
-                color = Color.fromColorLong(uiState.textColorCategory),
+                color = Color(uiState.textColorCategory),
                 modifier = Modifier.padding(4.dp)
             )
 

@@ -1,7 +1,5 @@
 package com.example.monefy.presentation.screens.category_editor
 
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toColorLong
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.monefy.domain.interfaces.local.FinancesRepository
@@ -32,9 +30,9 @@ class CategoryEditorScreenViewModel @Inject constructor(
         viewModelScope.launch {
             repeat(3) {
                 delay(500L)
-                _uiState.update { it.copy(textColorCategoryColor = Color.Red.toColorLong()) } // TODO : убрать Color
+                _uiState.update { it.copy(textColorCategoryColor = ERROR_COLOR) }
                 delay(500L)
-                _uiState.update { it.copy(textColorCategoryColor = Color.White.toColorLong()) } // TODO : убрать Color
+                _uiState.update { it.copy(textColorCategoryColor = TEXT_COLOR) }
             }
             _uiState.update { it.copy(isCategoryColorError = false) }
         }
@@ -44,9 +42,9 @@ class CategoryEditorScreenViewModel @Inject constructor(
         viewModelScope.launch {
             repeat(3) {
                 delay(500L)
-                _uiState.update { it.copy(textColorCategoryName = Color.Red.toColorLong()) } // TODO : убрать Color
+                _uiState.update { it.copy(textColorCategoryName = ERROR_COLOR) }
                 delay(500L)
-                _uiState.update { it.copy(textColorCategoryName = Color.White.toColorLong()) } // TODO : убрать Color
+                _uiState.update { it.copy(textColorCategoryName = TEXT_COLOR) }
             }
             _uiState.update { it.copy(isCategoryNameError = false) }
         }
@@ -132,5 +130,10 @@ class CategoryEditorScreenViewModel @Inject constructor(
                 colorCategory = category.colorLong
             )
         }
+    }
+
+    companion object {
+        private const val ERROR_COLOR = 0xFFBA1A1A
+        private const val TEXT_COLOR = 0xFFFFFFFF
     }
 }

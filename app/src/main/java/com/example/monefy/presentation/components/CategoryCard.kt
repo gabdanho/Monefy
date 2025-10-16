@@ -15,7 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toColorLong
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.monefy.presentation.constants.ADD_CATEGORY_ID
@@ -58,7 +58,7 @@ fun CategoryCard(
             // Рисуем категорию создания
             if (categoryId != ADD_CATEGORY_ID) {
                 CircleCategoryColor(
-                    colorLong = categoryColor.toColorLong(),
+                    colorLong = categoryColor.toArgb().toLong(),
                     radius = 10f,
                     center = 5f,
                     modifier = Modifier.fillMaxSize()

@@ -24,8 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.fromColorLong
-import androidx.compose.ui.graphics.toColorLong
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -87,8 +86,8 @@ private fun CategoryCard(
         modifier = modifier
             .shadow(
                 elevation = 10.dp,
-                ambientColor = category.colorLong?.let { Color.fromColorLong(it) } ?: Color.Transparent,
-                spotColor = category.colorLong?.let { Color.fromColorLong(it) } ?: Color.Transparent,
+                ambientColor = category.colorLong?.let { Color(it) } ?: Color.Transparent,
+                spotColor = category.colorLong?.let { Color(it) } ?: Color.Transparent,
                 shape = RoundedCornerShape(20.dp)
             )
             .clickable {
@@ -117,7 +116,7 @@ private fun CategoryInfo(
     // Кружочек с цветом категории
     if (category.id != ADD_CATEGORY_ID) {
         CircleCategoryColor(
-            colorLong = category.colorLong ?: Color.Transparent.toColorLong(),
+            colorLong = category.colorLong ?: Color.Transparent.toArgb().toLong(),
             radius = 20f,
             center = 50f
         )

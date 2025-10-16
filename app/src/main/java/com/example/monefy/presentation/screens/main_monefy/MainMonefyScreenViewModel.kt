@@ -31,13 +31,12 @@ class MainMonefyScreenViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             updateDateRange()
-            getTotalPriceFromAllCategories()
         }
     }
 
-    fun changeCurrentCategorySumPrice(category: Category?) {
+    fun changeCurrentCategorySumPrice(category: Category? = null) {
         if (category == null) {
-            _uiState.update { it.copy(currentCategorySumPrice = it.totalPriceFromAllCategories) }
+            _uiState.update { it.copy(currentCategorySumPrice = it.totalSum) }
         } else {
             viewModelScope.launch {
                 _uiState.update {
@@ -47,17 +46,31 @@ class MainMonefyScreenViewModel @Inject constructor(
         }
     }
 
-    fun updateIsTapped(tappedCategory: Category) {
+    fun onCategoryTapped(tappedCategory: Category) {
         val updatedMap = _uiState.value.categoriesToSumFinance.mapKeys { (category, _) ->
-            if (category.id == tappedCategory.id) category.copy(isTapped = !category.isTapped) else category.copy(
-                isTapped = false
-            )
+            if (category.id == tappedCategory.id)
+                category.copy(isTapped = !category.isTapped)
+            else
+                category.copy(isTapped = false)
         }
+
         val isAllNoTapped = updatedMap.keys.all { !it.isTapped }
+
+        val newCurrentSum = if (isAllNoTapped) {
+            _uiState.value.totalSum
+        } else {
+            val activeCategory = updatedMap.keys.find { it.isTapped }
+            if (activeCategory != null)
+                updatedMap[activeCategory] ?: 0.0
+            else
+                _uiState.value.totalSum
+        }
+
         _uiState.update {
             it.copy(
                 categoriesToSumFinance = updatedMap,
-                isAllNotTapped = isAllNoTapped
+                isAllNotTapped = isAllNoTapped,
+                currentCategorySumPrice = newCurrentSum
             )
         }
     }
@@ -144,38 +157,29 @@ class MainMonefyScreenViewModel @Inject constructor(
                 } ?: emptyList()
             }
 
-            val categoriesIdToFinances = categoriesToFinances
-                .mapKeys { (category, _) ->
+            val categoryIdToFinances = categoriesToFinances
+                .mapKeys { (category) ->
                     category.id
                 }
+                .filterNot { it.value.isEmpty() }
 
             val categoriesToSumFinance = categoriesToFinances
                 .mapValues { (_, finances) ->
                     finances.sumOf { it.price * it.count }
                 }
 
+            val totalSum = categoriesToSumFinance.values.sum()
+
             _uiState.update {
                 it.copy(
-                    categoryIdToFinances = categoriesIdToFinances,
+                    categoryIdToFinances = categoryIdToFinances,
                     categoriesToSumFinance = categoriesToSumFinance,
-                    isLoading = false
+                    totalSum = totalSum,
+                    isLoading = false,
+                    isHasFinances = true
                 )
             }
+            changeCurrentCategorySumPrice()
         }
-    }
-
-    private suspend fun getTotalPriceFromAllCategories() {
-        val finances = financesRepository.getAllFinances()
-        var totalSum = 0.0
-        if (finances.isNotEmpty()) {
-            totalSum = finances.sumOf { it.price * it.count }
-            _uiState.update { it.copy(isHasFinances = true) }
-        }
-        _uiState.update { it.copy(totalPriceFromAllCategories = totalSum) }
     }
 }
-
-/** finances sdelat mapu po kategoriyam id-shnikam i uporadochit' po date*/
-// val finances by getFinancesByCategoryId(category.id).collectAsState(emptyList())
-//                val filteredByDateFinances =
-//                    finances.filter { isDateInRange(it.date, dateRange[0], dateRange[1]) }

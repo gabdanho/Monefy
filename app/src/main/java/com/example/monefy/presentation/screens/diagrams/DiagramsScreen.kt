@@ -41,6 +41,9 @@ import kotlin.math.abs
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.example.monefy.presentation.model.DiagramInfo
 import com.example.monefy.presentation.theme.defaultDimensions
 import kotlin.math.roundToInt
@@ -61,6 +64,17 @@ fun DiagramScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val diagramsItems = LocalResources.current.getStringArray(R.array.diagramsItems)
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    LaunchedEffect(lifecycleOwner) {
+        lifecycleOwner.lifecycle.addObserver(
+            LifecycleEventObserver{ _, event ->
+                if (event == Lifecycle.Event.ON_RESUME) {
+                    viewModel.changeSelectedDiagramTabIndex(index = 0)
+                }
+            }
+        )
+    }
 
     Scaffold(modifier = modifier) { innerPadding ->
         Column(

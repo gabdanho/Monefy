@@ -34,7 +34,7 @@ class HistoryFinancesScreenViewModel @Inject constructor(
         }
     }
 
-    private fun getFinances() {
+    fun getFinances() {
         viewModelScope.launch {
             val mappedFinances =
                 financesRepository.getFinancesByDateSortDesc().map { it.toPresentationLayer() }

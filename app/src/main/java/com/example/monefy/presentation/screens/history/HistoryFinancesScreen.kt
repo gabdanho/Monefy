@@ -14,6 +14,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -25,6 +26,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.example.monefy.R
 import com.example.monefy.presentation.model.Finance
 import com.example.monefy.presentation.model.FinanceType
@@ -42,6 +46,17 @@ fun HistoryFinancesScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val dates = uiState.finances.map { it.date }.distinct()
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    LaunchedEffect(lifecycleOwner) {
+        lifecycleOwner.lifecycle.addObserver(
+            LifecycleEventObserver{ _, event ->
+                if (event == Lifecycle.Event.ON_RESUME) {
+                    viewModel.getFinances()
+                }
+            }
+        )
+    }
 
     if (dates.isNotEmpty()) {
         LazyColumn(modifier = modifier) {

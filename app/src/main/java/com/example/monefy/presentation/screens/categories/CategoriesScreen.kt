@@ -18,6 +18,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -29,6 +30,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.example.monefy.R
 import com.example.monefy.presentation.components.CircleCategoryColor
 import com.example.monefy.presentation.constants.ADD_CATEGORY_ID
@@ -43,6 +47,18 @@ fun CategoriesScreen(
     modifier: Modifier = Modifier,
     viewModel: CategoriesScreenViewModel = hiltViewModel<CategoriesScreenViewModel>(),
 ) {
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    LaunchedEffect(lifecycleOwner) {
+        lifecycleOwner.lifecycle.addObserver(
+            LifecycleEventObserver{ _, event ->
+                if (event == Lifecycle.Event.ON_RESUME) {
+                    viewModel.getCategories()
+                }
+            }
+        )
+    }
+
     Scaffold { innerPadding ->
         val uiState by viewModel.uiState.collectAsState()
 

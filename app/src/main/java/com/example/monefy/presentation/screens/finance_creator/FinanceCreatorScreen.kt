@@ -26,6 +26,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.example.monefy.R
 import com.example.monefy.presentation.mappers.resources.StringToResourceIdMapperImpl
 import com.example.monefy.presentation.components.CategoriesGrid
@@ -52,6 +55,17 @@ fun FinanceCreatorScreen(
     val dateDialogState = rememberMaterialDialogState()
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    LaunchedEffect(lifecycleOwner) {
+        lifecycleOwner.lifecycle.addObserver(
+            LifecycleEventObserver{ _, event ->
+                if (event == Lifecycle.Event.ON_RESUME) {
+                    viewModel.getCategories()
+                }
+            }
+        )
+    }
 
     LaunchedEffect(
         uiState.isCategoryNotSelected,

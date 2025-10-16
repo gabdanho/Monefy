@@ -29,9 +29,7 @@ class MainMonefyScreenViewModel @Inject constructor(
     val uiState: StateFlow<MainMonefyScreenUiState> = _uiState.asStateFlow()
 
     init {
-        viewModelScope.launch {
-            updateDateRange()
-        }
+        updateDateRange()
     }
 
     fun changeCurrentCategorySumPrice(category: Category? = null) {
@@ -100,7 +98,7 @@ class MainMonefyScreenViewModel @Inject constructor(
         updateDateRange()
     }
 
-    private fun updateDateRange() {
+    fun updateDateRange() {
         val dateRangeIndex = _uiState.value.selectedDateRangeIndex
 
         val dateRange = when (dateRangeIndex) {

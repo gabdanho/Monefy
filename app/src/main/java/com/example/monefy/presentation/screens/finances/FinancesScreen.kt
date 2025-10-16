@@ -25,6 +25,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.example.monefy.R
 import com.example.monefy.presentation.model.Finance
 import com.example.monefy.presentation.theme.defaultDimensions
@@ -37,6 +40,17 @@ fun FinancesScreen(
     viewModel: FinancesScreenViewModel = hiltViewModel<FinancesScreenViewModel>(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    LaunchedEffect(lifecycleOwner) {
+        lifecycleOwner.lifecycle.addObserver(
+            LifecycleEventObserver{ _, event ->
+                if (event == Lifecycle.Event.ON_RESUME) {
+                    viewModel.getFinanceByCategoryId(categoryId)
+                }
+            }
+        )
+    }
 
     LaunchedEffect(categoryId) {
         viewModel.getFinanceByCategoryId(categoryId)

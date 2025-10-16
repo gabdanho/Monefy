@@ -185,7 +185,7 @@ class FinanceEditorScreenViewModel @Inject constructor(
         }
     }
 
-    private fun getCategories() {
+    fun getCategories() {
         viewModelScope.launch {
             val categories = financesRepository.getAllCategories().map { it.toPresentationLayer() }
             _uiState.update { it.copy(categories = categories) }
